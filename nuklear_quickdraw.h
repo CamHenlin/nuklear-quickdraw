@@ -41,6 +41,7 @@
 #include <string.h>
 //#include "nuklear.h"
 
+typedef struct NkQuickDrawFont NkQuickDrawFont;
 NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int height);
 NK_API int nk_quickdraw_handle_event(EventRecord *event);
 NK_API void nk_quickdraw_shutdown(void);
@@ -48,6 +49,7 @@ NK_API void nk_quickdraw_render(WindowPtr window);
 
 NK_API struct nk_image* nk_quickdraw_create_image(const char* file_name);
 NK_API void nk_quickdraw_del_image(struct nk_image* image);
+NK_API NkQuickDrawFont* nk_quickdraw_font_create_from_file();
 
 #endif
 
@@ -63,6 +65,12 @@ NK_API void nk_quickdraw_del_image(struct nk_image* image);
 #ifndef NK_QUICKDRAW_TEXT_MAX
 #define NK_QUICKDRAW_TEXT_MAX 256
 #endif
+
+struct NkQuickDrawFont {
+    struct nk_user_font nk;
+    char *font;
+};
+
 
 // constant keyboard mappings for convenenience
 // See Inside Macintosh: Text pg A-7, A-8
@@ -246,6 +254,22 @@ static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, co
     return  output[len + 1];
 }
 
+/* Flags are identical to al_load_font() flags argument */
+NK_API NkQuickDrawFont* nk_quickdraw_font_create_from_file() {
+
+    NkQuickDrawFont *font = (NkQuickDrawFont*)calloc(1, sizeof(NkQuickDrawFont));
+
+    font->font = 0x0;// = al_load_font(file_name, font_size, flags);
+    if (font->font == NULL) {
+        fprintf(stdout, "Unable to load font file\n");
+        return NULL;
+    }
+    font->nk.userdata = nk_handle_ptr(font);
+    font->nk.height = 12;
+    font->nk.width = nk_quickdraw_font_get_text_width;
+    return font;
+}
+
 static int nk_color_to_quickdraw_bw_color(struct nk_color color) {
 
     // TODO: since we are operating under a b&w display - we need to convert these colors to black and white
@@ -306,7 +330,18 @@ NK_API void nk_quickdraw_render(WindowPtr window) {
 
     SetPort(window);
 
+	EraseRect(&window->portRect);
+    MoveTo(10, 10);
+    ForeColor(blackColor);
+    DrawText("hail satan", 0, 10);
+    int i = 0;
+
     nk_foreach(cmd, &quickdraw.nuklear_context) {
+        
+        char *logMessage;
+        sprintf(logMessage, "command: %d", i++);
+        DrawText(logMessage, 0, strlen(logMessage));
+        MoveTo(10, i * 10);
 
         int color; // Color QuickDraw colors are integers - see Retro68/InterfacesAndLibraries/Interfaces&Libraries/Interfaces/CIncludes/Quickdraw.h:122 for more info
 
@@ -328,8 +363,8 @@ NK_API void nk_quickdraw_render(WindowPtr window) {
                     Rect quickDrawRectangle;
                     quickDrawRectangle.top = (int)s->y;
                     quickDrawRectangle.left = (int)s->x;
-                    quickDrawRectangle.bottom = (int)s->y - (int)s->h;
-                    quickDrawRectangle.right = (int)s->x - (int)s->w;
+                    quickDrawRectangle.bottom = (int)s->y + (int)s->h;
+                    quickDrawRectangle.right = (int)s->x + (int)s->w;
                     
                     ClipRect(&quickDrawRectangle);
                 }
@@ -628,7 +663,7 @@ NK_API void nk_quickdraw_render(WindowPtr window) {
 
 NK_API int nk_quickdraw_handle_event(EventRecord *event) { // see: inside macintosh: toolbox essentials 2-4
 
-    struct nk_context *nuklear_context = &quickdraw.nuklear_context; // TODO
+    struct nk_context *nuklear_context = &quickdraw.nuklear_context;
     WindowPtr	window;
     FindWindow(event->where, &window); 
 
@@ -806,20 +841,26 @@ NK_INTERN void nk_quickdraw_clipboard_copy(nk_handle usr, const char *text, int 
 // it us up to our "main" function to call this code
 NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int height) {
 
-    nk_init_default(&quickdraw.nuklear_context, NULL);
+    // needed to calculate bezier info, see mactech article.
+    setupBezier();
 
-    //Region locUpdateRgn = NewRgn();
-    
-//    SetRect(limitRect, kMinDocSize, kMinDocSize, kMaxDocSize, kMaxDocSize);
-//    // {call Window Manager to let user drag size box}
-//    growSize = GrowWindow(thisWindow, event.where, limitRect);
-//    SizeWindow(thisWindow, LoWord(growSize), HiWord(growSize), TRUE);
-//    SectRect(oldViewRect, myData^^.editRec^^.viewRect, oldViewRect);
-//    // {validate the intersection (don't update)}
-//    ValidRect(oldViewRect);
-//    // {invalidate any prior update region}
-//    InvalRgn(locUpdateRgn);
-//    DisposeRgn(locUpdateRgn);
+    NkQuickDrawFont *quickdrawfont = nk_quickdraw_font_create_from_file();
+    struct nk_user_font *font = &quickdrawfont->nk;
+    nk_init_default(&quickdraw.nuklear_context, font);
+
+    // this is pascal code but i think we would need to do something like this if we want this function 
+    // to be responsible for setting the window size
+    //    Region locUpdateRgn = NewRgn();
+    //    SetRect(limitRect, kMinDocSize, kMinDocSize, kMaxDocSize, kMaxDocSize);
+    //    // {call Window Manager to let user drag size box}
+    //    growSize = GrowWindow(thisWindow, event.where, limitRect);
+    //    SizeWindow(thisWindow, LoWord(growSize), HiWord(growSize), TRUE);
+    //    SectRect(oldViewRect, myData^^.editRec^^.viewRect, oldViewRect);
+    //    // {validate the intersection (don't update)}
+    //    ValidRect(oldViewRect);
+    //    // {invalidate any prior update region}
+    //    InvalRgn(locUpdateRgn);
+    //    DisposeRgn(locUpdateRgn);
 
     quickdraw.nuklear_context.clip.copy = nk_quickdraw_clipboard_copy;
     quickdraw.nuklear_context.clip.paste = nk_quickdraw_clipboard_paste;
@@ -831,7 +872,21 @@ NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int hei
 NK_API void nk_quickdraw_shutdown(void) {
 
     nk_free(&quickdraw.nuklear_context);
-    // TODO: do we need to allocate memory for Macintosh Toolbox at all? allegro did this: memset(&allegro5, 0, sizeof(allegro5));
+    memset(&quickdraw, 0, sizeof(quickdraw));
 }
 
 #endif /* NK_QUICKDRAW_IMPLEMENTATION */
+        
+void aFailed(char *file, int line) {
+    
+    MoveTo(10, 10);
+    char *textoutput;
+    sprintf(textoutput, "%s:%d", file, line);
+    DrawText(textoutput, 0, strlen(textoutput));
+    // hold the program - we want to be able to read the text! assuming anything after the assert would be a crash
+    while (true) {}
+}
+
+#define NK_ASSERT(e) \
+    if (!(e)) \
+        aFailed(__FILE__, __LINE__)
