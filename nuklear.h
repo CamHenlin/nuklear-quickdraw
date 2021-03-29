@@ -1,3 +1,6 @@
+
+#include <Serial.h>
+#include "SerialHelper.h"
 /*
 /// # Nuklear
 /// ![](https://cloud.githubusercontent.com/assets/8057201/11761525/ae06f0ca-a0c6-11e5-819d-5610b25f6ef4.gif)
@@ -7401,7 +7404,7 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
     glyph_len = nk_utf_decode(text, &unicode, text_len);
     while (glyph_len && (width < space) && (len < text_len)) {
         len += glyph_len;
-        s = font->width(font->userdata, font->height, text, len);
+        s = 20; //font->width(font->userdata, font->height, text, len);
         for (i = 0; i < sep_count; ++i) {
             if (unicode != sep_list[i]) continue;
             sep_width = last_width = width;
@@ -7445,7 +7448,7 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
 
     glyph_len = nk_utf_decode(begin, &unicode, byte_len);
     if (!glyph_len) return text_size;
-    glyph_width = font->width(font->userdata, font->height, begin, glyph_len);
+    glyph_width = 20; //font->width(font->userdata, font->height, begin, glyph_len);
 
     *glyphs = 0;
     while ((text_len < byte_len) && glyph_len) {
@@ -7473,7 +7476,7 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
         text_len += glyph_len;
         line_width += (float)glyph_width;
         glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
-        glyph_width = font->width(font->userdata, font->height, begin+text_len, glyph_len);
+        glyph_width = 20; //font->width(font->userdata, font->height, begin+text_len, glyph_len);
         continue;
     }
 
@@ -9236,7 +9239,7 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     }
 
     /* make sure text fits inside bounds */
-    text_width = font->width(font->userdata, font->height, string, length);
+    text_width = 20; //font->width(font->userdata, font->height, string, length);
     if (text_width > r.w){
         int glyphs = 0;
         float txt_width = (float)text_width;
@@ -19292,6 +19295,10 @@ nk_panel_is_nonblock(enum nk_panel_type type)
 NK_LIB nk_bool
 nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type panel_type)
 {
+    
+
+    
+    // writeSerialPort(boutRefNum, "nk_panel_begin");
     struct nk_input *in;
     struct nk_window *win;
     struct nk_panel *layout;
@@ -19302,16 +19309,20 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
     struct nk_vec2 scrollbar_size;
     struct nk_vec2 panel_padding;
 
+    // writeSerialPort(boutRefNum, "nk_panel_begin asserts");
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
+    // writeSerialPort(boutRefNum, "nk_panel_begin asserts done ");
     if (!ctx || !ctx->current || !ctx->current->layout) return 0;
     nk_zero(ctx->current->layout, sizeof(*ctx->current->layout));
     if ((ctx->current->flags & NK_WINDOW_HIDDEN) || (ctx->current->flags & NK_WINDOW_CLOSED)) {
+        // writeSerialPort(boutRefNum, "nk_panel_begin x");
         nk_zero(ctx->current->layout, sizeof(struct nk_panel));
         ctx->current->layout->type = panel_type;
         return 0;
     }
+    // writeSerialPort(boutRefNum, "nk_panel_begin y");
     /* pull state into local stack */
     style = &ctx->style;
     font = style->font;
@@ -19328,6 +19339,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
 
     /* window movement */
     if ((win->flags & NK_WINDOW_MOVABLE) && !(win->flags & NK_WINDOW_ROM)) {
+        // writeSerialPort(boutRefNum, "nk_panel_begin xx");
         int left_mouse_down;
         int left_mouse_clicked;
         int left_mouse_click_in_cursor;
@@ -19355,7 +19367,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
             ctx->style.cursor_active = ctx->style.cursors[NK_CURSOR_MOVE];
         }
     }
-
+    // writeSerialPort(boutRefNum, "nk_panel_begin xxxx");
     /* setup panel */
     layout->type = panel_type;
     layout->flags = win->flags;
@@ -19387,13 +19399,15 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
             layout->footer_height = scrollbar_size.y;
         layout->bounds.h -= layout->footer_height;
     }
-
+// writeSerialPort(boutRefNum, "nk_panel_beginyy");
     /* panel header */
     if (nk_panel_has_header(win->flags, title))
     {
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy1");
         struct nk_text text;
         struct nk_rect header;
         const struct nk_style_item *background = 0;
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy2");
 
         /* calculate header bounds */
         header.x = win->bounds.x;
@@ -19401,12 +19415,14 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         header.w = win->bounds.w;
         header.h = font->height + 2.0f * style->window.header.padding.y;
         header.h += (2.0f * style->window.header.label_padding.y);
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy3");
 
         /* shrink panel by header */
         layout->header_height = header.h;
         layout->bounds.y += header.h;
         layout->bounds.h -= header.h;
         layout->at_y += header.h;
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy4");
 
         /* select correct header background and text color */
         if (ctx->active == win) {
@@ -19419,6 +19435,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
             background = &style->window.header.normal;
             text.text = style->window.header.label_normal;
         }
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy5");
 
         /* draw header background */
         header.h += 1.0f;
@@ -19429,6 +19446,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
             text.background = background->data.color;
             nk_fill_rect(out, header, 0, background->data.color);
         }
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy6");
 
         /* window close button */
         {struct nk_rect button;
@@ -19453,6 +19471,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                 layout->flags &= (nk_flags)~NK_WINDOW_MINIMIZED;
             }
         }
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy7");
 
         /* window minimize button */
         if (win->flags & NK_WINDOW_MINIMIZABLE) {
@@ -19475,20 +19494,43 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
                     layout->flags & (nk_flags)~NK_WINDOW_MINIMIZED:
                     layout->flags | NK_WINDOW_MINIMIZED;
         }}
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy8");
 
         {/* window header title */
         int text_len = nk_strlen(title);
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy8.1");
         struct nk_rect label = {0,0,0,0};
-        float t = font->width(font->userdata, font->height, title, text_len);
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy8.2");
+        char *logMessage;
+        sprintf(logMessage, "height: %d, title: %s", font->height, title);
+        // writeSerialPort(boutRefNum, logMessage);
+        float t = 20;// = font->width(font->userdata, font->height, title, text_len);
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy8.3");
         text.padding = nk_vec2(0,0);
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9");
 
         label.x = header.x + style->window.header.padding.x;
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9.1");
+
         label.x += style->window.header.label_padding.x;
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9.2");
+
         label.y = header.y + style->window.header.label_padding.y;
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9.3");
+
         label.h = font->height + 2 * style->window.header.label_padding.y;
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9.4");
+
         label.w = t + 2 * style->window.header.spacing.x;
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9.5");
+
         label.w = NK_CLAMP(0, label.w, header.x + header.w - label.x);
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9.6");
+
         nk_widget_text(out, label,(const char*)title, text_len, &text, NK_TEXT_LEFT, font);}
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy9.7");
+
+        // writeSerialPort(boutRefNum, "nk_panel_begin yy10");
     }
 
     /* draw window background */
@@ -19510,6 +19552,8 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         layout->clip.x + layout->clip.w, layout->clip.y + layout->clip.h);
     nk_push_scissor(out, clip);
     layout->clip = clip;}
+    
+    // writeSerialPort(boutRefNum, "nk_panel_begin xyz");
     return !(layout->flags & NK_WINDOW_HIDDEN) && !(layout->flags & NK_WINDOW_MINIMIZED);
 }
 NK_LIB void
@@ -19953,37 +19997,61 @@ NK_API nk_bool
 nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     struct nk_rect bounds, nk_flags flags)
 {
+    // writeSerialPort(boutRefNum, "call nk_begin_titled");
     struct nk_window *win;
     struct nk_style *style;
     nk_hash name_hash;
     int name_len;
     int ret = 0;
+    // writeSerialPort(boutRefNum, "call begin ASSERT calls");
 
     NK_ASSERT(ctx);
     NK_ASSERT(name);
     NK_ASSERT(title);
     NK_ASSERT(ctx->style.font && ctx->style.font->width && "if this triggers you forgot to add a font");
     NK_ASSERT(!ctx->current && "if this triggers you missed a `nk_end` call");
+    // writeSerialPort(boutRefNum, "done with assert calls");
     if (!ctx || ctx->current || !title || !name)
         return 0;
 
+    // writeSerialPort(boutRefNum, "1");
     /* find or create window */
     style = &ctx->style;
+
+    // writeSerialPort(boutRefNum, "2");
     name_len = (int)nk_strlen(name);
+    
+
+    // writeSerialPort(boutRefNum, "3");
     name_hash = nk_murmur_hash(name, (int)name_len, NK_WINDOW_TITLE);
+
+    // writeSerialPort(boutRefNum, "4");
     win = nk_find_window(ctx, name_hash, name);
+
+    // writeSerialPort(boutRefNum, "5");
     if (!win) {
+
+    // writeSerialPort(boutRefNum, "6");
         /* create new window */
         nk_size name_length = (nk_size)name_len;
+
+    // writeSerialPort(boutRefNum, "7");
         win = (struct nk_window*)nk_create_window(ctx);
+
+    // writeSerialPort(boutRefNum, "8");
         NK_ASSERT(win);
+
+    // writeSerialPort(boutRefNum, "9");
         if (!win) return 0;
+
+    // writeSerialPort(boutRefNum, "10");
 
         if (flags & NK_WINDOW_BACKGROUND)
             nk_insert_window(ctx, win, NK_INSERT_FRONT);
         else nk_insert_window(ctx, win, NK_INSERT_BACK);
         nk_command_buffer_init(&win->buffer, &ctx->memory, NK_CLIPPING_ON);
 
+// writeSerialPort(boutRefNum, "11");
         win->flags = flags;
         win->bounds = bounds;
         win->name = name_hash;
@@ -19991,10 +20059,11 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
         NK_MEMCPY(win->name_string, name, name_length);
         win->name_string[name_length] = 0;
         win->popup.win = 0;
+        // writeSerialPort(boutRefNum, "12");
         if (!ctx->active)
             ctx->active = win;
     } else {
-        /* update window */
+        /* update window */// writeSerialPort(boutRefNum, "13");
         win->flags &= ~(nk_flags)(NK_WINDOW_PRIVATE-1);
         win->flags |= flags;
         if (!(win->flags & (NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)))
@@ -20012,16 +20081,20 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
             ctx->active = win;
             ctx->end = win;
         }
+        // writeSerialPort(boutRefNum, "14");
     }
     if (win->flags & NK_WINDOW_HIDDEN) {
+        // writeSerialPort(boutRefNum, "15");
         ctx->current = win;
         win->layout = 0;
         return 0;
     } else nk_start(ctx, win);
 
+// writeSerialPort(boutRefNum, "16");
     /* window overlapping */
     if (!(win->flags & NK_WINDOW_HIDDEN) && !(win->flags & NK_WINDOW_NO_INPUT))
     {
+        // writeSerialPort(boutRefNum, "17");
         int inpanel, ishovered;
         struct nk_window *iter = win;
         float h = ctx->style.font->height + 2.0f * style->window.header.padding.y +
@@ -20034,8 +20107,10 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
         inpanel = inpanel && ctx->input.mouse.buttons[NK_BUTTON_LEFT].clicked;
         ishovered = nk_input_is_mouse_hovering_rect(&ctx->input, win_bounds);
         if ((win != ctx->active) && ishovered && !ctx->input.mouse.buttons[NK_BUTTON_LEFT].down) {
+            // writeSerialPort(boutRefNum, "18");
             iter = win->next;
             while (iter) {
+                // writeSerialPort(boutRefNum, "19");
                 struct nk_rect iter_bounds = (!(iter->flags & NK_WINDOW_MINIMIZED))?
                     iter->bounds: nk_rect(iter->bounds.x, iter->bounds.y, iter->bounds.w, h);
                 if (NK_INTERSECT(win_bounds.x, win_bounds.y, win_bounds.w, win_bounds.h,
@@ -20054,8 +20129,10 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
 
         /* activate window if clicked */
         if (iter && inpanel && (win != ctx->end)) {
+            // writeSerialPort(boutRefNum, "20");
             iter = win->next;
             while (iter) {
+                // writeSerialPort(boutRefNum, "21");
                 /* try to find a panel with higher priority in the same position */
                 struct nk_rect iter_bounds = (!(iter->flags & NK_WINDOW_MINIMIZED))?
                 iter->bounds: nk_rect(iter->bounds.x, iter->bounds.y, iter->bounds.w, h);
@@ -20072,6 +20149,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
             }
         }
         if (iter && !(win->flags & NK_WINDOW_ROM) && (win->flags & NK_WINDOW_BACKGROUND)) {
+            // writeSerialPort(boutRefNum, "22");
             win->flags |= (nk_flags)NK_WINDOW_ROM;
             iter->flags &= ~(nk_flags)NK_WINDOW_ROM;
             ctx->active = iter;
@@ -20082,6 +20160,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
                 nk_insert_window(ctx, iter, NK_INSERT_BACK);
             }
         } else {
+            // writeSerialPort(boutRefNum, "23");
             if (!iter && ctx->end != win) {
                 if (!(win->flags & NK_WINDOW_BACKGROUND)) {
                     /* current window is active in that position so transfer to top
@@ -20096,11 +20175,17 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
                 win->flags |= NK_WINDOW_ROM;
         }
     }
+    // writeSerialPort(boutRefNum, "24");
     win->layout = (struct nk_panel*)nk_create_panel(ctx);
+    // writeSerialPort(boutRefNum, "25");
     ctx->current = win;
+    // writeSerialPort(boutRefNum, "26");
     ret = nk_panel_begin(ctx, title, NK_PANEL_WINDOW);
+    // writeSerialPort(boutRefNum, "27");
     win->layout->offset_x = &win->scrollbar.x;
+    // writeSerialPort(boutRefNum, "28");
     win->layout->offset_y = &win->scrollbar.y;
+    // writeSerialPort(boutRefNum, "29");
     return ret;
 }
 NK_API void
@@ -22923,6 +23008,8 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     const char *string, int len, const struct nk_text *t,
     nk_flags a, const struct nk_user_font *f)
 {
+
+    // writeSerialPort(boutRefNum, "nk_widget_text a");
     struct nk_rect label;
     float text_width;
 
@@ -22935,7 +23022,8 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     label.y = b.y + t->padding.y;
     label.h = NK_MIN(f->height, b.h - 2 * t->padding.y);
 
-    text_width = f->width(f->userdata, f->height, (const char*)string, len);
+    // writeSerialPort(boutRefNum, "nk_widget_text crash!");
+    text_width = 20; //f->width(f->userdata, f->height, (const char*)string, len);
     text_width += (2.0f * t->padding.x);
 
     /* align in x-axis */
@@ -25389,7 +25477,7 @@ nk_textedit_get_width(const struct nk_text_edit *edit, int line_start, int char_
     int len = 0;
     nk_rune unicode = 0;
     const char *str = nk_str_at_const(&edit->string, line_start + char_id, &unicode, &len);
-    return font->width(font->userdata, font->height, str, len);
+    return 20; //font->width(font->userdata, font->height, str, len);
 }
 NK_INTERN void
 nk_textedit_layout_row(struct nk_text_edit_row *r, struct nk_text_edit *edit,
@@ -26508,7 +26596,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
             continue;
         }
-        glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+        glyph_width = 20; //font->width(font->userdata, font->height, text+text_len, glyph_len);
         line_width += (float)glyph_width;
         text_len += glyph_len;
         glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
@@ -26748,7 +26836,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             int row_begin = 0;
 
             glyph_len = nk_utf_decode(text, &unicode, len);
-            glyph_width = font->width(font->userdata, font->height, text, glyph_len);
+            glyph_width = 20; //font->width(font->userdata, font->height, text, glyph_len);
             line_width = 0;
 
             /* iterate all lines */
@@ -26814,7 +26902,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     glyphs++;
                     row_begin = text_len;
                     glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
-                    glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
+                    glyph_width = 20; //font->width(font->userdata, font->height, text+text_len, glyph_len);
                     continue;
                 }
 
@@ -26823,8 +26911,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 line_width += (float)glyph_width;
 
                 glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
-                glyph_width = font->width(font->userdata, font->height,
-                    text+text_len, glyph_len);
+                glyph_width = 20; //font->width(font->userdata, font->height,                    text+text_len, glyph_len);
                 continue;
             }
             text_size.y = (float)total_lines * row_height;
@@ -26993,7 +27080,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
                 label.x = area.x + cursor_pos.x - edit->scrollbar.x;
                 label.y = area.y + cursor_pos.y - edit->scrollbar.y;
-                label.w = font->width(font->userdata, font->height, cursor_ptr, glyph_len);
+                label.w = 20; //font->width(font->userdata, font->height, cursor_ptr, glyph_len);
                 label.h = row_height;
 
                 txt.padding = nk_vec2(0,0);
@@ -27328,7 +27415,7 @@ nk_do_property(nk_flags *ws,
 
     /* text label */
     name_len = nk_strlen(name);
-    size = font->width(font->userdata, font->height, name, name_len);
+    size = 20; //font->width(font->userdata, font->height, name, name_len);
     label.x = left.x + left.w + style->padding.x;
     label.w = (float)size + 2 * style->padding.x;
     label.y = property.y + style->border + style->padding.y;
@@ -27342,7 +27429,7 @@ nk_do_property(nk_flags *ws,
 
     /* edit */
     if (*state == NK_PROPERTY_EDIT) {
-        size = font->width(font->userdata, font->height, buffer, *len);
+        size = 20; //font->width(font->userdata, font->height, buffer, *len);
         size += style->edit.cursor_size;
         length = len;
         dst = buffer;
@@ -27362,7 +27449,7 @@ nk_do_property(nk_flags *ws,
             num_len = nk_string_float_limit(string, NK_MAX_FLOAT_PRECISION);
             break;
         }
-        size = font->width(font->userdata, font->height, string, num_len);
+        size = 20; //font->width(font->userdata, font->height, string, num_len);
         dst = string;
         length = &num_len;
     }
@@ -29085,8 +29172,7 @@ nk_tooltip(struct nk_context *ctx, const char *text)
 
     /* calculate size of the text and tooltip */
     text_len = nk_strlen(text);
-    text_width = style->font->width(style->font->userdata,
-                    style->font->height, text, text_len);
+    text_width = 20; //style->font->width(style->font->userdata,                    style->font->height, text, text_len);
     text_width += (4 * padding.x);
     text_height = (style->font->height + 2 * padding.y);
 
