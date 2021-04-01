@@ -6040,14 +6040,14 @@ NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_prop
 #ifndef STBTT_malloc
 static void*
 nk_stbtt_malloc(nk_size size, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	return alloc->alloc(alloc->userdata, 0, size);
+  struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+  return alloc->alloc(alloc->userdata, 0, size);
 }
 
 static void
 nk_stbtt_free(void *ptr, void *user_data) {
-	struct nk_allocator *alloc = (struct nk_allocator *) user_data;
-	alloc->free(alloc->userdata, ptr);
+  struct nk_allocator *alloc = (struct nk_allocator *) user_data;
+  alloc->free(alloc->userdata, ptr);
 }
 
 #define STBTT_malloc(x,u)  nk_stbtt_malloc(x,u)
@@ -15718,32 +15718,32 @@ static float stbtt__cuberoot( float x )
 /*  x^3 + c*x^2 + b*x + a = 0 */
 static int stbtt__solve_cubic(float a, float b, float c, float* r)
 {
-	float s = -a / 3;
-	float p = b - a*a / 3;
-	float q = a * (2*a*a - 9*b) / 27 + c;
+  float s = -a / 3;
+  float p = b - a*a / 3;
+  float q = a * (2*a*a - 9*b) / 27 + c;
    float p3 = p*p*p;
-	float d = q*q + 4*p3 / 27;
-	if (d >= 0) {
-		float z = (float) STBTT_sqrt(d);
-		float u = (-q + z) / 2;
-		float v = (-q - z) / 2;
-		u = stbtt__cuberoot(u);
-		v = stbtt__cuberoot(v);
-		r[0] = s + u + v;
-		return 1;
-	} else {
-	   float u = (float) STBTT_sqrt(-p/3);
-	   float v = (float) STBTT_acos(-STBTT_sqrt(-27/p3) * q / 2) / 3; /*  p3 must be negative, since d is negative */
-	   float m = (float) STBTT_cos(v);
+  float d = q*q + 4*p3 / 27;
+  if (d >= 0) {
+    float z = (float) STBTT_sqrt(d);
+    float u = (-q + z) / 2;
+    float v = (-q - z) / 2;
+    u = stbtt__cuberoot(u);
+    v = stbtt__cuberoot(v);
+    r[0] = s + u + v;
+    return 1;
+  } else {
+     float u = (float) STBTT_sqrt(-p/3);
+     float v = (float) STBTT_acos(-STBTT_sqrt(-27/p3) * q / 2) / 3; /*  p3 must be negative, since d is negative */
+     float m = (float) STBTT_cos(v);
       float n = (float) STBTT_cos(v-3.141592/2)*1.732050808f;
-	   r[0] = s + u * 2 * m;
-	   r[1] = s - u * (m + n);
-	   r[2] = s - u * (m - n);
+     r[0] = s + u * 2 * m;
+     r[1] = s - u * (m + n);
+     r[2] = s - u * (m - n);
 
       /* STBTT_assert( STBTT_fabs(((r[0]+a)*r[0]+b)*r[0]+c) < 0.05f);  // these asserts may not be safe at all scales, though they're in bezier t parameter units so maybe? */
       /* STBTT_assert( STBTT_fabs(((r[1]+a)*r[1]+b)*r[1]+c) < 0.05f); */
       /* STBTT_assert( STBTT_fabs(((r[2]+a)*r[2]+b)*r[2]+c) < 0.05f); */
-   	return 3;
+    return 3;
    }
 }
 
@@ -17687,24 +17687,12 @@ nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
 NK_API void
 nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, nk_bool down)
 {
-    writeSerialPort(boutRefNum, "nk_input_button");
     struct nk_mouse_button *btn;
     struct nk_input *in;
     NK_ASSERT(ctx);
-    if (!ctx) {
-        writeSerialPort(boutRefNum, "no context");
-        return;
-    }
+    if (!ctx) return;
     in = &ctx->input;
-    if (in->mouse.buttons[id].down == down) {
-        char *log;
-        sprintf(log, "no -wtf - id %d,  down %d, x %d, y %d", id, down, x, y);
-        writeSerialPort(boutRefNum, log);
-        
-        return;
-    }
-
-    writeSerialPort(boutRefNum, "button click WHAT WHAT");
+    if (in->mouse.buttons[id].down == down) return;
 
     btn = &in->mouse.buttons[id];
     btn->clicked_pos.x = (float)x;
@@ -23421,27 +23409,14 @@ NK_LIB nk_bool
 nk_button_behavior(nk_flags *state, struct nk_rect r,
     const struct nk_input *i, enum nk_button_behavior behavior)
 {
-    writeSerialPort(boutRefNum, "nk_button_behavior");
     int ret = 0;
     nk_widget_state_reset(state);
-    if (!i) {
-        
-    writeSerialPort(boutRefNum, "nk_button_behavior - no input");
-        return 0;
-        
-    }
+    if (!i) return 0;
     if (nk_input_is_mouse_hovering_rect(i, r)) {
-        
-        writeSerialPort(boutRefNum, "nk_button_behavior hover");
         *state = NK_WIDGET_STATE_HOVERED;
-        if (nk_input_is_mouse_down(i, NK_BUTTON_LEFT)) {
+        if (nk_input_is_mouse_down(i, NK_BUTTON_LEFT))
             *state = NK_WIDGET_STATE_ACTIVE;
-            
-            writeSerialPort(boutRefNum, "nk_button_behavior active");
-        }
         if (nk_input_has_mouse_click_in_rect(i, NK_BUTTON_LEFT, r)) {
-            
-        writeSerialPort(boutRefNum, "nk_button_behavior what");
             ret = (behavior != NK_BUTTON_DEFAULT) ?
                 nk_input_is_mouse_down(i, NK_BUTTON_LEFT):
 #ifdef NK_BUTTON_TRIGGER_ON_RELEASE
@@ -23451,20 +23426,10 @@ nk_button_behavior(nk_flags *state, struct nk_rect r,
 #endif
         }
     }
-    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(i, r)) {
-        
-    writeSerialPort(boutRefNum, "nk_button_behavior - x");
+    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(i, r))
         *state |= NK_WIDGET_STATE_ENTERED;
-    } else if (nk_input_is_mouse_prev_hovering_rect(i, r)) {
+    else if (nk_input_is_mouse_prev_hovering_rect(i, r))
         *state |= NK_WIDGET_STATE_LEFT;
-        
-        
-    writeSerialPort(boutRefNum, "nk_button_behavior - y");
-    }
-        
-        
-        
-    writeSerialPort(boutRefNum, "nk_button_behavior return");
     return ret;
 }
 NK_LIB const struct nk_style_item*
@@ -29536,3 +29501,4 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// in libraries and brought me to create some of my own. Finally Apoorva Joshi
 /// for his single header file packer.
 */
+
