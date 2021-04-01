@@ -17687,12 +17687,24 @@ nk_input_key(struct nk_context *ctx, enum nk_keys key, nk_bool down)
 NK_API void
 nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, nk_bool down)
 {
+    writeSerialPort(boutRefNum, "nk_input_button");
     struct nk_mouse_button *btn;
     struct nk_input *in;
     NK_ASSERT(ctx);
-    if (!ctx) return;
+    if (!ctx) {
+        writeSerialPort(boutRefNum, "no context");
+        return;
+    }
     in = &ctx->input;
-    if (in->mouse.buttons[id].down == down) return;
+    if (in->mouse.buttons[id].down == down) {
+        char *log;
+        sprintf(log, "no -wtf - id %d,  down %d, x %d, y %d", id, down, x, y);
+        writeSerialPort(boutRefNum, log);
+        
+        return;
+    }
+
+    writeSerialPort(boutRefNum, "button click WHAT WHAT");
 
     btn = &in->mouse.buttons[id];
     btn->clicked_pos.x = (float)x;
@@ -23409,14 +23421,27 @@ NK_LIB nk_bool
 nk_button_behavior(nk_flags *state, struct nk_rect r,
     const struct nk_input *i, enum nk_button_behavior behavior)
 {
+    writeSerialPort(boutRefNum, "nk_button_behavior");
     int ret = 0;
     nk_widget_state_reset(state);
-    if (!i) return 0;
+    if (!i) {
+        
+    writeSerialPort(boutRefNum, "nk_button_behavior - no input");
+        return 0;
+        
+    }
     if (nk_input_is_mouse_hovering_rect(i, r)) {
+        
+        writeSerialPort(boutRefNum, "nk_button_behavior hover");
         *state = NK_WIDGET_STATE_HOVERED;
-        if (nk_input_is_mouse_down(i, NK_BUTTON_LEFT))
+        if (nk_input_is_mouse_down(i, NK_BUTTON_LEFT)) {
             *state = NK_WIDGET_STATE_ACTIVE;
+            
+            writeSerialPort(boutRefNum, "nk_button_behavior active");
+        }
         if (nk_input_has_mouse_click_in_rect(i, NK_BUTTON_LEFT, r)) {
+            
+        writeSerialPort(boutRefNum, "nk_button_behavior what");
             ret = (behavior != NK_BUTTON_DEFAULT) ?
                 nk_input_is_mouse_down(i, NK_BUTTON_LEFT):
 #ifdef NK_BUTTON_TRIGGER_ON_RELEASE
@@ -23426,10 +23451,20 @@ nk_button_behavior(nk_flags *state, struct nk_rect r,
 #endif
         }
     }
-    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(i, r))
+    if (*state & NK_WIDGET_STATE_HOVER && !nk_input_is_mouse_prev_hovering_rect(i, r)) {
+        
+    writeSerialPort(boutRefNum, "nk_button_behavior - x");
         *state |= NK_WIDGET_STATE_ENTERED;
-    else if (nk_input_is_mouse_prev_hovering_rect(i, r))
+    } else if (nk_input_is_mouse_prev_hovering_rect(i, r)) {
         *state |= NK_WIDGET_STATE_LEFT;
+        
+        
+    writeSerialPort(boutRefNum, "nk_button_behavior - y");
+    }
+        
+        
+        
+    writeSerialPort(boutRefNum, "nk_button_behavior return");
     return ret;
 }
 NK_LIB const struct nk_style_item*

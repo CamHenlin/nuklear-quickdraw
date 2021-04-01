@@ -26,7 +26,7 @@
 
 typedef struct NkQuickDrawFont NkQuickDrawFont;
 NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int height);
-NK_API int nk_quickdraw_handle_event(EventRecord *event);
+NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nuklear_context);
 NK_API void nk_quickdraw_shutdown(void);
 NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx);
 
@@ -421,13 +421,13 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     // additionally, see page 2-61 for a data structure example for the rectangle OR 
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-60.html
                     // for usage example
-                    Rect quickDrawRectangle;
-                    quickDrawRectangle.top = (int)s->y;
-                    quickDrawRectangle.left = (int)s->x;
-                    quickDrawRectangle.bottom = (int)s->y + (int)s->h;
-                    quickDrawRectangle.right = (int)s->x + (int)s->w;
-                    
-                    ClipRect(&quickDrawRectangle);
+//                    Rect quickDrawRectangle;
+//                    quickDrawRectangle.top = (int)s->y;
+//                    quickDrawRectangle.left = (int)s->x;
+//                    quickDrawRectangle.bottom = (int)s->y + (int)s->h;
+//                    quickDrawRectangle.right = (int)s->x + (int)s->w;
+//                    
+//                    ClipRect(&quickDrawRectangle);
                 }
 
                 break;
@@ -810,21 +810,19 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
     
     //writeSerialPort(boutRefNum, "done with drawing commands, calling nk_clear");
 
-    nk_clear(&quickdraw.nuklear_context);
+    nk_clear(ctx);
     //writeSerialPort(boutRefNum, "done with nk_clear");
 }
 
-NK_API int nk_quickdraw_handle_event(EventRecord *event) { 
+NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nuklear_context) { 
     // see: inside macintosh: toolbox essentials 2-4
     // and  inside macintosh toolbox essentials 2-79
 
-    struct nk_context *nuklear_context = &quickdraw.nuklear_context;
-    WindowPtr	window;
+    WindowPtr window;
     FindWindow(event->where, &window); 
-    writeSerialPort(boutRefNum, "nk_quickdraw_handle_event");
-    char *log;
-    sprintf(log, "event %d", event->what);
-    writeSerialPort(boutRefNum, log);
+    // char *logb;
+    // sprintf(logb, "nk_quickdraw_handle_event event %d", event->what);
+    // writeSerialPort(boutRefNum, logb);
 
     switch (event->what) {
         case updateEvt: {
@@ -851,88 +849,36 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event) {
                 }
             }
             break;
-        case 62: {
-                // event->where should have coordinates??? or is it just a pointer to what the mouse is over?
-                // TODO need to figure this out
-                writeSerialPort(boutRefNum, "62 IN DEFAULT ZONE!!!!");
-                
-                
-                
-                OSEventAvail(kNoEvents, event);
-                GlobalToLocal(&event->where);
-                
-                if (!event->where.h) {
-                    
-                    writeSerialPort(boutRefNum, "no event location for mouse!!!!");
-                    return 1;
-                }
-                char *log;
-                sprintf(log, "h: %d,  v: %d", event->where.h, event->where.v);
-                writeSerialPort(boutRefNum, log);
-    //                    char *log2;
-    //                    sprintf(log2, "w: %l", event->where);
-    //                    writeSerialPort(boutRefNum, log2);
-                Boolean RELEASED = true; // todo i think we need to track thsi between events?
-                nk_input_button(nuklear_context, NK_BUTTON_LEFT, event->where.h, event->where.v, RELEASED /* TODO boolean */);
-            }
-            break;
+        
+        case mouseUp: 
+            writeSerialPort(boutRefNum, "mouseUp!!!");
         case mouseDown: {
-            writeSerialPort(boutRefNum, "mouseDown");
+            writeSerialPort(boutRefNum, "mouseUp/Down");
             
             short part = FindWindow(event->where, &window);
 
 			switch (part) {
-				case inMenuBar: {
-                    
-                    }
-                    break;
-				case inSysWindow: {			/* let the system handle the mouseDown */
-                        SystemClick(event, window);
-                    }
-					break;
-				case inDrag: {				/* pass screenBits.bounds to get all gDevices */
-                        DragWindow(window, event->where, &qd.screenBits.bounds);
-                    }
-					break;
-				case inZoomIn:
-				case inZoomOut: {
-
-                        Boolean hit = TrackBox(window, event->where, part);
-
-                        if (hit) {
-
-                            // this code mostly taken from example app in http://www.toughdev.com/content/2018/12/developing-68k-mac-apps-with-codelite-ide-retro68-and-pce-macplus-emulator/
-                            SetPort(window);				/* the window must be the current port... */
-                            EraseRect(&window->portRect);	/* because of a bug in ZoomWindow */
-                            ZoomWindow(window, part, true);	/* note that we invalidate and erase... */
-                            InvalRect(&window->portRect);	/* to make things look better on-screen */
-                        }
-                        
-                    }
-					break;
-                default: {
+                case inContent: {
                     // event->where should have coordinates??? or is it just a pointer to what the mouse is over?
                     // TODO need to figure this out
-                    writeSerialPort(boutRefNum, "mouseDown IN DEFAULT ZONE!!!!");
+                    writeSerialPort(boutRefNum, "mouseUp/Down IN DEFAULT ZONE!!!!");
                     
-                    
-                    
-                    OSEventAvail(kNoEvents, event);
-                    GlobalToLocal(&event->where);
+//                    
+//                    
+//                    OSEventAvail(kNoEvents, event);
+//                    GlobalToLocal(&event->where);
                     
                     if (!event->where.h) {
                         
                         writeSerialPort(boutRefNum, "no event location for mouse!!!!");
                         return 1;
                     }
-                    char *log;
-                    sprintf(log, "h: %d,  v: %d", event->where.h, event->where.v);
-                    writeSerialPort(boutRefNum, log);
-//                    char *log2;
-//                    sprintf(log2, "w: %l", event->where);
-//                    writeSerialPort(boutRefNum, log2);
-                    Boolean RELEASED = true; // todo i think we need to track thsi between events?
-                    nk_input_button(nuklear_context, NK_BUTTON_LEFT, event->where.h, event->where.v, RELEASED /* TODO boolean */);
+                    int x = event->where.h;
+                    int y = event->where.v;
+                    char *logx;
+                    sprintf(logx, "xxxx h: %d,  v: %d", x, y);
+                    writeSerialPort(boutRefNum, logx);
+                    nk_input_button(nuklear_context, NK_BUTTON_LEFT, x, y, event->what == mouseDown);
                 }
                 break;
                 return 1;
@@ -968,10 +914,7 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event) {
                     } else if (key == 'r') {
                         
                         nk_input_key(nuklear_context, NK_KEY_TEXT_REDO, 1);
-                    } else {
-                        
-                        nk_input_unicode(nuklear_context, key);
-                    }
+                    } 
                 } else if (key == eitherShiftKey) {
                     
                     nk_input_key(nuklear_context, NK_KEY_SHIFT, keyDown);
@@ -1016,6 +959,9 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event) {
 
                     nk_input_key(nuklear_context, NK_KEY_TEXT_END, keyDown);
                     nk_input_key(nuklear_context, NK_KEY_SCROLL_END, keyDown);
+                } else {
+                    
+                    nk_input_unicode(nuklear_context, key);
                 }
 
                 return 1;
@@ -1058,7 +1004,7 @@ NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int hei
     NkQuickDrawFont *quickdrawfont = nk_quickdraw_font_create_from_file();
     struct nk_user_font *font = &quickdrawfont->nk;
     // nk_init_default(&quickdraw.nuklear_context, font);
-    nk_init_fixed(&quickdraw.nuklear_context, calloc(1, 10240), 10240, font);
+    nk_init_default(&quickdraw.nuklear_context, font);
     nk_style_push_font(&quickdraw.nuklear_context, font);
 
     // this is pascal code but i think we would need to do something like this if we want this function 
