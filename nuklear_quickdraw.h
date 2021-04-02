@@ -369,7 +369,32 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
     SetPort(window);
 
-	// EraseRect(&window->portRect);
+    GWorldPtr *origPort;
+
+    // GetPort(&origPort);
+
+    GDHandle origDev;
+    GWorldFlags flags;
+
+
+    PixMapHandle offPixMapHandle;
+    CGrafPort *myOffGWorld;
+    Rect sourceRect;
+    Rect destRect;
+
+    GetGWorld(origPort, &origDev);
+
+    NewGWorld(&myOffGWorld, 0, &window->portRect, NULL, NULL, flags); //        {  {create offscreen graphics world, }using window's port rectangle}
+    SetGWorld(myOffGWorld, NULL);
+
+    offPixMapHandle = GetGWorldPixMap(myOffGWorld); //  {get handle to }
+    Boolean good = LockPixels(offPixMapHandle);// { offscreen pixel image and lock it}
+    EraseRect(&myOffGWorld->portRect);    //     {initialize its pixel image}
+
+    //MyPaintAndFillColorRects; //{paint a blue rectangle, fill a green rectangle}
+     //{dispose of offscreen world}
+	
+    // EraseRect(&window->portRect);
     //MoveTo(10, 10);
     //ForeColor(blackColor);
     // DrawText("hail satan", 0, 10);
@@ -812,6 +837,23 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
         }
     }
     
+    SetGWorld(*origPort, origDev); //         {make window the current port}
+      //{next, for CopyBits, create source and destination rectangles that }
+      //{ exclude scroll bar areas}
+    sourceRect = myOffGWorld->portRect;//   {use offscreen portRect for source}
+    sourceRect.bottom = myOffGWorld->portRect.bottom - 15;
+    sourceRect.right = myOffGWorld->portRect.right - 15;
+    destRect = window->portRect;       // {use window portRect for destination}
+    destRect.bottom = window->portRect.bottom - 15;
+    destRect.right = window->portRect.right - 15;
+      //{next, use CopyBits to transfer the offscreen image to the window}
+    // BitMap *fromBitmap = BitMap.GetPortBitMapForCopyBits(myOffGWorld);
+    CopyBits((BitMap *)myOffGWorld->portPixMap, &window->portBits, &sourceRect, &destRect, srcCopy, NULL);//  {coerce graphics world's }// { PixMap to a BitMap}// {coerce window's PixMap to a BitMap}
+    //IF QDError <> noErr THEN
+      ///; {likely error is that there is insufficient memory}
+    UnlockPixels(offPixMapHandle);         //{unlock the pixel image}
+    DisposeGWorld(myOffGWorld);    
+
     //writeSerialPort(boutRefNum, "done with drawing commands, calling nk_clear");
 
     //writeSerialPort(boutRefNum, "done with nk_clear");
