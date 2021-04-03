@@ -357,66 +357,60 @@ static Pattern nk_color_to_quickdraw_color(struct nk_color color) {
         returnPattern = &qd.white; // white
     }
 
-
     writeSerialPort(boutRefNum, "returning pattern");
 
     return *returnPattern;
 }
 
+typedef struct {
+    Ptr Address;
+    long RowBytes;
+    GrafPtr bits;
+    Rect bounds;
+    
+    BitMap  BWBits;
+    GrafPort BWPort;
+    
+    Handle  OrigBits;
+    
+} ShockBitmap;
+
+void NewShockBitmap(ShockBitmap *theMap, short width, short height) {
+
+    theMap->bits = 0L;
+    SetRect(&theMap->bounds, 0, 0, width, height);
+    
+    theMap->BWBits.bounds = theMap->bounds;
+    theMap->BWBits.rowBytes = ((width+15) >> 4)<<1;         // round to even
+    theMap->BWBits.baseAddr = NewPtr(((long) height * (long) theMap->BWBits.rowBytes));
+
+    theMap->BWBits.baseAddr = StripAddress(theMap->BWBits.baseAddr);
+    
+    OpenPort(&theMap->BWPort);
+    SetPort(&theMap->BWPort);
+    SetPortBits(&theMap->BWBits);
+
+    SetRectRgn(theMap->BWPort.visRgn, theMap->bounds.left, theMap->bounds.top, theMap->bounds.right, theMap->bounds.bottom);
+    SetRectRgn(theMap->BWPort.clipRgn, theMap->bounds.left, theMap->bounds.top, theMap->bounds.right, theMap->bounds.bottom);
+    EraseRect(&theMap->bounds);
+      
+    theMap->Address = theMap->BWBits.baseAddr;
+    theMap->RowBytes = (long) theMap->BWBits.rowBytes;
+    theMap->bits = (GrafPtr) &theMap->BWPort;
+}
+
+ShockBitmap gMainOffScreen;
+
 NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
     const struct nk_command *cmd = 0;
 
-    SetPort(window);
-
-    GWorldPtr *origPort;
-
-    // GetPort(&origPort);
-
-    GDHandle origDev;
-    GWorldFlags flags;
-
-
-    PixMapHandle offPixMapHandle;
-    CGrafPort *myOffGWorld;
-    Rect sourceRect;
-    Rect destRect;
-
-    GetGWorld(origPort, &origDev);
-
-    NewGWorld(&myOffGWorld, 0, &window->portRect, NULL, NULL, flags); //        {  {create offscreen graphics world, }using window's port rectangle}
-    SetGWorld(myOffGWorld, NULL);
-
-    offPixMapHandle = GetGWorldPixMap(myOffGWorld); //  {get handle to }
-    Boolean good = LockPixels(offPixMapHandle);// { offscreen pixel image and lock it}
-    EraseRect(&myOffGWorld->portRect);    //     {initialize its pixel image}
-
-    //MyPaintAndFillColorRects; //{paint a blue rectangle, fill a green rectangle}
-     //{dispose of offscreen world}
-	
-    // EraseRect(&window->portRect);
-    //MoveTo(10, 10);
-    //ForeColor(blackColor);
-    // DrawText("hail satan", 0, 10);
-    //writeSerialPort(boutRefNum, "nk_quickdraw_render");
-    
-    
-    //writeSerialPort(boutRefNum, "manuall call begin");
-    //const struct nk_command* x = nk__begin(&quickdraw.nuklear_context);
-    //writeSerialPort(boutRefNum, x->type);
-    int i = 0;
+    OpenPort(&gMainOffScreen.BWPort);
+    SetPort(&gMainOffScreen.BWPort);
+    SetPortBits(&gMainOffScreen.BWBits);
+    EraseRect(&gMainOffScreen.bounds);
 
     nk_foreach(cmd, ctx) {
-    
-        
-        
-        //writeSerialPort(boutRefNum, "in foreach handler");
-        
-        //char *logMessage;
-        //sprintf(logMessage, "command: %d", i++);
-        //DrawText(logMessage, 0, strlen(logMessage));
-        //writeSerialPort(boutRefNum, logMessage);
-        //MoveTo(10, i * 10);
 
         int color; // Color QuickDraw colors are integers - see Retro68/InterfacesAndLibraries/Interfaces&Libraries/Interfaces/CIncludes/Quickdraw.h:122 for more info
 
@@ -836,27 +830,12 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                 break;
         }
     }
-    
-    SetGWorld(*origPort, origDev); //         {make window the current port}
-      //{next, for CopyBits, create source and destination rectangles that }
-      //{ exclude scroll bar areas}
-    sourceRect = myOffGWorld->portRect;//   {use offscreen portRect for source}
-    sourceRect.bottom = myOffGWorld->portRect.bottom - 15;
-    sourceRect.right = myOffGWorld->portRect.right - 15;
-    destRect = window->portRect;       // {use window portRect for destination}
-    destRect.bottom = window->portRect.bottom - 15;
-    destRect.right = window->portRect.right - 15;
-      //{next, use CopyBits to transfer the offscreen image to the window}
-    // BitMap *fromBitmap = BitMap.GetPortBitMapForCopyBits(myOffGWorld);
-    CopyBits((BitMap *)myOffGWorld->portPixMap, &window->portBits, &sourceRect, &destRect, srcCopy, NULL);//  {coerce graphics world's }// { PixMap to a BitMap}// {coerce window's PixMap to a BitMap}
-    //IF QDError <> noErr THEN
-      ///; {likely error is that there is insufficient memory}
-    UnlockPixels(offPixMapHandle);         //{unlock the pixel image}
-    DisposeGWorld(myOffGWorld);    
 
-    //writeSerialPort(boutRefNum, "done with drawing commands, calling nk_clear");
+    SetPort(window);
 
-    //writeSerialPort(boutRefNum, "done with nk_clear");
+    // our offscreen bitmap is the same size as our port rectangle, so we
+    // get away with using the portRect sizing for source and destination
+    CopyBits(&gMainOffScreen.bits->portBits, &window->portBits, &window->portRect, &window->portRect, srcCopy, 0L);
 }
 
 NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nuklear_context) { 
@@ -1050,6 +1029,7 @@ NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int hei
     // needed to calculate bezier info, see mactech article.
     setupBezier();
 
+    NewShockBitmap(&gMainOffScreen, width, height);
     NkQuickDrawFont *quickdrawfont = nk_quickdraw_font_create_from_file();
     struct nk_user_font *font = &quickdrawfont->nk;
     // nk_init_default(&quickdraw.nuklear_context, font);
