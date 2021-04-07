@@ -76,6 +76,7 @@ char eitherShiftKey = (char)0x0F;
 char escapeKey = (char)0x1B;
 
 const Boolean NK_QUICKDRAW_GRAPHICS_DEBUGGING = false;
+const Boolean NK_QUICKDRAW_EVENTS_DEBUGGING = false;
 
 // bezier code is from http://preserve.mactech.com/articles/mactech/Vol.05/05.01/BezierCurve/index.html
 // as it is not built in to quickdraw like other "modern" graphics environments
@@ -224,12 +225,25 @@ static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, co
         return 0;
     }
 
-    int output[len + 1];
+    short output[len + 1];
+
+    for (int i = 0; i <= len + 1; i++) {
+
+        output[i] = 0;
+    }
     
     MeasureText(len, text, output); // TODO should be quickdraw PROCEDURE MeasureText (count: Integer; textAddr, charLocs: Ptr);
     // see inside macintosh: text pg 3-84
     
-    return  output[len + 1];
+    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+
+        writeSerialPort(boutRefNum, "in nk_quickdraw- nk_quickdraw_font_get_text_width:");
+        char log[1024];
+        sprintf(log, "%s: %d -- %f", text, len, 1.0f * output[len]);
+        writeSerialPort(boutRefNum, log);
+    }
+
+    return 1.0f * output[len];
 }
 
 /* Flags are identical to al_load_font() flags argument */
@@ -279,87 +293,45 @@ static int nk_color_to_quickdraw_bw_color(struct nk_color color) {
 // i split this in to a 2nd routine because we can use the various shades of gray when filling rectangles and whatnot
 // i think these are technically patterns and not colors, see Quickdraw.h:2095
 // not used yet but could be used on the pattern operations like boxes, etc
-static Pattern nk_color_to_quickdraw_color(struct nk_color color) {
+const Pattern black  = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+const Pattern dkGray = { 0x77, 0xDD, 0x77, 0xDD, 0x77, 0xDD, 0x77, 0xDD };
+const Pattern gray   = { 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55 };
+const Pattern ltGray = { 0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22 };
+const Pattern white  = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+Pattern *dummyPattern;
+// i split this in to a 2nd routine because we can use the various shades of gray when filling rectangles and whatnot
+// i think these are technically patterns and not colors, see Quickdraw.h:2095
+// not used yet but could be used on the pattern operations like boxes, etc
+static Pattern nk_color_to_quickdraw_color(const struct nk_color *color) {
 
-    // TODO: since we are operating under a b&w display - we need to convert these colors to black and white
-    // look up a simple algorithm for taking RGBA values and making the call on black or white and try it out here
     // as a future upgrade, we could support color quickdraw
     // using an algorithm from https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
     // if (red*0.299 + green*0.587 + blue*0.114) > 186 use #000000 else use #ffffff
-    // return al_map_rgba((unsigned char)color.r, (unsigned char)color.g, (unsigned char)color.b, (unsigned char)color.a);
     uint8_t red;
     uint8_t blue;
     uint8_t green;
-    Pattern *returnPattern;
     
-    if (!(uint8_t)color.r) {
-        writeSerialPort(boutRefNum, "NO RED CHANNEL");
-        
-        red = 0;
-    } else {
-        
-        red = color.r;
-    }
-    
-    if (!(uint8_t)color.b) {
-        writeSerialPort(boutRefNum, "NO BLUE CHANNEL");
-        
-        blue = 0;
-    } else {
-        
-        blue = color.b;
-    }
-    
-    if (!(uint8_t)color.g) {
-        writeSerialPort(boutRefNum, "NO GREEN CHANNEL");
-        
-        green = 0;
-    } else {
-        
-        green = color.g;
-    }
+    red = color->r;
+    blue = color->b;
+    green = color->g;
     
     float magicColorNumber = (uint8_t)red * 0.299 + (uint8_t)green * 0.587 + (uint8_t)blue * 0.114;
-    short patternIdNumber;
-    char *stringMagicColorNumber;
-    writeSerialPort(boutRefNum, "get color pattern");
-    // sprintf(stringMagicColorNumber, "pattern stringMagicColorNumber: %f, r: %u, b: %u, g: %u", magicColorNumber, (uint8_t)red, (uint8_t)blue, (uint8_t)green);
-    // writeSerialPort(boutRefNum, stringMagicColorNumber);
-    char *greenChannelMessage;
-    sprintf(greenChannelMessage, "green channel g: %u", (uint8_t)green);
-    writeSerialPort(boutRefNum, greenChannelMessage);
-    char *redChannelMessage;
-    sprintf(redChannelMessage, "red channel g: %u", (uint8_t)red);
-    writeSerialPort(boutRefNum, redChannelMessage);
-    char *blueChannelMessage;
-    sprintf(blueChannelMessage, "blue channel g: %u", (uint8_t)blue);
-    writeSerialPort(boutRefNum, blueChannelMessage);
-    
+
     if (magicColorNumber > 200) {
-        writeSerialPort(boutRefNum, "1");
-        
-        returnPattern = &qd.black; //black; // TODO patterns are actually integer values - see Inside Macintosh: Imaging with QuickDraw: Figure 3-28
+
+        return qd.black;
     } else if (magicColorNumber > 175) {
-        writeSerialPort(boutRefNum, "2");
-        
-        returnPattern = &qd.dkGray; //dkGray;
+
+        return qd.dkGray;
     } else if (magicColorNumber > 150) {
-        writeSerialPort(boutRefNum, "3");
-        
-        returnPattern = &qd.gray; //gray;
-    } else if (magicColorNumber > 125) {
-        writeSerialPort(boutRefNum, "4");
-        
-        returnPattern = &qd.ltGray;
-    } else {
-        writeSerialPort(boutRefNum, "20");
-    
-        returnPattern = &qd.white; // white
+
+        return qd.gray;
+    } else if (magicColorNumber > 49) {
+
+        return qd.ltGray;
     }
 
-    writeSerialPort(boutRefNum, "returning pattern");
-
-    return *returnPattern;
+    return qd.white;
 }
 
 typedef struct {
@@ -510,12 +482,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     color = nk_color_to_quickdraw_bw_color(r->color);
                     
                     ForeColor(color);
-                    // Pattern colorPattern = nk_color_to_quickdraw_color(r->color);
-                    // writeSerialPort(boutRefNum, "NK_COMMAND_RECT_FILLED got color pattern");
+                    Pattern colorPattern = nk_color_to_quickdraw_color(&r->color);
 
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
-                    // PenSize((float)r->line_thickness, (float)r->line_thicqkness); no member line thickness on this struct
-
+                    // PenSize((float)r->line_thickness, (float)r->line_thickness); // no member line thickness on this struct
                     // might actually need to build this with SetRect, search inside macintosh: imaging with quickdraw
                     Rect quickDrawRectangle;
                     quickDrawRectangle.top = (int)r->y;
@@ -524,7 +494,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     quickDrawRectangle.right = (int)r->x + (int)r->w;
 
                     //FrameRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding);
-                    FillRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding, &qd.white); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
+                    FillRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding, &colorPattern); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
                 }
 
                 break;
@@ -564,7 +534,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     color = nk_color_to_quickdraw_bw_color(c->color);
                     
                     ForeColor(color);
-                    //PatterncolorPattern = nk_color_to_quickdraw_color(c->color);
+                    Pattern colorPattern = nk_color_to_quickdraw_color(&c->color);
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
 
                     Rect quickDrawRectangle;
@@ -573,8 +543,8 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     quickDrawRectangle.bottom = (int)c->y + (int)c->h;
                     quickDrawRectangle.right = (int)c->x + (int)c->w;
 
-                    FrameOval(&quickDrawRectangle);
-                    // FillOval(&quickDrawRectangle, &colorPattern); // An oval is a circular or elliptical shape defined by the bounding rectangle that encloses it. inside macintosh: imaging with quickdraw 3-25
+                    // FrameOval(&quickDrawRectangle);
+                    FillOval(&quickDrawRectangle, &colorPattern); // An oval is a circular or elliptical shape defined by the bounding rectangle that encloses it. inside macintosh: imaging with quickdraw 3-25
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-111.html#HEADING111-0
                 }
 
@@ -609,7 +579,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     }
 
                     const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled *)cmd;
-                    //Pattern colorPattern = nk_color_to_quickdraw_color(t->color);
+                    Pattern colorPattern = nk_color_to_quickdraw_color(&t->color);
                     color = nk_color_to_quickdraw_bw_color(t->color);
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
                     ForeColor(color);
@@ -621,7 +591,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     LineTo((float)t->a.x, (float)t->a.y);
                     ClosePoly();
 
-                    FillPoly(trianglePolygon, &qd.white);
+                    FillPoly(trianglePolygon, &colorPattern);
                     KillPoly(trianglePolygon);
                 }
 
@@ -668,7 +638,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                     const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
 
-                    // Pattern colorPattern = nk_color_to_quickdraw_color(p->color);
+                    Pattern colorPattern = nk_color_to_quickdraw_color(&p->color);
                     color = nk_color_to_quickdraw_bw_color(p->color);
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48 -- but might actually need PenPat -- look into this
                     ForeColor(color);
@@ -694,14 +664,13 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     
                     ClosePoly();
 
-                    FillPoly(trianglePolygon, &qd.white);
+                    FillPoly(trianglePolygon, &colorPattern);
                     KillPoly(trianglePolygon);
                 }
                 
                 break;
             case NK_COMMAND_POLYLINE: {
-                
-                    
+
                     if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_POLYLINE");
@@ -735,13 +704,16 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_TEXT");
-                        writeSerialPort(boutRefNum,(const char*)t->string);
+                        char log[255];
+                        sprintf(log, "%f: %s, %d", (float)t->height, &t->string, (int)t->length);
+                        writeSerialPort(boutRefNum, log);
                     }
 
                     color = nk_color_to_quickdraw_bw_color(t->foreground);
                     ForeColor(color);
-                    MoveTo((float)t->x, (float)t->y + 4);
-                    DrawText((const char*)t->string, 0, strlen((const char*)t->string));
+                    MoveTo((float)t->x, (float)t->y + (float)t->height);
+                    TextSize((float)t->height);
+                    DrawText((const char*)t->string, 0, (int)t->length);
                 }
 
                 break;
@@ -765,10 +737,12 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                 break;
             case NK_COMMAND_ARC: {
+
                     if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_ARC");
                     }
+
                     const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
                     color = nk_color_to_quickdraw_bw_color(a->color);
                     ForeColor(color);
@@ -788,10 +762,12 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                 break;
             case NK_COMMAND_IMAGE: {
+
                     if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_IMAGE");  
                     }
+
                     const struct nk_command_image *i = (const struct nk_command_image *)cmd;
                     // al_draw_bitmap_region(i->img.handle.ptr, 0, 0, i->w, i->h, i->x, i->y, 0); // TODO: look up and convert al_draw_bitmap_region
                     // TODO: consider implementing a bitmap drawing routine. we could iterate pixel by pixel and draw
@@ -853,13 +829,21 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
                 return 1;
             }
             break;
-        case osEvt: { // the quicktime osEvts cover mouse movement events
+        case osEvt: { 
+            // the quicktime osEvts are supposed to cover mouse movement events
+            // notice that we are actually calling nk_input_motion in the EventLoop for the program
+            // instead, as handling this event directly does not appear to work for whatever reason
+            // TODO: research this
             writeSerialPort(boutRefNum, "osEvt");
 
                 switch (event->message) {
 
                     case mouseMovedMessage: {
-                        writeSerialPort(boutRefNum, "mouseMovedMessage");
+
+                        if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+                            
+                            writeSerialPort(boutRefNum, "mouseMovedMessage");
+                        }
 
 
                         // event->where should have coordinates??? or is it just a pointer to what the mouse is over?
@@ -875,9 +859,15 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
             break;
         
         case mouseUp: 
-            writeSerialPort(boutRefNum, "mouseUp!!!");
+            if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                writeSerialPort(boutRefNum, "mouseUp!!!");
+            }
         case mouseDown: {
-            writeSerialPort(boutRefNum, "mouseUp/Down");
+            if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                writeSerialPort(boutRefNum, "mouseUp/Down");
+            }
             
             short part = FindWindow(event->where, &window);
 
@@ -885,26 +875,34 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
                 case inContent: {
                     // event->where should have coordinates??? or is it just a pointer to what the mouse is over?
                     // TODO need to figure this out
-                    writeSerialPort(boutRefNum, "mouseUp/Down IN DEFAULT ZONE!!!!");
+                    if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                        writeSerialPort(boutRefNum, "mouseUp/Down IN DEFAULT ZONE!!!!");
+                    }
+
+                    // this converts the offset of the window to the actual location of the mouse within the window
                     Point tempPoint;
                     SetPt(&tempPoint, event->where.h, event->where.v);
                     GlobalToLocal(&tempPoint);
                     
-//                    
-//                    
-                   // OSEventAvail(kNoEvents, event);
-                   // GlobalToLocal(&event->where);
-                    
                     if (!event->where.h) {
                         
-                        writeSerialPort(boutRefNum, "no event location for mouse!!!!");
+                        if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                            writeSerialPort(boutRefNum, "no event location for mouse!!!!");
+                        }
                         return 1;
                     }
                     int x = tempPoint.h;
                     int y = tempPoint.v;
-                    char *logx;
-                    sprintf(logx, "xxxx h: %d,  v: %d", x, y);
-                    writeSerialPort(boutRefNum, logx);
+
+                    if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                        char *logx;
+                        sprintf(logx, "xxxx h: %d,  v: %d", x, y);
+                        writeSerialPort(boutRefNum, logx);
+                    }
+
                     nk_input_motion(nuklear_context, x, y); // TODO we wouldnt need to do this if motion capturing was working right
                     nk_input_button(nuklear_context, NK_BUTTON_LEFT, x, y, event->what == mouseDown);
                 }
@@ -915,7 +913,11 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
             break;
         case keyDown:
 		case autoKey: {/* check for menukey equivalents */
-                writeSerialPort(boutRefNum, "keyDown/autoKey");
+                if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                    writeSerialPort(boutRefNum, "keyDown/autoKey");
+                }
+
                 char key = event->message & charCodeMask;
                 const Boolean keyDown = event->what == keyDown;
 
@@ -996,7 +998,10 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
             }
 			break;
         default: {
-                writeSerialPort(boutRefNum, "default");
+                if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                    writeSerialPort(boutRefNum, "default unhandled event");
+                }
             
                 return 1; 
             }
