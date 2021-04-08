@@ -231,6 +231,10 @@ static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, co
 
         output[i] = 0;
     }
+
+    float actualHeight = height - 2.0;
+
+    TextSize(actualHeight);
     
     MeasureText(len, text, output); // TODO should be quickdraw PROCEDURE MeasureText (count: Integer; textAddr, charLocs: Ptr);
     // see inside macintosh: text pg 3-84
@@ -243,7 +247,7 @@ static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, co
         writeSerialPort(boutRefNum, log);
     }
 
-    return 1.0f * output[len];
+    return 1.0f * output[len] + 1; // adding the +4 for additional padding
 }
 
 /* Flags are identical to al_load_font() flags argument */
@@ -263,8 +267,6 @@ NK_API NkQuickDrawFont* nk_quickdraw_font_create_from_file() {
 }
 
 static int nk_color_to_quickdraw_bw_color(struct nk_color color) {
-    
-    return blackColor;
 
     // TODO: since we are operating under a b&w display - we need to convert these colors to black and white
     // look up a simple algorithm for taking RGBA values and making the call on black or white and try it out here
@@ -272,36 +274,25 @@ static int nk_color_to_quickdraw_bw_color(struct nk_color color) {
     // using an algorithm from https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
     // if (red*0.299 + green*0.587 + blue*0.114) > 186 use #000000 else use #ffffff
     // return al_map_rgba((unsigned char)color.r, (unsigned char)color.g, (unsigned char)color.b, (unsigned char)color.a);
-//    
-//    float magicColorNumber = color.r * 0.299 + color.g * 0.587 + color.b * 0.114;
-//    
-//    char *stringMagicColorNumber;
-//    sprintf(stringMagicColorNumber, "stringMagicColorNumber: %f", magicColorNumber);
-//    writeSerialPort(boutRefNum, stringMagicColorNumber);
-//    
-//    if (magicColorNumber > 37) {
-//        writeSerialPort(boutRefNum, "BLACK");
-//        
-//        return blackColor;
-//    }
-//    
-//    writeSerialPort(boutRefNum, "WHITE");
-//    
-//    return whiteColor;
+   
+    float magicColorNumber = color.r * 0.299 + color.g * 0.587 + color.b * 0.114;
+   
+    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+
+       char stringMagicColorNumber[255];
+       sprintf(stringMagicColorNumber, "stringMagicColorNumber: %f", magicColorNumber);
+       writeSerialPort(boutRefNum, stringMagicColorNumber);
+    }
+   
+   if (magicColorNumber > 37) {
+       
+       return blackColor;
+   }
+   
+   return whiteColor;
 }
 
 // i split this in to a 2nd routine because we can use the various shades of gray when filling rectangles and whatnot
-// i think these are technically patterns and not colors, see Quickdraw.h:2095
-// not used yet but could be used on the pattern operations like boxes, etc
-const Pattern black  = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-const Pattern dkGray = { 0x77, 0xDD, 0x77, 0xDD, 0x77, 0xDD, 0x77, 0xDD };
-const Pattern gray   = { 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55 };
-const Pattern ltGray = { 0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22 };
-const Pattern white  = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-Pattern *dummyPattern;
-// i split this in to a 2nd routine because we can use the various shades of gray when filling rectangles and whatnot
-// i think these are technically patterns and not colors, see Quickdraw.h:2095
-// not used yet but could be used on the pattern operations like boxes, etc
 static Pattern nk_color_to_quickdraw_color(const struct nk_color *color) {
 
     // as a future upgrade, we could support color quickdraw
@@ -317,13 +308,13 @@ static Pattern nk_color_to_quickdraw_color(const struct nk_color *color) {
     
     float magicColorNumber = (uint8_t)red * 0.299 + (uint8_t)green * 0.587 + (uint8_t)blue * 0.114;
 
-    if (magicColorNumber > 200) {
+    if (magicColorNumber > 150) {
 
         return qd.black;
-    } else if (magicColorNumber > 175) {
+    } else if (magicColorNumber > 100) {
 
         return qd.dkGray;
-    } else if (magicColorNumber > 150) {
+    } else if (magicColorNumber > 75) {
 
         return qd.gray;
     } else if (magicColorNumber > 49) {
@@ -485,7 +476,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     Pattern colorPattern = nk_color_to_quickdraw_color(&r->color);
 
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
-                    // PenSize((float)r->line_thickness, (float)r->line_thickness); // no member line thickness on this struct
+                    PenSize(1.0, 1.0); // no member line thickness on this struct so assume we want a thin line
                     // might actually need to build this with SetRect, search inside macintosh: imaging with quickdraw
                     Rect quickDrawRectangle;
                     quickDrawRectangle.top = (int)r->y;
@@ -493,8 +484,8 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     quickDrawRectangle.bottom = (int)r->y + (int)r->h;
                     quickDrawRectangle.right = (int)r->x + (int)r->w;
 
-                    //FrameRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding);
-                    FillRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding, &colorPattern); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
+                    FillRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding, &colorPattern);
+                    FrameRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
                 }
 
                 break;
@@ -536,15 +527,15 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     ForeColor(color);
                     Pattern colorPattern = nk_color_to_quickdraw_color(&c->color);
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
-
+                    PenSize(1.0, 1.0);
                     Rect quickDrawRectangle;
                     quickDrawRectangle.top = (int)c->y;
                     quickDrawRectangle.left = (int)c->x;
                     quickDrawRectangle.bottom = (int)c->y + (int)c->h;
                     quickDrawRectangle.right = (int)c->x + (int)c->w;
 
-                    // FrameOval(&quickDrawRectangle);
-                    FillOval(&quickDrawRectangle, &colorPattern); // An oval is a circular or elliptical shape defined by the bounding rectangle that encloses it. inside macintosh: imaging with quickdraw 3-25
+                    FillOval(&quickDrawRectangle, &colorPattern); 
+                    FrameOval(&quickDrawRectangle);// An oval is a circular or elliptical shape defined by the bounding rectangle that encloses it. inside macintosh: imaging with quickdraw 3-25
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-111.html#HEADING111-0
                 }
 
@@ -581,6 +572,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled *)cmd;
                     Pattern colorPattern = nk_color_to_quickdraw_color(&t->color);
                     color = nk_color_to_quickdraw_bw_color(t->color);
+                    PenSize(1.0, 1.0);
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
                     ForeColor(color);
 
@@ -709,10 +701,16 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                         writeSerialPort(boutRefNum, log);
                     }
 
+                    // adjust font size down a bit from what nuklear specifies
+                    // smaller fonts are pretty alright on mac given the low resolution,
+                    // and nuklear wants everything in default 14pt which looks awful, whereas 12pt
+                    // looks great
+                    float fontHeight = (float)t->height - 2.0;
+
                     color = nk_color_to_quickdraw_bw_color(t->foreground);
                     ForeColor(color);
-                    MoveTo((float)t->x, (float)t->y + (float)t->height);
-                    TextSize((float)t->height);
+                    MoveTo((float)t->x, (float)t->y + fontHeight);
+                    TextSize(fontHeight); 
                     DrawText((const char*)t->string, 0, (int)t->length);
                 }
 
@@ -1058,6 +1056,49 @@ NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int hei
     quickdraw.nuklear_context.clip.copy = nk_quickdraw_clipboard_copy;
     quickdraw.nuklear_context.clip.paste = nk_quickdraw_clipboard_paste;
     quickdraw.nuklear_context.clip.userdata = nk_handle_ptr(0);
+
+    // fix styles to be more "mac-like"
+    struct nk_style *style;
+    struct nk_style_toggle *toggle;
+    style = &quickdraw.nuklear_context.style;
+
+    /* checkbox toggle */
+    toggle = &style->checkbox;
+    nk_zero_struct(*toggle);
+    toggle->normal          = nk_style_item_color(nk_rgba(45, 45, 45, 255));
+    toggle->hover           = nk_style_item_color(nk_rgba(80, 80, 80, 255)); // this is the "background" hover state regardless of checked status - we want light gray
+    toggle->active          = nk_style_item_color(nk_rgba(255, 255, 255, 255)); // i can't tell what this does yet
+    toggle->cursor_normal   = nk_style_item_color(nk_rgba(255, 255, 255, 255)); // this is the "checked" box itself - we want "black"
+    toggle->cursor_hover    = nk_style_item_color(nk_rgba(255, 255, 255, 255)); // this is the hover state of a "checked" box - anything lighter than black is ok
+    toggle->userdata        = nk_handle_ptr(0);
+    toggle->text_background = nk_rgba(255, 255, 255, 255);
+    toggle->text_normal     = nk_rgba(70, 70, 70, 255);
+    toggle->text_hover      = nk_rgba(70, 70, 70, 255);
+    toggle->text_active     = nk_rgba(70, 70, 70, 255);
+    toggle->padding         = nk_vec2(3.0f, 3.0f);
+    toggle->touch_padding   = nk_vec2(0,0);
+    toggle->border_color    = nk_rgba(0,0,0,0);
+    toggle->border          = 0.0f;
+    toggle->spacing         = 5;
+
+    /* option toggle */
+    toggle = &style->option;
+    nk_zero_struct(*toggle);
+    toggle->normal          = nk_style_item_color(nk_rgba(45, 45, 45, 255));
+    toggle->hover           = nk_style_item_color(nk_rgba(80, 80, 80, 255)); // this is the "background" hover state regardless of checked status - we want light gray
+    toggle->active          = nk_style_item_color(nk_rgba(255, 255, 255, 255)); // i can't tell what this does yet
+    toggle->cursor_normal   = nk_style_item_color(nk_rgba(255, 255, 255, 255)); // this is the "checked" box itself - we want "black"
+    toggle->cursor_hover    = nk_style_item_color(nk_rgba(255, 255, 255, 255)); // this is the hover state of a "checked" box - anything lighter than black is ok
+    toggle->userdata        = nk_handle_ptr(0);
+    toggle->text_background = nk_rgba(255, 255, 255, 255);
+    toggle->text_normal     = nk_rgba(70, 70, 70, 255);
+    toggle->text_hover      = nk_rgba(70, 70, 70, 255);
+    toggle->text_active     = nk_rgba(70, 70, 70, 255);
+    toggle->padding         = nk_vec2(3.0f, 3.0f);
+    toggle->touch_padding   = nk_vec2(0,0);
+    toggle->border_color    = nk_rgba(0,0,0,0);
+    toggle->border          = 0.0f;
+    toggle->spacing         = 5;
 
     return &quickdraw.nuklear_context;
 }
