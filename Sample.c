@@ -32,6 +32,7 @@
 #define WINDOW_WIDTH 510
 #define WINDOW_HEIGHT 302
 
+#define NK_ZERO_COMMAND_MEMORY
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -53,7 +54,7 @@ Boolean		gHasWaitNextEvent;	/* set up by Initialize */
    the program can check it to find out if it is currently in the background. */
 Boolean		gInBackground;		/* maintained by Initialize and DoEvent */
 
-const Boolean MAC_APP_DEBUGGING = false;
+// #define MAC_APP_DEBUGGING
 /* The following globals are the state of the window. If we supported more than
    one window, they would be attatched to each document, rather than globals. */
 
@@ -87,6 +88,24 @@ void AlertUser( void );
 #define TopLeft(aRect)	(* (Point *) &(aRect).top)
 #define BotRight(aRect)	(* (Point *) &(aRect).bottom)
 
+
+
+
+static void boxTest(struct nk_context *ctx) {
+
+    if (nk_begin(ctx, "Calculator", nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
+        NK_WINDOW_BORDER|NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_MOVABLE))
+    {
+
+		nk_layout_row_dynamic(ctx, 200, 1);
+		static char box_buffer[512];
+		static int box_len;
+
+		nk_edit_string(ctx, NK_EDIT_BOX, box_buffer, &box_len, 512, nk_filter_default);
+
+    	nk_end(ctx);
+	}
+}
 
 static void calculator(struct nk_context *ctx) {
 
@@ -172,17 +191,17 @@ void main()
 
     struct nk_context *ctx;
 
-    if (MAC_APP_DEBUGGING) {
+    #ifdef MAC_APP_DEBUGGING
     
     	writeSerialPort(boutRefNum, "call nk_init");
-    }
+    #endif
 
     ctx = nk_quickdraw_init(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    if (MAC_APP_DEBUGGING) {
+    #ifdef MAC_APP_DEBUGGING
 
 	    writeSerialPort(boutRefNum, "call into event loop");
-	}
+	#endif
 
 	EventLoop(ctx);					/* call the main event loop */
 }
@@ -202,17 +221,18 @@ void EventLoop(struct nk_context *ctx)
 	int lastMouseVPos = 0;
 
 	do {
-		if (MAC_APP_DEBUGGING) {
+
+		Boolean beganInput = false;
+
+		#ifdef MAC_APP_DEBUGGING
 
 	        writeSerialPort(boutRefNum, "nk_input_begin");
-	    }
+	    #endif
 
-        nk_input_begin(ctx);
-
-        if (MAC_APP_DEBUGGING) {
+        #ifdef MAC_APP_DEBUGGING
 
         	writeSerialPort(boutRefNum, "nk_input_begin complete");
-        }
+        #endif
 
 
 		GetGlobalMouse(&mouse);
@@ -225,10 +245,10 @@ void EventLoop(struct nk_context *ctx)
 		// call the nk_input_motion command
         if (lastMouseHPos != mouse.h || lastMouseVPos != mouse.v) {
 
-        	if (MAC_APP_DEBUGGING) {
+        	#ifdef MAC_APP_DEBUGGING
 
         		writeSerialPort(boutRefNum, "nk_input_motion!");
-        	}
+        	#endif
 
         	firstOrMouseMove = true;
 
@@ -236,6 +256,8 @@ void EventLoop(struct nk_context *ctx)
             SetPt(&tempPoint, mouse.h, mouse.v);
             GlobalToLocal(&tempPoint);
 
+            beganInput = true;
+        	nk_input_begin(ctx);
         	nk_input_motion(ctx, tempPoint.h, tempPoint.v);
         }
 
@@ -253,53 +275,63 @@ void EventLoop(struct nk_context *ctx)
 
 		if (gotEvent) {
 
-			if (MAC_APP_DEBUGGING) {
+			#ifdef MAC_APP_DEBUGGING
 
         		writeSerialPort(boutRefNum, "calling to DoEvent");
+        	#endif
+
+        	if (!beganInput) {
+
+        		nk_input_begin(ctx);
         	}
+
+        	beganInput = true;
 
 			DoEvent(&event, ctx);
 
-			if (MAC_APP_DEBUGGING) {
+			#ifdef MAC_APP_DEBUGGING
 
         		writeSerialPort(boutRefNum, "done with DoEvent");
-        	}
+        	#endif
 		}
 
-		if (MAC_APP_DEBUGGING) {
+		#ifdef MAC_APP_DEBUGGING
 
         	writeSerialPort(boutRefNum, "nk_input_end");
+        #endif
+
+        if (beganInput) {
+
+        	nk_input_end(ctx);
         }
 
-        nk_input_end(ctx);
-
-        if (MAC_APP_DEBUGGING) {
+        #ifdef MAC_APP_DEBUGGING
         	
         	writeSerialPort(boutRefNum, "nk_input_end complete");
-        }
-
-        //calculator(ctx);
-        overview(ctx);
-
-        if (MAC_APP_DEBUGGING) {
-
-	        writeSerialPort(boutRefNum, "nk_quickdraw_render");
-	    }
+        #endif
 
         // only re-render if there is an event, prevents screen flickering
         if (gotEvent || firstOrMouseMove) {
 
         	firstOrMouseMove = false;
 
+	        #ifdef MAC_APP_DEBUGGING
+
+		        writeSerialPort(boutRefNum, "nk_quickdraw_render");
+		    #endif
+
+	        //calculator(ctx);
+	        //overview(ctx);
+        	boxTest(ctx);
         	nk_quickdraw_render(FrontWindow(), ctx);
+    		nk_clear(ctx);
         }
 
-    	nk_clear(ctx);
 
-    	if (MAC_APP_DEBUGGING) {
+    	#ifdef MAC_APP_DEBUGGING
 
         	writeSerialPort(boutRefNum, "nk_input_render complete");
-        }
+        #endif
 	} while ( true );	/* loop forever; we quit via ExitToShell */
 } /*EventLoop*/
 
@@ -320,6 +352,11 @@ void DoEvent(EventRecord *event, struct nk_context *ctx) {
 	switch ( event->what ) {
 
         case mouseUp:
+
+	    	#ifdef MAC_APP_DEBUGGING
+	        	writeSerialPort(boutRefNum, "mouseup");
+        	#endif
+
             part = FindWindow(event->where, &window);
             switch (part)
             {
@@ -331,6 +368,12 @@ void DoEvent(EventRecord *event, struct nk_context *ctx) {
             }
             break;
 		case mouseDown:
+
+
+	    	#ifdef MAC_APP_DEBUGGING
+	        	writeSerialPort(boutRefNum, "mousedown");
+	        #endif
+
 			part = FindWindow(event->where, &window);
 			switch ( part ) {
 				case inMenuBar:				/* process a mouse menu command (if any) */
@@ -366,6 +409,12 @@ void DoEvent(EventRecord *event, struct nk_context *ctx) {
 			break;
 		case keyDown:
 		case autoKey:						/* check for menukey equivalents */
+        	
+
+	    	#ifdef MAC_APP_DEBUGGING
+	        	writeSerialPort(boutRefNum, "key");
+	        #endif
+
 			key = event->message & charCodeMask;
 			if ( event->modifiers & cmdKey )	{		/* Command key down */
 				if ( event->what == keyDown ) {
@@ -377,14 +426,26 @@ void DoEvent(EventRecord *event, struct nk_context *ctx) {
             nk_quickdraw_handle_event(event, ctx);
 			break;
 		case activateEvt:
+			
+    		#ifdef MAC_APP_DEBUGGING
+        		writeSerialPort(boutRefNum, "activate");
+        	#endif
 			DoActivate((WindowPtr) event->message, (event->modifiers & activeFlag) != 0);
 			break;
 		case updateEvt:
+			
+			#ifdef MAC_APP_DEBUGGING
+        		writeSerialPort(boutRefNum, "update");
+        	#endif
 			DoUpdate((WindowPtr) event->message);
 			break;
 		/*	1.01 - It is not a bad idea to at least call DIBadMount in response
 			to a diskEvt, so that the user can format a floppy. */
 		case diskEvt:
+			
+    		#ifdef MAC_APP_DEBUGGING
+        		writeSerialPort(boutRefNum, "disk");
+        	#endif
 			if ( HiWord(event->message) != noErr ) {
 				SetPt(&aPoint, kDILeft, kDITop);
 				err = DIBadMount(aPoint, event->message);
@@ -392,6 +453,10 @@ void DoEvent(EventRecord *event, struct nk_context *ctx) {
 			break;
 
 		case osEvt:
+			
+    		#ifdef MAC_APP_DEBUGGING
+        		writeSerialPort(boutRefNum, "os");
+        	#endif
 
 			// this should be trigger on mousemove but does not -- if we can figure that out, we should call through to 
 			// nk_quickdraw_handle_event, and allow it to handle the mousemove events

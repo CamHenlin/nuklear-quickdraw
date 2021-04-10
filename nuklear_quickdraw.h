@@ -45,8 +45,8 @@ NK_API NkQuickDrawFont* nk_quickdraw_font_create_from_file();
  */
 #define NK_MEMSET memset
 #define NK_MEMCPY memcpy
-#ifdef NK_QUICKDRAW_IMPLEMENTATION
-#ifndef NK_QUICKDRAW_TEXT_MAX
+#ifdef NK_QUICKDRAW_IMPLEMENTATIO
+N#ifndef NK_QUICKDRAW_TEXT_MAX
 #define NK_QUICKDRAW_TEXT_MAX 256
 #endif
 
@@ -55,28 +55,69 @@ struct NkQuickDrawFont {
     char *font;
 };
 
+void *last;
+void *buf;
 
 // constant keyboard mappings for convenenience
 // See Inside Macintosh: Text pg A-7, A-8
-char homeKey = (char)0x01;
-char enterKey = (char)0x03;
-char endKey = (char)0x04;
-char helpKey = (char)0x05;
-char backspaceKey = (char)0x08;
-char deleteKey = (char)0x7F;
-char tabKey = (char)0x09;
-char pageUpKey = (char)0x0B;
-char pageDownKey = (char)0x0C;
-char returnKey = (char)0x0D;
-char rightArrowKey = (char)0x1D;
-char leftArrowKey = (char)0x1C;
-char downArrowKey = (char)0x1F;
-char upArrowKey = (char)0x1E;
-char eitherShiftKey = (char)0x0F;
-char escapeKey = (char)0x1B;
+int homeKey = (int)0x01;
+int enterKey = (int)0x03;
+int endKey = (int)0x04;
+int helpKey = (int)0x05;
+int backspaceKey = (int)0x08;
+int deleteKey = (int)0x7F;
+int tabKey = (int)0x09;
+int pageUpKey = (int)0x0B;
+int pageDownKey = (int)0x0C;
+int returnKey = (int)0x0D;
+int rightArrowKey = (int)0x1D;
+int leftArrowKey = (int)0x1C;
+int downArrowKey = (int)0x1F;
+int upArrowKey = (int)0x1E;
+int eitherShiftKey = (int)0x0F;
+int escapeKey = (int)0x1B;
 
-const Boolean NK_QUICKDRAW_GRAPHICS_DEBUGGING = false;
-const Boolean NK_QUICKDRAW_EVENTS_DEBUGGING = false;
+// #define NK_QUICKDRAW_GRAPHICS_DEBUGGING
+// #def#ifdef NK_QUICKDRAW_EVENTS_DEBUGG
+
+typedef struct {
+    Ptr Address;
+    long RowBytes;
+    GrafPtr bits;
+    Rect bounds;
+    
+    BitMap  BWBits;
+    GrafPort BWPort;
+    
+    Handle  OrigBits;
+    
+} ShockBitmap;
+
+void NewShockBitmap(ShockBitmap *theMap, short width, short height) {
+
+    theMap->bits = 0L;
+    SetRect(&theMap->bounds, 0, 0, width, height);
+    
+    theMap->BWBits.bounds = theMap->bounds;
+    theMap->BWBits.rowBytes = ((width+15) >> 4)<<1;         // round to even
+    theMap->BWBits.baseAddr = NewPtr(((long) height * (long) theMap->BWBits.rowBytes));
+
+    theMap->BWBits.baseAddr = StripAddress(theMap->BWBits.baseAddr);
+    
+    OpenPort(&theMap->BWPort);
+    SetPort(&theMap->BWPort);
+    SetPortBits(&theMap->BWBits);
+
+    SetRectRgn(theMap->BWPort.visRgn, theMap->bounds.left, theMap->bounds.top, theMap->bounds.right, theMap->bounds.bottom);
+    SetRectRgn(theMap->BWPort.clipRgn, theMap->bounds.left, theMap->bounds.top, theMap->bounds.right, theMap->bounds.bottom);
+    EraseRect(&theMap->bounds);
+      
+    theMap->Address = theMap->BWBits.baseAddr;
+    theMap->RowBytes = (long) theMap->BWBits.rowBytes;
+    theMap->bits = (GrafPtr) &theMap->BWPort;
+}
+
+ShockBitmap gMainOffScreen;
 
 // bezier code is from http://preserve.mactech.com/articles/mactech/Vol.05/05.01/BezierCurve/index.html
 // as it is not built in to quickdraw like other "modern" graphics environments
@@ -214,40 +255,25 @@ NK_API void nk_quickdraw_del_image(struct nk_image* image) {
     free(image);
 }
 
+// note: if this produces a greater value than the actual length of the text, 
+// the cursor will walk off to the right
+// too small, it will precede the end of the text
 // TODO: fully convert
 // TODO: assuming system font for v1, support other fonts in v2
 static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, const char *text, int len) {
-    
+
     // writeSerialPort(boutRefNum, "nk_quickdraw_font_get_text_width");
 
-    if (!text) {
+    if (!text || len == 0) {
 
         return 0;
     }
 
-    short output[len + 1];
+    OpenPort(&gMainOffScreen.BWPort);
+    SetPort(&gMainOffScreen.BWPort);
+    TextSize(height);
 
-    for (int i = 0; i <= len + 1; i++) {
-
-        output[i] = 0;
-    }
-
-    float actualHeight = height - 2.0;
-
-    TextSize(actualHeight);
-    
-    MeasureText(len, text, output); // TODO should be quickdraw PROCEDURE MeasureText (count: Integer; textAddr, charLocs: Ptr);
-    // see inside macintosh: text pg 3-84
-    
-    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
-
-        writeSerialPort(boutRefNum, "in nk_quickdraw- nk_quickdraw_font_get_text_width:");
-        char log[1024];
-        sprintf(log, "%s: %d -- %f", text, len, 1.0f * output[len]);
-        writeSerialPort(boutRefNum, log);
-    }
-
-    return 1.0f * output[len] + 1; // adding the +4 for additional padding
+    return 1.0 * TextWidth(text, 0, len);
 }
 
 /* Flags are identical to al_load_font() flags argument */
@@ -261,7 +287,7 @@ NK_API NkQuickDrawFont* nk_quickdraw_font_create_from_file() {
         return NULL;
     }
     font->nk.userdata = nk_handle_ptr(font);
-    font->nk.height = (int)14;
+    font->nk.height = (int)12;
     font->nk.width = nk_quickdraw_font_get_text_width;
     return font;
 }
@@ -277,12 +303,12 @@ static int nk_color_to_quickdraw_bw_color(struct nk_color color) {
    
     float magicColorNumber = color.r * 0.299 + color.g * 0.587 + color.b * 0.114;
    
-    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
        char stringMagicColorNumber[255];
        sprintf(stringMagicColorNumber, "stringMagicColorNumber: %f", magicColorNumber);
        writeSerialPort(boutRefNum, stringMagicColorNumber);
-    }
+    #endif
    
    if (magicColorNumber > 37) {
        
@@ -325,46 +351,16 @@ static Pattern nk_color_to_quickdraw_color(const struct nk_color *color) {
     return qd.white;
 }
 
-typedef struct {
-    Ptr Address;
-    long RowBytes;
-    GrafPtr bits;
-    Rect bounds;
-    
-    BitMap  BWBits;
-    GrafPort BWPort;
-    
-    Handle  OrigBits;
-    
-} ShockBitmap;
-
-void NewShockBitmap(ShockBitmap *theMap, short width, short height) {
-
-    theMap->bits = 0L;
-    SetRect(&theMap->bounds, 0, 0, width, height);
-    
-    theMap->BWBits.bounds = theMap->bounds;
-    theMap->BWBits.rowBytes = ((width+15) >> 4)<<1;         // round to even
-    theMap->BWBits.baseAddr = NewPtr(((long) height * (long) theMap->BWBits.rowBytes));
-
-    theMap->BWBits.baseAddr = StripAddress(theMap->BWBits.baseAddr);
-    
-    OpenPort(&theMap->BWPort);
-    SetPort(&theMap->BWPort);
-    SetPortBits(&theMap->BWBits);
-
-    SetRectRgn(theMap->BWPort.visRgn, theMap->bounds.left, theMap->bounds.top, theMap->bounds.right, theMap->bounds.bottom);
-    SetRectRgn(theMap->BWPort.clipRgn, theMap->bounds.left, theMap->bounds.top, theMap->bounds.right, theMap->bounds.bottom);
-    EraseRect(&theMap->bounds);
-      
-    theMap->Address = theMap->BWBits.baseAddr;
-    theMap->RowBytes = (long) theMap->BWBits.rowBytes;
-    theMap->bits = (GrafPtr) &theMap->BWPort;
-}
-
-ShockBitmap gMainOffScreen;
-
 NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
+
+    void *cmds = nk_buffer_memory(&ctx->memory);
+
+    if (!memcmp(cmds, last, ctx->memory.allocated)) {
+
+        return;
+    }
+
+    memcpy(last, cmds, ctx->memory.allocated);
 
     const struct nk_command *cmd = 0;
 
@@ -380,22 +376,21 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
         switch (cmd->type) {
 
             case NK_COMMAND_NOP:
-            
                 
-                if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                     writeSerialPort(boutRefNum, "NK_COMMAND_NOP");
-                }
+                #endif
                 
 
                 break;
             case NK_COMMAND_SCISSOR: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_SCISSOR");
-                    }
+                    #endif
 
                     const struct nk_command_scissor *s =(const struct nk_command_scissor*)cmd;
                     // al_set_clipping_rectangle((int)s->x, (int)s->y, (int)s->w, (int)s->h); // TODO: https://www.allegro.cc/manual/5/al_set_clipping_rectangle
@@ -418,10 +413,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_LINE: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_LINE");
-                    }
+                    #endif
 
                     const struct nk_command_line *l = (const struct nk_command_line *)cmd;
                     color = nk_color_to_quickdraw_bw_color(l->color);
@@ -437,10 +432,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_RECT: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_RECT");
-                    }
+                    #endif
 
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-102.html#MARKER-9-372
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-103.html#HEADING103-0
@@ -463,10 +458,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_RECT_FILLED: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_RECT_FILLED");
-                    }
+                    #endif
 
                     const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled *)cmd;
 
@@ -492,10 +487,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_CIRCLE: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_CIRCLE");
-                    }
+                    #endif
 
                     const struct nk_command_circle *c = (const struct nk_command_circle *)cmd;
                     color = nk_color_to_quickdraw_bw_color(c->color);
@@ -515,10 +510,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_CIRCLE_FILLED: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_CIRCLE_FILLED");
-                    }
+                    #endif
 
                     const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
                     
@@ -543,10 +538,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_TRIANGLE: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_TRIANGLE");
-                    }
+                    #endif
 
                     const struct nk_command_triangle *t = (const struct nk_command_triangle*)cmd;
                     color = nk_color_to_quickdraw_bw_color(t->color);
@@ -564,10 +559,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_TRIANGLE_FILLED: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_TRIANGLE_FILLED");
-                    }
+                    #endif
 
                     const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled *)cmd;
                     Pattern colorPattern = nk_color_to_quickdraw_color(&t->color);
@@ -591,10 +586,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_POLYGON: {
                 
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_POLYGON");
-                    }
+                    #endif
 
                     const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
 
@@ -623,10 +618,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_POLYGON_FILLED: {
                     
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_POLYGON_FILLED");
-                    }
+                    #endif
 
                     const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
 
@@ -663,10 +658,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                 break;
             case NK_COMMAND_POLYLINE: {
 
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_POLYLINE");
-                    }
+                    #endif
 
                     // this is similar to polygons except the polygon does not get closed to the 0th point
                     // check out the slight difference in the for loop
@@ -693,34 +688,29 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                     const struct nk_command_text *t = (const struct nk_command_text*)cmd;
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_TEXT");
                         char log[255];
                         sprintf(log, "%f: %s, %d", (float)t->height, &t->string, (int)t->length);
                         writeSerialPort(boutRefNum, log);
-                    }
-
-                    // adjust font size down a bit from what nuklear specifies
-                    // smaller fonts are pretty alright on mac given the low resolution,
-                    // and nuklear wants everything in default 14pt which looks awful, whereas 12pt
-                    // looks great
-                    float fontHeight = (float)t->height - 2.0;
+                    #endif
 
                     color = nk_color_to_quickdraw_bw_color(t->foreground);
                     ForeColor(color);
-                    MoveTo((float)t->x, (float)t->y + fontHeight);
-                    TextSize(fontHeight); 
+                    MoveTo((int)t->x, (int)t->y + (int)t->height);
+                    TextSize((float)t->height);
+
                     DrawText((const char*)t->string, 0, (int)t->length);
                 }
 
                 break;
             case NK_COMMAND_CURVE: {
                     
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_CURVE");
-                    }
+                    #endif
 
                     const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
                     color = nk_color_to_quickdraw_bw_color(q->color);
@@ -736,10 +726,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                 break;
             case NK_COMMAND_ARC: {
 
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_ARC");
-                    }
+                    #endif
 
                     const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
                     color = nk_color_to_quickdraw_bw_color(a->color);
@@ -761,10 +751,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                 break;
             case NK_COMMAND_IMAGE: {
 
-                    if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_IMAGE");  
-                    }
+                    #endif
 
                     const struct nk_command_image *i = (const struct nk_command_image *)cmd;
                     // al_draw_bitmap_region(i->img.handle.ptr, 0, 0, i->w, i->h, i->x, i->y, 0); // TODO: look up and convert al_draw_bitmap_region
@@ -797,10 +787,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
             case NK_COMMAND_ARC_FILLED:
             default:
             
-                if (NK_QUICKDRAW_GRAPHICS_DEBUGGING) {
+                #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                     writeSerialPort(boutRefNum, "NK_COMMAND_RECT_MULTI_COLOR/NK_COMMAND_ARC_FILLED/default");
-                }
+                #endif
                 break;
         }
     }
@@ -838,10 +828,10 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
 
                     case mouseMovedMessage: {
 
-                        if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+                        #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
                             
                             writeSerialPort(boutRefNum, "mouseMovedMessage");
-                        }
+                        #endif
 
 
                         // event->where should have coordinates??? or is it just a pointer to what the mouse is over?
@@ -857,15 +847,16 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
             break;
         
         case mouseUp: 
-            if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+            #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
 
                 writeSerialPort(boutRefNum, "mouseUp!!!");
-            }
+            #endif
         case mouseDown: {
-            if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+            #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
 
                 writeSerialPort(boutRefNum, "mouseUp/Down");
-            }
+            #endif
             
             short part = FindWindow(event->where, &window);
 
@@ -873,10 +864,10 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
                 case inContent: {
                     // event->where should have coordinates??? or is it just a pointer to what the mouse is over?
                     // TODO need to figure this out
-                    if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "mouseUp/Down IN DEFAULT ZONE!!!!");
-                    }
+                    #endif
 
                     // this converts the offset of the window to the actual location of the mouse within the window
                     Point tempPoint;
@@ -885,23 +876,25 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
                     
                     if (!event->where.h) {
                         
-                        if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+                        #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
 
                             writeSerialPort(boutRefNum, "no event location for mouse!!!!");
-                        }
+                        #endif
                         return 1;
                     }
                     int x = tempPoint.h;
                     int y = tempPoint.v;
 
-                    if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+                    #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
 
-                        char *logx;
-                        sprintf(logx, "xxxx h: %d,  v: %d", x, y);
+                        char logx[255];
+                        sprintf(logx, "mouse location at time of click h: %d,  v: %d", x, y);
                         writeSerialPort(boutRefNum, logx);
-                    }
+                    #endif
 
-                    nk_input_motion(nuklear_context, x, y); // TODO we wouldnt need to do this if motion capturing was working right
+                    // nk_input_motion(nuklear_context, x, y); // you can enable this if you don't want to use motion tracking
+                    // in the Mac event loop handler as in the nuklear quickdraw sample, and this will allow mouse clicks to
+                    // work properly, but will not allow hover states to work
                     nk_input_button(nuklear_context, NK_BUTTON_LEFT, x, y, event->what == mouseDown);
                 }
                 break;
@@ -911,17 +904,25 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
             break;
         case keyDown:
 		case autoKey: {/* check for menukey equivalents */
-                if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+
+                char charKey = event->message & charCodeMask;
+                int key = (int)charKey;
+
+
+                #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
 
                     writeSerialPort(boutRefNum, "keyDown/autoKey");
-                }
 
-                char key = event->message & charCodeMask;
-                const Boolean keyDown = event->what == keyDown;
+                    char logy[255];
+                    sprintf(logy, "key pressed: key: '%c', 02x: '%02X', return: '%02X', %d == %d ??", key, key, returnKey, (int)(key), (int)(returnKey));
+                    writeSerialPort(boutRefNum, logy);
+                #endif
+
+                const Boolean isKeyDown = event->what == keyDown;
 
                 if (event->modifiers & cmdKey) {/* Command key down */
 
-                    if (keyDown) {
+                    if (isKeyDown) {
 
                         // AdjustMenus();						/* enable/disable/check menu items properly */
                         // DoMenuCommand(MenuKey(key));
@@ -945,61 +946,69 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
                     } 
                 } else if (key == eitherShiftKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_SHIFT, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_SHIFT, isKeyDown);
                 } else if (key == deleteKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_DEL, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_DEL, isKeyDown);
                 } else if (key == enterKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_ENTER, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_ENTER, isKeyDown);
+                } else if (key == returnKey) {
+                    
+                    nk_input_key(nuklear_context, NK_KEY_ENTER, isKeyDown);
                 } else if (key == tabKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_TAB, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_TAB, isKeyDown);
                 } else if (key == leftArrowKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_LEFT, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_LEFT, isKeyDown);
                 } else if (key == rightArrowKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_RIGHT, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_RIGHT, isKeyDown);
                 } else if (key == upArrowKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_UP, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_UP, isKeyDown);
                 } else if (key == downArrowKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_DOWN, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_DOWN, isKeyDown);
                 } else if (key == backspaceKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_BACKSPACE, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_BACKSPACE, isKeyDown);
                 } else if (key == escapeKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_TEXT_RESET_MODE, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_TEXT_RESET_MODE, isKeyDown);
                 } else if (key == pageUpKey) {
                  
-                    nk_input_key(nuklear_context, NK_KEY_SCROLL_UP, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_SCROLL_UP, isKeyDown);
                 } else if (key == pageDownKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_SCROLL_DOWN, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_SCROLL_DOWN, isKeyDown);
                 } else if (key == homeKey) {
 
-                    nk_input_key(nuklear_context, NK_KEY_TEXT_START, keyDown);
-                    nk_input_key(nuklear_context, NK_KEY_SCROLL_START, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_TEXT_START, isKeyDown);
+                    nk_input_key(nuklear_context, NK_KEY_SCROLL_START, isKeyDown);
                 } else if (key == endKey) {
 
-                    nk_input_key(nuklear_context, NK_KEY_TEXT_END, keyDown);
-                    nk_input_key(nuklear_context, NK_KEY_SCROLL_END, keyDown);
+                    nk_input_key(nuklear_context, NK_KEY_TEXT_END, isKeyDown);
+                    nk_input_key(nuklear_context, NK_KEY_SCROLL_END, isKeyDown);
                 } else {
+
+                    #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
+
+                        writeSerialPort(boutRefNum, "default keydown/autokey event");
+                    #endif
                     
-                    nk_input_unicode(nuklear_context, key);
+                    nk_input_unicode(nuklear_context, charKey);
                 }
 
                 return 1;
             }
 			break;
         default: {
-                if (NK_QUICKDRAW_EVENTS_DEBUGGING) {
+                #ifdef NK_QUICKDRAW_EVENTS_DEBUGGING
 
                     writeSerialPort(boutRefNum, "default unhandled event");
-                }
+                #endif
             
                 return 1; 
             }
@@ -1035,8 +1044,12 @@ NK_API struct nk_context* nk_quickdraw_init(unsigned int width, unsigned int hei
     NewShockBitmap(&gMainOffScreen, width, height);
     NkQuickDrawFont *quickdrawfont = nk_quickdraw_font_create_from_file();
     struct nk_user_font *font = &quickdrawfont->nk;
+
+    last = calloc(1, 64 * 1024);
+    buf = calloc(1, 64 * 1024);
+    nk_init_fixed(&quickdraw.nuklear_context, buf, 64 * 1024, font);
+    
     // nk_init_default(&quickdraw.nuklear_context, font);
-    nk_init_default(&quickdraw.nuklear_context, font);
     nk_style_push_font(&quickdraw.nuklear_context, font);
 
     // this is pascal code but i think we would need to do something like this if we want this function 
@@ -1108,8 +1121,6 @@ NK_API void nk_quickdraw_shutdown(void) {
     nk_free(&quickdraw.nuklear_context);
     memset(&quickdraw, 0, sizeof(quickdraw));
 }
-
-#endif /* NK_QUICKDRAW_IMPLEMENTATION */
         
 void aFailed(char *file, int line) {
     
