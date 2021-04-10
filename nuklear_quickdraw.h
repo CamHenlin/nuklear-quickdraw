@@ -269,8 +269,9 @@ static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, co
         return 0;
     }
 
+    // opening the port is needed to get the proper width of the text, otherwise it will be wrong for some reason
     OpenPort(&gMainOffScreen.BWPort);
-    SetPort(&gMainOffScreen.BWPort);
+
     TextSize(height);
 
     return 1.0 * TextWidth(text, 0, len);
@@ -292,70 +293,17 @@ NK_API NkQuickDrawFont* nk_quickdraw_font_create_from_file() {
     return font;
 }
 
-static int nk_color_to_quickdraw_bw_color(struct nk_color color) {
-
-    // TODO: since we are operating under a b&w display - we need to convert these colors to black and white
-    // look up a simple algorithm for taking RGBA values and making the call on black or white and try it out here
-    // as a future upgrade, we could support color quickdraw
-    // using an algorithm from https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
-    // if (red*0.299 + green*0.587 + blue*0.114) > 186 use #000000 else use #ffffff
-    // return al_map_rgba((unsigned char)color.r, (unsigned char)color.g, (unsigned char)color.b, (unsigned char)color.a);
-   
-    float magicColorNumber = color.r * 0.299 + color.g * 0.587 + color.b * 0.114;
-   
-    #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
-
-       char stringMagicColorNumber[255];
-       sprintf(stringMagicColorNumber, "stringMagicColorNumber: %f", magicColorNumber);
-       writeSerialPort(boutRefNum, stringMagicColorNumber);
-    #endif
-   
-   if (magicColorNumber > 37) {
-       
-       return blackColor;
-   }
-   
-   return whiteColor;
-}
-
-// i split this in to a 2nd routine because we can use the various shades of gray when filling rectangles and whatnot
-static Pattern nk_color_to_quickdraw_color(const struct nk_color *color) {
-
-    // as a future upgrade, we could support color quickdraw
-    // using an algorithm from https://stackoverflow.com/questions/3942878/how-to-decide-font-color-in-white-or-black-depending-on-background-color
-    // if (red*0.299 + green*0.587 + blue*0.114) > 186 use #000000 else use #ffffff
-    uint8_t red;
-    uint8_t blue;
-    uint8_t green;
-    
-    red = color->r;
-    blue = color->b;
-    green = color->g;
-    
-    float magicColorNumber = (uint8_t)red * 0.299 + (uint8_t)green * 0.587 + (uint8_t)blue * 0.114;
-
-    if (magicColorNumber > 150) {
-
-        return qd.black;
-    } else if (magicColorNumber > 100) {
-
-        return qd.dkGray;
-    } else if (magicColorNumber > 75) {
-
-        return qd.gray;
-    } else if (magicColorNumber > 49) {
-
-        return qd.ltGray;
-    }
-
-    return qd.white;
-}
-
 NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
     void *cmds = nk_buffer_memory(&ctx->memory);
 
+    // do not render if the buffer did not change from the previous rendering run
     if (!memcmp(cmds, last, ctx->memory.allocated)) {
+
+        #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
+
+            writeSerialPort(boutRefNum, "NK_COMMAND_NOP");
+        #endif
 
         return;
     }
@@ -385,7 +333,6 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                 break;
             case NK_COMMAND_SCISSOR: {
-                
                     
                     #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
@@ -393,20 +340,20 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     #endif
 
                     const struct nk_command_scissor *s =(const struct nk_command_scissor*)cmd;
-                    // al_set_clipping_rectangle((int)s->x, (int)s->y, (int)s->w, (int)s->h); // TODO: https://www.allegro.cc/manual/5/al_set_clipping_rectangle
-                    // this essentially just sets the region of the screen that we are going to write to
-                    // initially, i thought that this would be SetClip, but now believe this should be ClipRect, see:
-                    // Inside Macintosh: Imaging with Quickdraw pages 2-48 and 2-49 for more info
-                    // additionally, see page 2-61 for a data structure example for the rectangle OR 
-                    // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-60.html
-                    // for usage example
-                   Rect quickDrawRectangle;
-                   quickDrawRectangle.top = (int)s->y;
-                   quickDrawRectangle.left = (int)s->x;
-                   quickDrawRectangle.bottom = (int)s->y + (int)s->h;
-                   quickDrawRectangle.right = (int)s->x + (int)s->w;
+                   //  // al_set_clipping_rectangle((int)s->x, (int)s->y, (int)s->w, (int)s->h); // TODO: https://www.allegro.cc/manual/5/al_set_clipping_rectangle
+                   //  // this essentially just sets the region of the screen that we are going to write to
+                   //  // initially, i thought that this would be SetClip, but now believe this should be ClipRect, see:
+                   //  // Inside Macintosh: Imaging with Quickdraw pages 2-48 and 2-49 for more info
+                   //  // additionally, see page 2-61 for a data structure example for the rectangle OR 
+                   //  // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-60.html
+                   //  // for usage example
+                   // Rect quickDrawRectangle;
+                   // quickDrawRectangle.top = (int)s->y;
+                   // quickDrawRectangle.left = (int)s->x;
+                   // quickDrawRectangle.bottom = (int)s->y + (int)s->h;
+                   // quickDrawRectangle.right = (int)s->x + (int)s->w;
                    
-                   ClipRect(&quickDrawRectangle);
+                   // ClipRect(&quickDrawRectangle);
                 }
 
                 break;
@@ -419,7 +366,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     #endif
 
                     const struct nk_command_line *l = (const struct nk_command_line *)cmd;
-                    color = nk_color_to_quickdraw_bw_color(l->color);
+                    color = blackColor;
                     // great reference: http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-60.html
                     // al_draw_line((float)l->begin.x, (float)l->begin.y, (float)l->end.x, (float)l->end.y, color, (float)l->line_thickness); // TODO: look up and convert al_draw_line
                     ForeColor(color);
@@ -440,7 +387,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-102.html#MARKER-9-372
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-103.html#HEADING103-0
                     const struct nk_command_rect *r = (const struct nk_command_rect *)cmd;
-                    color = nk_color_to_quickdraw_bw_color(r->color);
+                    color = blackColor;
                     
                     ForeColor(color);
                     PenSize((float)r->line_thickness, (float)r->line_thickness);
@@ -457,7 +404,6 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                 break;
             case NK_COMMAND_RECT_FILLED: {
                 
-                    
                     #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_RECT_FILLED");
@@ -465,10 +411,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                     const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled *)cmd;
 
-                    color = nk_color_to_quickdraw_bw_color(r->color);
+                    color = blackColor;
                     
                     ForeColor(color);
-                    Pattern colorPattern = nk_color_to_quickdraw_color(&r->color);
+                    Pattern colorPattern = qd.white; //nk_color_to_quickdraw_color(&r->color);
 
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
                     PenSize(1.0, 1.0); // no member line thickness on this struct so assume we want a thin line
@@ -486,14 +432,13 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                 break;
             case NK_COMMAND_CIRCLE: {
                 
-                    
                     #ifdef NK_QUICKDRAW_GRAPHICS_DEBUGGING
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_CIRCLE");
                     #endif
 
                     const struct nk_command_circle *c = (const struct nk_command_circle *)cmd;
-                    color = nk_color_to_quickdraw_bw_color(c->color);
+                    color = blackColor;
                     
                     ForeColor(color);  
                     
@@ -517,10 +462,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                     const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
                     
-                    color = nk_color_to_quickdraw_bw_color(c->color);
+                    color = blackColor;
                     
                     ForeColor(color);
-                    Pattern colorPattern = nk_color_to_quickdraw_color(&c->color);
+                    Pattern colorPattern = qd.white; //nk_color_to_quickdraw_color(&c->color);
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
                     PenSize(1.0, 1.0);
                     Rect quickDrawRectangle;
@@ -544,7 +489,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     #endif
 
                     const struct nk_command_triangle *t = (const struct nk_command_triangle*)cmd;
-                    color = nk_color_to_quickdraw_bw_color(t->color);
+                    color = blackColor;
                     
                     ForeColor(color);
                     PenSize((float)t->line_thickness, (float)t->line_thickness);
@@ -565,8 +510,8 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     #endif
 
                     const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled *)cmd;
-                    Pattern colorPattern = nk_color_to_quickdraw_color(&t->color);
-                    color = nk_color_to_quickdraw_bw_color(t->color);
+                    Pattern colorPattern = qd.white; //nk_color_to_quickdraw_color(&t->color);
+                    color = blackColor;
                     PenSize(1.0, 1.0);
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48
                     ForeColor(color);
@@ -593,7 +538,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                     const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
 
-                    color = nk_color_to_quickdraw_bw_color(p->color);
+                    color = blackColor;
 
                     int i;
 
@@ -625,8 +570,8 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                     const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
 
-                    Pattern colorPattern = nk_color_to_quickdraw_color(&p->color);
-                    color = nk_color_to_quickdraw_bw_color(p->color);
+                    Pattern colorPattern = qd.white; //nk_color_to_quickdraw_color(&p->color);
+                    color = blackColor;
                     // BackPat(&colorPattern); // inside macintosh: imaging with quickdraw 3-48 -- but might actually need PenPat -- look into this
                     ForeColor(color);
 
@@ -667,7 +612,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     // check out the slight difference in the for loop
                     const struct nk_command_polygon *p = (const struct nk_command_polygon*)cmd;
 
-                    color = nk_color_to_quickdraw_bw_color(p->color);
+                    color = blackColor;
                     ForeColor(color);
 
                     int i;
@@ -696,7 +641,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                         writeSerialPort(boutRefNum, log);
                     #endif
 
-                    color = nk_color_to_quickdraw_bw_color(t->foreground);
+                    color = blackColor;
                     ForeColor(color);
                     MoveTo((int)t->x, (int)t->y + (int)t->height);
                     TextSize((float)t->height);
@@ -713,7 +658,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     #endif
 
                     const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
-                    color = nk_color_to_quickdraw_bw_color(q->color);
+                    color = blackColor;
                     ForeColor(color);
                     Point p1 = { (float)q->begin.x, (float)q->begin.y};
                     Point p2 = { (float)q->ctrl[0].x, (float)q->ctrl[0].y};
@@ -732,7 +677,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     #endif
 
                     const struct nk_command_arc *a = (const struct nk_command_arc *)cmd;
-                    color = nk_color_to_quickdraw_bw_color(a->color);
+                    color = blackColor;
                     ForeColor(color);
                     
                     Rect arcBoundingBoxRectangle;
