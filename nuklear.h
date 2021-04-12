@@ -132,7 +132,7 @@
 /// Define                          | Description
 /// --------------------------------|---------------------------------------
 /// NK_BUFFER_DEFAULT_INITIAL_SIZE  | Initial buffer size allocated by all buffers while using the default allocator functions included by defining NK_INCLUDE_DEFAULT_ALLOCATOR. If you don't want to allocate the default 4k memory then redefine it.
-/// NK_MAX_NUMBER_BUFFER            | Maximum buffer size for the conversion buffer between float and string Under normal circumstances this should be more than sufficient.
+/// NK_MAX_NUMBER_BUFFER            | Maximum buffer size for the conversion buffer between int and string Under normal circumstances this should be more than sufficient.
 /// NK_INPUT_MAX                    | Defines the max number of bytes which can be added as text input in one frame. Under normal circumstances this should be more than sufficient.
 ///
 /// !!! WARNING
@@ -179,7 +179,7 @@
 /// // init gui state
 /// enum {EASY, HARD};
 /// static int op = EASY;
-/// static float value = 0.6f;
+/// static int value = 0.6f;
 /// static int i =  20;
 /// struct nk_context ctx;
 ///
@@ -203,7 +203,7 @@
 ///         nk_layout_row_push(&ctx, 50);
 ///         nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
 ///         nk_layout_row_push(&ctx, 110);
-///         nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
+///         nk_slider_int(&ctx, 0, &value, 1.0f, 0.1f);
 ///     }
 ///     nk_layout_row_end(&ctx);
 /// }
@@ -473,10 +473,10 @@ struct nk_style_window;
 
 enum {nk_false, nk_true};
 struct nk_color {nk_byte r,g,b,a;};
-struct nk_colorf {float r,g,b,a;};
-struct nk_vec2 {float x,y;};
+struct nk_colorf {int r,g,b,a;};
+struct nk_vec2 {int x,y;};
 struct nk_vec2i {short x, y;};
-struct nk_rect {float x,y,w,h;};
+struct nk_rect {int x,y,w,h;};
 struct nk_recti {short x,y,w,h;};
 typedef char nk_glyph[NK_UTF_SIZE];
 typedef union {void *ptr; int id;} nk_handle;
@@ -1106,14 +1106,14 @@ NK_API void nk_input_end(struct nk_context*);
 /// // fill configuration
 /// struct your_vertex
 /// {
-///     float pos[2]; // important to keep it to 2 floats
-///     float uv[2];
+///     int pos[2]; // important to keep it to 2 ints
+///     int uv[2];
 ///     unsigned char col[4];
 /// };
 /// struct nk_convert_config cfg = {};
 /// static const struct nk_draw_vertex_layout_element vertex_layout[] = {
-///     {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct your_vertex, pos)},
-///     {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct your_vertex, uv)},
+///     {NK_VERTEX_POSITION, NK_FORMAT_int, NK_OFFSETOF(struct your_vertex, pos)},
+///     {NK_VERTEX_TEXCOORD, NK_FORMAT_int, NK_OFFSETOF(struct your_vertex, uv)},
 ///     {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct your_vertex, col)},
 ///     {NK_VERTEX_LAYOUT_END}
 /// };
@@ -1170,7 +1170,7 @@ struct nk_draw_null_texture {
     struct nk_vec2 uv; /* coordinates to a white pixel in the texture  */
 };
 struct nk_convert_config {
-    float global_alpha; /* global alpha value */
+    int global_alpha; /* global alpha value */
     enum nk_anti_aliasing line_AA; /* line anti-aliasing flag can be turned off if you are tight on memory */
     enum nk_anti_aliasing shape_AA; /* shape anti-aliasing flag can be turned off if you are tight on memory */
     unsigned circle_segment_count; /* number of segments used for circles: default to 22 */
@@ -1600,7 +1600,7 @@ NK_API struct nk_vec2 nk_window_get_size(const struct nk_context*);
 /// !!! WARNING
 ///     Only call this function between calls `nk_begin_xxx` and `nk_end`
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// float nk_window_get_width(const struct nk_context *ctx);
+/// int nk_window_get_width(const struct nk_context *ctx);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -1609,14 +1609,14 @@ NK_API struct nk_vec2 nk_window_get_size(const struct nk_context*);
 ///
 /// Returns the current window width
 */
-NK_API float nk_window_get_width(const struct nk_context*);
+NK_API int nk_window_get_width(const struct nk_context*);
 /*/// #### nk_window_get_height
 /// Returns the height of the currently processed window.
 ///
 /// !!! WARNING
 ///     Only call this function between calls `nk_begin_xxx` and `nk_end`
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// float nk_window_get_height(const struct nk_context *ctx);
+/// int nk_window_get_height(const struct nk_context *ctx);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -1625,7 +1625,7 @@ NK_API float nk_window_get_width(const struct nk_context*);
 ///
 /// Returns the current window height
 */
-NK_API float nk_window_get_height(const struct nk_context*);
+NK_API int nk_window_get_height(const struct nk_context*);
 /*/// #### nk_window_get_panel
 /// Returns the underlying panel which contains all processing state of the current window.
 ///
@@ -2152,7 +2152,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 ///     if (nk_begin_xxx(...) {
 ///         // two rows with height: 30 composed of two widgets with width 60 and 40
-///         const float size[] = {60,40};
+///         const int size[] = {60,40};
 ///         nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
 ///         nk_widget(...);
 ///         nk_widget(...);
@@ -2160,7 +2160,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///         nk_widget(...);
 ///         //
 ///         // two rows with height: 30 composed of two widgets with window ratio 0.25 and 0.75
-///         const float ratio[] = {0.25, 0.75};
+///         const int ratio[] = {0.25, 0.75};
 ///         nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratio);
 ///         nk_widget(...);
 ///         nk_widget(...);
@@ -2168,7 +2168,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///         nk_widget(...);
 ///         //
 ///         // two rows with auto generated height composed of two widgets with window ratio 0.25 and 0.75
-///         const float ratio[] = {0.25, 0.75};
+///         const int ratio[] = {0.25, 0.75};
 ///         nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratio);
 ///         nk_widget(...);
 ///         nk_widget(...);
@@ -2282,7 +2282,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 ///     as well as padding. No internal padding is added.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_set_min_row_height(struct nk_context*, float height);
+/// void nk_layout_set_min_row_height(struct nk_context*, int height);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2290,7 +2290,7 @@ NK_API void nk_window_show_if(struct nk_context*, const char *name, enum nk_show
 /// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_begin_xxx`
 /// __height__  | New minimum row height to be used for auto generating the row height
 */
-NK_API void nk_layout_set_min_row_height(struct nk_context*, float height);
+NK_API void nk_layout_set_min_row_height(struct nk_context*, int height);
 /*/// #### nk_layout_reset_min_row_height
 /// Reset the currently used minimum row height back to `font_height + text_padding + padding`
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -2318,7 +2318,7 @@ NK_API struct nk_rect nk_layout_widget_bounds(struct nk_context*);
 /*/// #### nk_layout_ratio_from_pixel
 /// Utility functions to calculate window ratio from pixel size
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// float nk_layout_ratio_from_pixel(struct nk_context*, float pixel_width);
+/// int nk_layout_ratio_from_pixel(struct nk_context*, int pixel_width);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2328,13 +2328,13 @@ NK_API struct nk_rect nk_layout_widget_bounds(struct nk_context*);
 ///
 /// Returns `nk_rect` with both position and size of the next row
 */
-NK_API float nk_layout_ratio_from_pixel(struct nk_context*, float pixel_width);
+NK_API int nk_layout_ratio_from_pixel(struct nk_context*, int pixel_width);
 /*/// #### nk_layout_row_dynamic
 /// Sets current row layout to share horizontal space
 /// between @cols number of widgets evenly. Once called all subsequent widget
 /// calls greater than @cols will allocate a new row with same layout.
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row_dynamic(struct nk_context *ctx, float height, int cols);
+/// void nk_layout_row_dynamic(struct nk_context *ctx, int height, int cols);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2343,13 +2343,13 @@ NK_API float nk_layout_ratio_from_pixel(struct nk_context*, float pixel_width);
 /// __height__  | Holds height of each widget in row or zero for auto layouting
 /// __columns__ | Number of widget inside row
 */
-NK_API void nk_layout_row_dynamic(struct nk_context *ctx, float height, int cols);
+NK_API void nk_layout_row_dynamic(struct nk_context *ctx, int height, int cols);
 /*/// #### nk_layout_row_static
 /// Sets current row layout to fill @cols number of widgets
 /// in row with same @item_width horizontal size. Once called all subsequent widget
 /// calls greater than @cols will allocate a new row with same layout.
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row_static(struct nk_context *ctx, float height, int item_width, int cols);
+/// void nk_layout_row_static(struct nk_context *ctx, int height, int item_width, int cols);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2359,11 +2359,11 @@ NK_API void nk_layout_row_dynamic(struct nk_context *ctx, float height, int cols
 /// __width__   | Holds pixel width of each widget in the row
 /// __columns__ | Number of widget inside row
 */
-NK_API void nk_layout_row_static(struct nk_context *ctx, float height, int item_width, int cols);
+NK_API void nk_layout_row_static(struct nk_context *ctx, int height, int item_width, int cols);
 /*/// #### nk_layout_row_begin
 /// Starts a new dynamic or fixed row with given height and columns.
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row_begin(struct nk_context *ctx, enum nk_layout_format fmt, float row_height, int cols);
+/// void nk_layout_row_begin(struct nk_context *ctx, enum nk_layout_format fmt, int row_height, int cols);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2373,11 +2373,11 @@ NK_API void nk_layout_row_static(struct nk_context *ctx, float height, int item_
 /// __height__  | holds height of each widget in row or zero for auto layouting
 /// __columns__ | Number of widget inside row
 */
-NK_API void nk_layout_row_begin(struct nk_context *ctx, enum nk_layout_format fmt, float row_height, int cols);
+NK_API void nk_layout_row_begin(struct nk_context *ctx, enum nk_layout_format fmt, int row_height, int cols);
 /*/// #### nk_layout_row_push
 /// Specifies either window ratio or width of a single column
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row_push(struct nk_context*, float value);
+/// void nk_layout_row_push(struct nk_context*, int value);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2385,7 +2385,7 @@ NK_API void nk_layout_row_begin(struct nk_context *ctx, enum nk_layout_format fm
 /// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_begin_xxx`
 /// __value__   | either a window ratio or fixed width depending on @fmt in previous `nk_layout_row_begin` call
 */
-NK_API void nk_layout_row_push(struct nk_context*, float value);
+NK_API void nk_layout_row_push(struct nk_context*, int value);
 /*/// #### nk_layout_row_end
 /// Finished previously started row
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -2400,7 +2400,7 @@ NK_API void nk_layout_row_end(struct nk_context*);
 /*/// #### nk_layout_row
 /// Specifies row columns in array as either window ratio or size
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row(struct nk_context*, enum nk_layout_format, float height, int cols, const float *ratio);
+/// void nk_layout_row(struct nk_context*, enum nk_layout_format, int height, int cols, const int *ratio);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2410,11 +2410,11 @@ NK_API void nk_layout_row_end(struct nk_context*);
 /// __height__  | Holds height of each widget in row or zero for auto layouting
 /// __columns__ | Number of widget inside row
 */
-NK_API void nk_layout_row(struct nk_context*, enum nk_layout_format, float height, int cols, const float *ratio);
+NK_API void nk_layout_row(struct nk_context*, enum nk_layout_format, int height, int cols, const int *ratio);
 /*/// #### nk_layout_row_template_begin
 /// Begins the row template declaration
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row_template_begin(struct nk_context*, float row_height);
+/// void nk_layout_row_template_begin(struct nk_context*, int row_height);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2422,7 +2422,7 @@ NK_API void nk_layout_row(struct nk_context*, enum nk_layout_format, float heigh
 /// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_begin_xxx`
 /// __height__  | Holds height of each widget in row or zero for auto layouting
 */
-NK_API void nk_layout_row_template_begin(struct nk_context*, float row_height);
+NK_API void nk_layout_row_template_begin(struct nk_context*, int row_height);
 /*/// #### nk_layout_row_template_push_dynamic
 /// Adds a dynamic column that dynamically grows and can go to zero if not enough space
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -2438,7 +2438,7 @@ NK_API void nk_layout_row_template_push_dynamic(struct nk_context*);
 /*/// #### nk_layout_row_template_push_variable
 /// Adds a variable column that dynamically grows but does not shrink below specified pixel width
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row_template_push_variable(struct nk_context*, float min_width);
+/// void nk_layout_row_template_push_variable(struct nk_context*, int min_width);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2446,11 +2446,11 @@ NK_API void nk_layout_row_template_push_dynamic(struct nk_context*);
 /// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_begin_xxx`
 /// __width__   | Holds the minimum pixel width the next column must always be
 */
-NK_API void nk_layout_row_template_push_variable(struct nk_context*, float min_width);
+NK_API void nk_layout_row_template_push_variable(struct nk_context*, int min_width);
 /*/// #### nk_layout_row_template_push_static
 /// Adds a static column that does not grow and will always have the same size
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_row_template_push_static(struct nk_context*, float width);
+/// void nk_layout_row_template_push_static(struct nk_context*, int width);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2458,7 +2458,7 @@ NK_API void nk_layout_row_template_push_variable(struct nk_context*, float min_w
 /// __ctx__     | Must point to an previously initialized `nk_context` struct after call `nk_begin_xxx`
 /// __width__   | Holds the absolute pixel width value the next column must be
 */
-NK_API void nk_layout_row_template_push_static(struct nk_context*, float width);
+NK_API void nk_layout_row_template_push_static(struct nk_context*, int width);
 /*/// #### nk_layout_row_template_end
 /// Marks the end of the row template
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -2473,7 +2473,7 @@ NK_API void nk_layout_row_template_end(struct nk_context*);
 /*/// #### nk_layout_space_begin
 /// Begins a new layouting space that allows to specify each widgets position and size.
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, float height, int widget_count);
+/// void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, int height, int widget_count);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter   | Description
@@ -2483,7 +2483,7 @@ NK_API void nk_layout_row_template_end(struct nk_context*);
 /// __height__  | Holds height of each widget in row or zero for auto layouting
 /// __columns__ | Number of widgets inside row
 */
-NK_API void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, float height, int widget_count);
+NK_API void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, int height, int widget_count);
 /*/// #### nk_layout_space_push
 /// Pushes position and size of the next widget in own coordinate space either as pixel or ratio
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -3076,8 +3076,8 @@ NK_API enum nk_widget_layout_states nk_widget_fitting(struct nk_rect*, struct nk
 NK_API struct nk_rect nk_widget_bounds(struct nk_context*);
 NK_API struct nk_vec2 nk_widget_position(struct nk_context*);
 NK_API struct nk_vec2 nk_widget_size(struct nk_context*);
-NK_API float nk_widget_width(struct nk_context*);
-NK_API float nk_widget_height(struct nk_context*);
+NK_API int nk_widget_width(struct nk_context*);
+NK_API int nk_widget_height(struct nk_context*);
 NK_API nk_bool nk_widget_is_hovered(struct nk_context*);
 NK_API nk_bool nk_widget_is_mouse_clicked(struct nk_context*, enum nk_buttons);
 NK_API nk_bool nk_widget_has_mouse_click_down(struct nk_context*, enum nk_buttons, nk_bool down);
@@ -3122,9 +3122,9 @@ NK_API void nk_labelfv_colored_wrap(struct nk_context*, struct nk_color, NK_PRIN
 NK_API void nk_value_bool(struct nk_context*, const char *prefix, int);
 NK_API void nk_value_int(struct nk_context*, const char *prefix, int);
 NK_API void nk_value_uint(struct nk_context*, const char *prefix, unsigned int);
-NK_API void nk_value_float(struct nk_context*, const char *prefix, float);
+// NK_API void nk_value_int(struct nk_context*, const char *prefix, int);
 NK_API void nk_value_color_byte(struct nk_context*, const char *prefix, struct nk_color);
-NK_API void nk_value_color_float(struct nk_context*, const char *prefix, struct nk_color);
+NK_API void nk_value_color_int(struct nk_context*, const char *prefix, struct nk_color);
 NK_API void nk_value_color_hex(struct nk_context*, const char *prefix, struct nk_color);
 #endif
 /* =============================================================================
@@ -3198,10 +3198,10 @@ NK_API nk_bool nk_select_symbol_text(struct nk_context*,enum nk_symbol_type, con
  *                                  SLIDER
  *
  * ============================================================================= */
-NK_API float nk_slide_float(struct nk_context*, float min, float val, float max, float step);
 NK_API int nk_slide_int(struct nk_context*, int min, int val, int max, int step);
-NK_API nk_bool nk_slider_float(struct nk_context*, float min, float *val, float max, float step);
+// NK_API int nk_slide_int(struct nk_context*, int min, int val, int max, int step);
 NK_API nk_bool nk_slider_int(struct nk_context*, int min, int *val, int max, int step);
+// NK_API nk_bool nk_slider_int(struct nk_context*, int min, int *val, int max, int step);
 /* =============================================================================
  *
  *                                  PROGRESSBAR
@@ -3286,10 +3286,10 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 /// Function            | Description
 /// --------------------|-------------------------------------------
 /// nk_property_int     | Integer property directly modifing a passed in value
-/// nk_property_float   | Float property directly modifing a passed in value
+/// nk_property_int   | int property directly modifing a passed in value
 /// nk_property_double  | Double property directly modifing a passed in value
 /// nk_propertyi        | Integer property returning the modified int value
-/// nk_propertyf        | Float property returning the modified float value
+/// nk_propertyf        | int property returning the modified int value
 /// nk_propertyd        | Double property returning the modified double value
 ///
 */
@@ -3300,7 +3300,7 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_property_int(struct nk_context *ctx, const char *name, int min, int *val, int max, int step, float inc_per_pixel);
+/// void nk_property_int(struct nk_context *ctx, const char *name, int min, int *val, int max, int step, int inc_per_pixel);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter           | Description
@@ -3313,15 +3313,15 @@ NK_API nk_bool nk_color_pick(struct nk_context*, struct nk_colorf*, enum nk_colo
 /// __step__            | Increment added and subtracted on increment and decrement button
 /// __inc_per_pixel__   | Value per pixel added or subtracted on dragging
 */
-NK_API void nk_property_int(struct nk_context*, const char *name, int min, int *val, int max, int step, float inc_per_pixel);
-/*/// #### nk_property_float
-/// Float property directly modifing a passed in value
+NK_API void nk_property_int(struct nk_context*, const char *name, int min, int *val, int max, int step, int inc_per_pixel);
+/*/// #### nk_property_int
+/// int property directly modifing a passed in value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// void nk_property_float(struct nk_context *ctx, const char *name, float min, float *val, float max, float step, float inc_per_pixel);
+/// void nk_property_int(struct nk_context *ctx, const char *name, int min, int *val, int max, int step, int inc_per_pixel);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter           | Description
@@ -3329,12 +3329,12 @@ NK_API void nk_property_int(struct nk_context*, const char *name, int min, int *
 /// __ctx__             | Must point to an previously initialized `nk_context` struct after calling a layouting function
 /// __name__            | String used both as a label as well as a unique identifier
 /// __min__             | Minimum value not allowed to be underflown
-/// __val__             | Float pointer to be modified
+/// __val__             | int pointer to be modified
 /// __max__             | Maximum value not allowed to be overflown
 /// __step__            | Increment added and subtracted on increment and decrement button
 /// __inc_per_pixel__   | Value per pixel added or subtracted on dragging
 */
-NK_API void nk_property_float(struct nk_context*, const char *name, float min, float *val, float max, float step, float inc_per_pixel);
+NK_API void nk_property_int(struct nk_context*, const char *name, int min, int *val, int max, int step, int inc_per_pixel);
 /*/// #### nk_property_double
 /// Double property directly modifing a passed in value
 /// !!! WARNING
@@ -3355,7 +3355,7 @@ NK_API void nk_property_float(struct nk_context*, const char *name, float min, f
 /// __step__            | Increment added and subtracted on increment and decrement button
 /// __inc_per_pixel__   | Value per pixel added or subtracted on dragging
 */
-NK_API void nk_property_double(struct nk_context*, const char *name, double min, double *val, double max, double step, float inc_per_pixel);
+NK_API void nk_property_double(struct nk_context*, const char *name, double min, double *val, double max, double step, int inc_per_pixel);
 /*/// #### nk_propertyi
 /// Integer property modifing a passed in value and returning the new value
 /// !!! WARNING
@@ -3363,7 +3363,7 @@ NK_API void nk_property_double(struct nk_context*, const char *name, double min,
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// int nk_propertyi(struct nk_context *ctx, const char *name, int min, int val, int max, int step, float inc_per_pixel);
+/// int nk_propertyi(struct nk_context *ctx, const char *name, int min, int val, int max, int step, int inc_per_pixel);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter           | Description
@@ -3378,15 +3378,15 @@ NK_API void nk_property_double(struct nk_context*, const char *name, double min,
 ///
 /// Returns the new modified integer value
 */
-NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, float inc_per_pixel);
+NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, int max, int step, int inc_per_pixel);
 /*/// #### nk_propertyf
-/// Float property modifing a passed in value and returning the new value
+/// int property modifing a passed in value and returning the new value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// float nk_propertyf(struct nk_context *ctx, const char *name, float min, float val, float max, float step, float inc_per_pixel);
+/// int nk_propertyf(struct nk_context *ctx, const char *name, int min, int val, int max, int step, int inc_per_pixel);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter           | Description
@@ -3394,22 +3394,22 @@ NK_API int nk_propertyi(struct nk_context*, const char *name, int min, int val, 
 /// __ctx__             | Must point to an previously initialized `nk_context` struct after calling a layouting function
 /// __name__            | String used both as a label as well as a unique identifier
 /// __min__             | Minimum value not allowed to be underflown
-/// __val__             | Current float value to be modified and returned
+/// __val__             | Current int value to be modified and returned
 /// __max__             | Maximum value not allowed to be overflown
 /// __step__            | Increment added and subtracted on increment and decrement button
 /// __inc_per_pixel__   | Value per pixel added or subtracted on dragging
 ///
-/// Returns the new modified float value
+/// Returns the new modified int value
 */
-NK_API float nk_propertyf(struct nk_context*, const char *name, float min, float val, float max, float step, float inc_per_pixel);
+NK_API int nk_propertyf(struct nk_context*, const char *name, int min, int val, int max, int step, int inc_per_pixel);
 /*/// #### nk_propertyd
-/// Float property modifing a passed in value and returning the new value
+/// int property modifing a passed in value and returning the new value
 /// !!! WARNING
 ///     To generate a unique property ID using the same label make sure to insert
 ///     a `#` at the beginning. It will not be shown but guarantees correct behavior.
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
-/// float nk_propertyd(struct nk_context *ctx, const char *name, double min, double val, double max, double step, double inc_per_pixel);
+/// int nk_propertyd(struct nk_context *ctx, const char *name, double min, double val, double max, double step, double inc_per_pixel);
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ///
 /// Parameter           | Description
@@ -3424,7 +3424,7 @@ NK_API float nk_propertyf(struct nk_context*, const char *name, float min, float
 ///
 /// Returns the new modified double value
 */
-NK_API double nk_propertyd(struct nk_context*, const char *name, double min, double val, double max, double step, float inc_per_pixel);
+NK_API double nk_propertyd(struct nk_context*, const char *name, double min, double val, double max, double step, int inc_per_pixel);
 /* =============================================================================
  *
  *                                  TEXT EDIT
@@ -3468,15 +3468,15 @@ NK_API void nk_edit_unfocus(struct nk_context*);
  *                                  CHART
  *
  * ============================================================================= */
-NK_API nk_bool nk_chart_begin(struct nk_context*, enum nk_chart_type, int num, float min, float max);
-NK_API nk_bool nk_chart_begin_colored(struct nk_context*, enum nk_chart_type, struct nk_color, struct nk_color active, int num, float min, float max);
-NK_API void nk_chart_add_slot(struct nk_context *ctx, const enum nk_chart_type, int count, float min_value, float max_value);
-NK_API void nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type, struct nk_color, struct nk_color active, int count, float min_value, float max_value);
-NK_API nk_flags nk_chart_push(struct nk_context*, float);
-NK_API nk_flags nk_chart_push_slot(struct nk_context*, float, int);
+NK_API nk_bool nk_chart_begin(struct nk_context*, enum nk_chart_type, int num, int min, int max);
+NK_API nk_bool nk_chart_begin_colored(struct nk_context*, enum nk_chart_type, struct nk_color, struct nk_color active, int num, int min, int max);
+NK_API void nk_chart_add_slot(struct nk_context *ctx, const enum nk_chart_type, int count, int min_value, int max_value);
+NK_API void nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type, struct nk_color, struct nk_color active, int count, int min_value, int max_value);
+NK_API nk_flags nk_chart_push(struct nk_context*, int);
+NK_API nk_flags nk_chart_push_slot(struct nk_context*, int, int);
 NK_API void nk_chart_end(struct nk_context*);
-NK_API void nk_plot(struct nk_context*, enum nk_chart_type, const float *values, int count, int offset);
-NK_API void nk_plot_function(struct nk_context*, enum nk_chart_type, void *userdata, float(*value_getter)(void* user, int index), int count, int offset);
+NK_API void nk_plot(struct nk_context*, enum nk_chart_type, const int *values, int count, int offset);
+NK_API void nk_plot_function(struct nk_context*, enum nk_chart_type, void *userdata, int(*value_getter)(void* user, int index), int count, int offset);
 /* =============================================================================
  *
  *                                  POPUP
@@ -3546,7 +3546,7 @@ NK_API void nk_tooltip(struct nk_context*, const char*);
 NK_API void nk_tooltipf(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, ...) NK_PRINTF_VARARG_FUNC(2);
 NK_API void nk_tooltipfv(struct nk_context*, NK_PRINTF_FORMAT_STRING const char*, va_list) NK_PRINTF_VALIST_FUNC(2);
 #endif
-NK_API nk_bool nk_tooltip_begin(struct nk_context*, float width);
+NK_API nk_bool nk_tooltip_begin(struct nk_context*, int width);
 NK_API void nk_tooltip_end(struct nk_context*);
 /* =============================================================================
  *
@@ -3628,14 +3628,14 @@ NK_API void nk_style_show_cursor(struct nk_context*);
 NK_API void nk_style_hide_cursor(struct nk_context*);
 
 NK_API nk_bool nk_style_push_font(struct nk_context*, const struct nk_user_font*);
-NK_API nk_bool nk_style_push_float(struct nk_context*, float*, float);
+NK_API nk_bool nk_style_push_int(struct nk_context*, int*, int);
 NK_API nk_bool nk_style_push_vec2(struct nk_context*, struct nk_vec2*, struct nk_vec2);
 NK_API nk_bool nk_style_push_style_item(struct nk_context*, struct nk_style_item*, struct nk_style_item);
 NK_API nk_bool nk_style_push_flags(struct nk_context*, nk_flags*, nk_flags);
 NK_API nk_bool nk_style_push_color(struct nk_context*, struct nk_color*, struct nk_color);
 
 NK_API nk_bool nk_style_pop_font(struct nk_context*);
-NK_API nk_bool nk_style_pop_float(struct nk_context*);
+NK_API nk_bool nk_style_pop_int(struct nk_context*);
 NK_API nk_bool nk_style_pop_vec2(struct nk_context*);
 NK_API nk_bool nk_style_pop_style_item(struct nk_context*);
 NK_API nk_bool nk_style_pop_flags(struct nk_context*);
@@ -3648,8 +3648,8 @@ NK_API nk_bool nk_style_pop_color(struct nk_context*);
 NK_API struct nk_color nk_rgb(int r, int g, int b);
 NK_API struct nk_color nk_rgb_iv(const int *rgb);
 NK_API struct nk_color nk_rgb_bv(const nk_byte* rgb);
-NK_API struct nk_color nk_rgb_f(float r, float g, float b);
-NK_API struct nk_color nk_rgb_fv(const float *rgb);
+NK_API struct nk_color nk_rgb_f(int r, int g, int b);
+NK_API struct nk_color nk_rgb_fv(const int *rgb);
 NK_API struct nk_color nk_rgb_cf(struct nk_colorf c);
 NK_API struct nk_color nk_rgb_hex(const char *rgb);
 
@@ -3657,31 +3657,31 @@ NK_API struct nk_color nk_rgba(int r, int g, int b, int a);
 NK_API struct nk_color nk_rgba_u32(nk_uint);
 NK_API struct nk_color nk_rgba_iv(const int *rgba);
 NK_API struct nk_color nk_rgba_bv(const nk_byte *rgba);
-NK_API struct nk_color nk_rgba_f(float r, float g, float b, float a);
-NK_API struct nk_color nk_rgba_fv(const float *rgba);
+NK_API struct nk_color nk_rgba_f(int r, int g, int b, int a);
+NK_API struct nk_color nk_rgba_fv(const int *rgba);
 NK_API struct nk_color nk_rgba_cf(struct nk_colorf c);
 NK_API struct nk_color nk_rgba_hex(const char *rgb);
 
-NK_API struct nk_colorf nk_hsva_colorf(float h, float s, float v, float a);
-NK_API struct nk_colorf nk_hsva_colorfv(float *c);
-NK_API void nk_colorf_hsva_f(float *out_h, float *out_s, float *out_v, float *out_a, struct nk_colorf in);
-NK_API void nk_colorf_hsva_fv(float *hsva, struct nk_colorf in);
+NK_API struct nk_colorf nk_hsva_colorf(int h, int s, int v, int a);
+NK_API struct nk_colorf nk_hsva_colorfv(int *c);
+NK_API void nk_colorf_hsva_f(int *out_h, int *out_s, int *out_v, int *out_a, struct nk_colorf in);
+NK_API void nk_colorf_hsva_fv(int *hsva, struct nk_colorf in);
 
 NK_API struct nk_color nk_hsv(int h, int s, int v);
 NK_API struct nk_color nk_hsv_iv(const int *hsv);
 NK_API struct nk_color nk_hsv_bv(const nk_byte *hsv);
-NK_API struct nk_color nk_hsv_f(float h, float s, float v);
-NK_API struct nk_color nk_hsv_fv(const float *hsv);
+NK_API struct nk_color nk_hsv_f(int h, int s, int v);
+NK_API struct nk_color nk_hsv_fv(const int *hsv);
 
 NK_API struct nk_color nk_hsva(int h, int s, int v, int a);
 NK_API struct nk_color nk_hsva_iv(const int *hsva);
 NK_API struct nk_color nk_hsva_bv(const nk_byte *hsva);
-NK_API struct nk_color nk_hsva_f(float h, float s, float v, float a);
-NK_API struct nk_color nk_hsva_fv(const float *hsva);
+NK_API struct nk_color nk_hsva_f(int h, int s, int v, int a);
+NK_API struct nk_color nk_hsva_fv(const int *hsva);
 
 /* color (conversion nuklear --> user) */
-NK_API void nk_color_f(float *r, float *g, float *b, float *a, struct nk_color);
-NK_API void nk_color_fv(float *rgba_out, struct nk_color);
+NK_API void nk_color_f(int *r, int *g, int *b, int *a, struct nk_color);
+NK_API void nk_color_fv(int *rgba_out, struct nk_color);
 NK_API struct nk_colorf nk_color_cf(struct nk_color);
 NK_API void nk_color_d(double *r, double *g, double *b, double *a, struct nk_color);
 NK_API void nk_color_dv(double *rgba_out, struct nk_color);
@@ -3694,15 +3694,15 @@ NK_API void nk_color_hsv_i(int *out_h, int *out_s, int *out_v, struct nk_color);
 NK_API void nk_color_hsv_b(nk_byte *out_h, nk_byte *out_s, nk_byte *out_v, struct nk_color);
 NK_API void nk_color_hsv_iv(int *hsv_out, struct nk_color);
 NK_API void nk_color_hsv_bv(nk_byte *hsv_out, struct nk_color);
-NK_API void nk_color_hsv_f(float *out_h, float *out_s, float *out_v, struct nk_color);
-NK_API void nk_color_hsv_fv(float *hsv_out, struct nk_color);
+NK_API void nk_color_hsv_f(int *out_h, int *out_s, int *out_v, struct nk_color);
+NK_API void nk_color_hsv_fv(int *hsv_out, struct nk_color);
 
 NK_API void nk_color_hsva_i(int *h, int *s, int *v, int *a, struct nk_color);
 NK_API void nk_color_hsva_b(nk_byte *h, nk_byte *s, nk_byte *v, nk_byte *a, struct nk_color);
 NK_API void nk_color_hsva_iv(int *hsva_out, struct nk_color);
 NK_API void nk_color_hsva_bv(nk_byte *hsva_out, struct nk_color);
-NK_API void nk_color_hsva_f(float *out_h, float *out_s, float *out_v, float *out_a, struct nk_color);
-NK_API void nk_color_hsva_fv(float *hsva_out, struct nk_color);
+NK_API void nk_color_hsva_f(int *out_h, int *out_s, int *out_v, int *out_a, struct nk_color);
+NK_API void nk_color_hsva_fv(int *hsva_out, struct nk_color);
 /* =============================================================================
  *
  *                                  IMAGE
@@ -3723,18 +3723,18 @@ NK_API struct nk_image nk_subimage_handle(nk_handle, unsigned short w, unsigned 
  *
  * ============================================================================= */
 NK_API nk_hash nk_murmur_hash(const void *key, int len, nk_hash seed);
-NK_API void nk_triangle_from_direction(struct nk_vec2 *result, struct nk_rect r, float pad_x, float pad_y, enum nk_heading);
+NK_API void nk_triangle_from_direction(struct nk_vec2 *result, struct nk_rect r, int pad_x, int pad_y, enum nk_heading);
 
-NK_API struct nk_vec2 nk_vec2(float x, float y);
+NK_API struct nk_vec2 nk_vec2(int x, int y);
 NK_API struct nk_vec2 nk_vec2i(int x, int y);
-NK_API struct nk_vec2 nk_vec2v(const float *xy);
+NK_API struct nk_vec2 nk_vec2v(const int *xy);
 NK_API struct nk_vec2 nk_vec2iv(const int *xy);
 
 NK_API struct nk_rect nk_get_null_rect(void);
-NK_API struct nk_rect nk_rect(float x, float y, float w, float h);
+NK_API struct nk_rect nk_rect(int x, int y, int w, int h);
 NK_API struct nk_rect nk_recti(int x, int y, int w, int h);
 NK_API struct nk_rect nk_recta(struct nk_vec2 pos, struct nk_vec2 size);
-NK_API struct nk_rect nk_rectv(const float *xywh);
+NK_API struct nk_rect nk_rectv(const int *xywh);
 NK_API struct nk_rect nk_rectiv(const int *xywh);
 NK_API struct nk_vec2 nk_rect_pos(struct nk_rect);
 NK_API struct nk_vec2 nk_rect_size(struct nk_rect);
@@ -3747,7 +3747,7 @@ NK_API int nk_strlen(const char *str);
 NK_API int nk_stricmp(const char *s1, const char *s2);
 NK_API int nk_stricmpn(const char *s1, const char *s2, int n);
 NK_API int nk_strtoi(const char *str, const char **endptr);
-NK_API float nk_strtof(const char *str, const char **endptr);
+NK_API int nk_strtof(const char *str, const char **endptr);
 #ifndef NK_STRTOD
 #define NK_STRTOD nk_strtod
 NK_API double nk_strtod(const char *str, const char **endptr);
@@ -3788,10 +3788,10 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
     over the complete life time! I know this sucks but it is currently the only
     way to switch between fonts.
 
-        float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
+        int your_text_width_calculation(nk_handle handle, int height, const char *text, int len)
         {
             your_font_type *type = handle.ptr;
-            float text_width = ...;
+            int text_width = ...;
             return text_width;
         }
 
@@ -3813,13 +3813,13 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
     information (offset, size, ...). So it is still possible to provide your own
     font and use the vertex buffer output.
 
-        float your_text_width_calculation(nk_handle handle, float height, const char *text, int len)
+        int your_text_width_calculation(nk_handle handle, int height, const char *text, int len)
         {
             your_font_type *type = handle.ptr;
-            float text_width = ...;
+            int text_width = ...;
             return text_width;
         }
-        void query_your_font_glyph(nk_handle handle, float font_height, struct nk_user_font_glyph *glyph, nk_rune codepoint, nk_rune next_codepoint)
+        void query_your_font_glyph(nk_handle handle, int font_height, struct nk_user_font_glyph *glyph, nk_rune codepoint, nk_rune next_codepoint)
         {
             your_font_type *type = handle.ptr;
             glyph.width = ...;
@@ -3914,8 +3914,8 @@ NK_API const char* nk_utf_at(const char *buffer, int length, int index, nk_rune 
 
 */
 struct nk_user_font_glyph;
-typedef float(*nk_text_width_f)(nk_handle, float h, const char*, int len);
-typedef void(*nk_query_font_glyph_f)(nk_handle handle, float font_height,
+typedef int(*nk_text_width_f)(nk_handle, int h, const char*, int len);
+typedef void(*nk_query_font_glyph_f)(nk_handle handle, int font_height,
                                     struct nk_user_font_glyph *glyph,
                                     nk_rune codepoint, nk_rune next_codepoint);
 
@@ -3925,9 +3925,9 @@ struct nk_user_font_glyph {
     /* texture coordinates */
     struct nk_vec2 offset;
     /* offset between top left and glyph */
-    float width, height;
+    int width, height;
     /* size of the glyph  */
-    float xadvance;
+    int xadvance;
     /* offset to the next glyph */
 };
 #endif
@@ -3935,7 +3935,7 @@ struct nk_user_font_glyph {
 struct nk_user_font {
     nk_handle userdata;
     /* user provided font handle */
-    float height;
+    int height;
     /* max height of the font */
     nk_text_width_f width;
     /* font string width in pixel callback */
@@ -3955,9 +3955,9 @@ enum nk_font_coord_type {
 
 struct nk_font;
 struct nk_baked_font {
-    float height;
+    int height;
     /* height of the font  */
-    float ascent, descent;
+    int ascent, descent;
     /* font glyphs ascent and descent  */
     nk_rune glyph_offset;
     /* glyph array offset inside the font glyph baking output array  */
@@ -3987,7 +3987,7 @@ struct nk_font_config {
     /* rasterize at hight quality for sub-pixel position */
     unsigned char padding[3];
 
-    float size;
+    int size;
     /* baked pixel height of the font */
     enum nk_font_coord_type coord_type;
     /* texture coordinate format with either pixel or UV coordinates */
@@ -4005,16 +4005,16 @@ struct nk_font_config {
 
 struct nk_font_glyph {
     nk_rune codepoint;
-    float xadvance;
-    float x0, y0, x1, y1, w, h;
-    float u0, v0, u1, v1;
+    int xadvance;
+    int x0, y0, x1, y1, w, h;
+    int u0, v0, u1, v1;
 };
 
 struct nk_font {
     struct nk_font *next;
     struct nk_user_font handle;
     struct nk_baked_font info;
-    float scale;
+    int scale;
     struct nk_font_glyph *glyphs;
     const struct nk_font_glyph *fallback;
     nk_rune fallback_codepoint;
@@ -4058,17 +4058,17 @@ NK_API void nk_font_atlas_init_default(struct nk_font_atlas*);
 NK_API void nk_font_atlas_init(struct nk_font_atlas*, struct nk_allocator*);
 NK_API void nk_font_atlas_init_custom(struct nk_font_atlas*, struct nk_allocator *persistent, struct nk_allocator *transient);
 NK_API void nk_font_atlas_begin(struct nk_font_atlas*);
-NK_API struct nk_font_config nk_font_config(float pixel_height);
+NK_API struct nk_font_config nk_font_config(int pixel_height);
 NK_API struct nk_font *nk_font_atlas_add(struct nk_font_atlas*, const struct nk_font_config*);
 #ifdef NK_INCLUDE_DEFAULT_FONT
-NK_API struct nk_font* nk_font_atlas_add_default(struct nk_font_atlas*, float height, const struct nk_font_config*);
+NK_API struct nk_font* nk_font_atlas_add_default(struct nk_font_atlas*, int height, const struct nk_font_config*);
 #endif
-NK_API struct nk_font* nk_font_atlas_add_from_memory(struct nk_font_atlas *atlas, void *memory, nk_size size, float height, const struct nk_font_config *config);
+NK_API struct nk_font* nk_font_atlas_add_from_memory(struct nk_font_atlas *atlas, void *memory, nk_size size, int height, const struct nk_font_config *config);
 #ifdef NK_INCLUDE_STANDARD_IO
-NK_API struct nk_font* nk_font_atlas_add_from_file(struct nk_font_atlas *atlas, const char *file_path, float height, const struct nk_font_config*);
+NK_API struct nk_font* nk_font_atlas_add_from_file(struct nk_font_atlas *atlas, const char *file_path, int height, const struct nk_font_config*);
 #endif
-NK_API struct nk_font *nk_font_atlas_add_compressed(struct nk_font_atlas*, void *memory, nk_size size, float height, const struct nk_font_config*);
-NK_API struct nk_font* nk_font_atlas_add_compressed_base85(struct nk_font_atlas*, const char *data, float height, const struct nk_font_config *config);
+NK_API struct nk_font *nk_font_atlas_add_compressed(struct nk_font_atlas*, void *memory, nk_size size, int height, const struct nk_font_config*);
+NK_API struct nk_font* nk_font_atlas_add_compressed_base85(struct nk_font_atlas*, const char *data, int height, const struct nk_font_config *config);
 NK_API const void* nk_font_atlas_bake(struct nk_font_atlas*, int *width, int *height, enum nk_font_atlas_format);
 NK_API void nk_font_atlas_end(struct nk_font_atlas*, nk_handle tex, struct nk_draw_null_texture*);
 NK_API const struct nk_font_glyph* nk_font_find_glyph(struct nk_font*, nk_rune unicode);
@@ -4145,7 +4145,7 @@ struct nk_buffer {
     /* memory management type */
     struct nk_memory memory;
     /* memory and size of the current memory block */
-    float grow_factor;
+    int grow_factor;
     /* growing factor for dynamic memory management */
     nk_size allocated;
     /* total amount of memory allocated */
@@ -4314,14 +4314,14 @@ struct nk_text_edit {
     unsigned char single_line;
     unsigned char active;
     unsigned char padding1;
-    float preferred_x;
+    int preferred_x;
     struct nk_text_undo_state undo;
 };
 
 /* filter function */
 NK_API nk_bool nk_filter_default(const struct nk_text_edit*, nk_rune unicode);
 NK_API nk_bool nk_filter_ascii(const struct nk_text_edit*, nk_rune unicode);
-NK_API nk_bool nk_filter_float(const struct nk_text_edit*, nk_rune unicode);
+NK_API nk_bool nk_filter_int(const struct nk_text_edit*, nk_rune unicode);
 NK_API nk_bool nk_filter_decimal(const struct nk_text_edit*, nk_rune unicode);
 NK_API nk_bool nk_filter_hex(const struct nk_text_edit*, nk_rune unicode);
 NK_API nk_bool nk_filter_oct(const struct nk_text_edit*, nk_rune unicode);
@@ -4510,7 +4510,7 @@ struct nk_command_arc {
     short cx, cy;
     unsigned short r;
     unsigned short line_thickness;
-    float a[2];
+    int a[2];
     struct nk_color color;
 };
 
@@ -4518,7 +4518,7 @@ struct nk_command_arc_filled {
     struct nk_command header;
     short cx, cy;
     unsigned short r;
-    float a[2];
+    int a[2];
     struct nk_color color;
 };
 
@@ -4570,7 +4570,7 @@ struct nk_command_text {
     struct nk_color foreground;
     short x, y;
     unsigned short w, h;
-    float height;
+    int height;
     int length;
     char string[1];
 };
@@ -4589,22 +4589,22 @@ struct nk_command_buffer {
 };
 
 /* shape outlines */
-NK_API void nk_stroke_line(struct nk_command_buffer *b, float x0, float y0, float x1, float y1, float line_thickness, struct nk_color);
-NK_API void nk_stroke_curve(struct nk_command_buffer*, float, float, float, float, float, float, float, float, float line_thickness, struct nk_color);
-NK_API void nk_stroke_rect(struct nk_command_buffer*, struct nk_rect, float rounding, float line_thickness, struct nk_color);
-NK_API void nk_stroke_circle(struct nk_command_buffer*, struct nk_rect, float line_thickness, struct nk_color);
-NK_API void nk_stroke_arc(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, float line_thickness, struct nk_color);
-NK_API void nk_stroke_triangle(struct nk_command_buffer*, float, float, float, float, float, float, float line_thichness, struct nk_color);
-NK_API void nk_stroke_polyline(struct nk_command_buffer*, float *points, int point_count, float line_thickness, struct nk_color col);
-NK_API void nk_stroke_polygon(struct nk_command_buffer*, float*, int point_count, float line_thickness, struct nk_color);
+NK_API void nk_stroke_line(struct nk_command_buffer *b, int x0, int y0, int x1, int y1, int line_thickness, struct nk_color);
+NK_API void nk_stroke_curve(struct nk_command_buffer*, int, int, int, int, int, int, int, int, int line_thickness, struct nk_color);
+NK_API void nk_stroke_rect(struct nk_command_buffer*, struct nk_rect, int rounding, int line_thickness, struct nk_color);
+NK_API void nk_stroke_circle(struct nk_command_buffer*, struct nk_rect, int line_thickness, struct nk_color);
+NK_API void nk_stroke_arc(struct nk_command_buffer*, int cx, int cy, int radius, int a_min, int a_max, int line_thickness, struct nk_color);
+NK_API void nk_stroke_triangle(struct nk_command_buffer*, int, int, int, int, int, int, int line_thichness, struct nk_color);
+NK_API void nk_stroke_polyline(struct nk_command_buffer*, int *points, int point_count, int line_thickness, struct nk_color col);
+NK_API void nk_stroke_polygon(struct nk_command_buffer*, int*, int point_count, int line_thickness, struct nk_color);
 
 /* filled shades */
-NK_API void nk_fill_rect(struct nk_command_buffer*, struct nk_rect, float rounding, struct nk_color);
+NK_API void nk_fill_rect(struct nk_command_buffer*, struct nk_rect, int rounding, struct nk_color);
 NK_API void nk_fill_rect_multi_color(struct nk_command_buffer*, struct nk_rect, struct nk_color left, struct nk_color top, struct nk_color right, struct nk_color bottom);
 NK_API void nk_fill_circle(struct nk_command_buffer*, struct nk_rect, struct nk_color);
-NK_API void nk_fill_arc(struct nk_command_buffer*, float cx, float cy, float radius, float a_min, float a_max, struct nk_color);
-NK_API void nk_fill_triangle(struct nk_command_buffer*, float x0, float y0, float x1, float y1, float x2, float y2, struct nk_color);
-NK_API void nk_fill_polygon(struct nk_command_buffer*, float*, int point_count, struct nk_color);
+NK_API void nk_fill_arc(struct nk_command_buffer*, int cx, int cy, int radius, int a_min, int a_max, struct nk_color);
+NK_API void nk_fill_triangle(struct nk_command_buffer*, int x0, int y0, int x1, int y1, int x2, int y2, struct nk_color);
+NK_API void nk_fill_polygon(struct nk_command_buffer*, int*, int point_count, struct nk_color);
 
 /* misc */
 NK_API void nk_draw_image(struct nk_command_buffer*, struct nk_rect, const struct nk_image*, struct nk_color);
@@ -4709,7 +4709,7 @@ enum nk_draw_vertex_layout_format {
     NK_FORMAT_UCHAR,
     NK_FORMAT_USHORT,
     NK_FORMAT_UINT,
-    NK_FORMAT_FLOAT,
+    NK_FORMAT_int,
     NK_FORMAT_DOUBLE,
 
 NK_FORMAT_COLOR_BEGIN,
@@ -4721,7 +4721,7 @@ NK_FORMAT_COLOR_BEGIN,
     NK_FORMAT_B8G8R8A8,
     NK_FORMAT_R16G15B16A16,
     NK_FORMAT_R32G32B32A32,
-    NK_FORMAT_R32G32B32A32_FLOAT,
+    NK_FORMAT_R32G32B32A32_int,
     NK_FORMAT_R32G32B32A32_DOUBLE,
 
     NK_FORMAT_RGB32,
@@ -4787,31 +4787,31 @@ NK_API const struct nk_draw_command* nk__draw_list_end(const struct nk_draw_list
 /* path */
 NK_API void nk_draw_list_path_clear(struct nk_draw_list*);
 NK_API void nk_draw_list_path_line_to(struct nk_draw_list*, struct nk_vec2 pos);
-NK_API void nk_draw_list_path_arc_to_fast(struct nk_draw_list*, struct nk_vec2 center, float radius, int a_min, int a_max);
-NK_API void nk_draw_list_path_arc_to(struct nk_draw_list*, struct nk_vec2 center, float radius, float a_min, float a_max, unsigned int segments);
-NK_API void nk_draw_list_path_rect_to(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, float rounding);
+NK_API void nk_draw_list_path_arc_to_fast(struct nk_draw_list*, struct nk_vec2 center, int radius, int a_min, int a_max);
+NK_API void nk_draw_list_path_arc_to(struct nk_draw_list*, struct nk_vec2 center, int radius, int a_min, int a_max, unsigned int segments);
+NK_API void nk_draw_list_path_rect_to(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, int rounding);
 NK_API void nk_draw_list_path_curve_to(struct nk_draw_list*, struct nk_vec2 p2, struct nk_vec2 p3, struct nk_vec2 p4, unsigned int num_segments);
 NK_API void nk_draw_list_path_fill(struct nk_draw_list*, struct nk_color);
-NK_API void nk_draw_list_path_stroke(struct nk_draw_list*, struct nk_color, enum nk_draw_list_stroke closed, float thickness);
+NK_API void nk_draw_list_path_stroke(struct nk_draw_list*, struct nk_color, enum nk_draw_list_stroke closed, int thickness);
 
 /* stroke */
-NK_API void nk_draw_list_stroke_line(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_color, float thickness);
-NK_API void nk_draw_list_stroke_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float rounding, float thickness);
-NK_API void nk_draw_list_stroke_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color, float thickness);
-NK_API void nk_draw_list_stroke_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color, unsigned int segs, float thickness);
-NK_API void nk_draw_list_stroke_curve(struct nk_draw_list*, struct nk_vec2 p0, struct nk_vec2 cp0, struct nk_vec2 cp1, struct nk_vec2 p1, struct nk_color, unsigned int segments, float thickness);
-NK_API void nk_draw_list_stroke_poly_line(struct nk_draw_list*, const struct nk_vec2 *pnts, const unsigned int cnt, struct nk_color, enum nk_draw_list_stroke, float thickness, enum nk_anti_aliasing);
+NK_API void nk_draw_list_stroke_line(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_color, int thickness);
+NK_API void nk_draw_list_stroke_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, int rounding, int thickness);
+NK_API void nk_draw_list_stroke_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color, int thickness);
+NK_API void nk_draw_list_stroke_circle(struct nk_draw_list*, struct nk_vec2 center, int radius, struct nk_color, unsigned int segs, int thickness);
+NK_API void nk_draw_list_stroke_curve(struct nk_draw_list*, struct nk_vec2 p0, struct nk_vec2 cp0, struct nk_vec2 cp1, struct nk_vec2 p1, struct nk_color, unsigned int segments, int thickness);
+NK_API void nk_draw_list_stroke_poly_line(struct nk_draw_list*, const struct nk_vec2 *pnts, const unsigned int cnt, struct nk_color, enum nk_draw_list_stroke, int thickness, enum nk_anti_aliasing);
 
 /* fill */
-NK_API void nk_draw_list_fill_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, float rounding);
+NK_API void nk_draw_list_fill_rect(struct nk_draw_list*, struct nk_rect rect, struct nk_color, int rounding);
 NK_API void nk_draw_list_fill_rect_multi_color(struct nk_draw_list*, struct nk_rect rect, struct nk_color left, struct nk_color top, struct nk_color right, struct nk_color bottom);
 NK_API void nk_draw_list_fill_triangle(struct nk_draw_list*, struct nk_vec2 a, struct nk_vec2 b, struct nk_vec2 c, struct nk_color);
-NK_API void nk_draw_list_fill_circle(struct nk_draw_list*, struct nk_vec2 center, float radius, struct nk_color col, unsigned int segs);
+NK_API void nk_draw_list_fill_circle(struct nk_draw_list*, struct nk_vec2 center, int radius, struct nk_color col, unsigned int segs);
 NK_API void nk_draw_list_fill_poly_convex(struct nk_draw_list*, const struct nk_vec2 *points, const unsigned int count, struct nk_color, enum nk_anti_aliasing);
 
 /* misc */
 NK_API void nk_draw_list_add_image(struct nk_draw_list*, struct nk_image texture, struct nk_rect rect, struct nk_color);
-NK_API void nk_draw_list_add_text(struct nk_draw_list*, const struct nk_user_font*, struct nk_rect, const char *text, int len, float font_height, struct nk_color);
+NK_API void nk_draw_list_add_text(struct nk_draw_list*, const struct nk_user_font*, struct nk_rect, const char *text, int len, int font_height, struct nk_color);
 #ifdef NK_INCLUDE_COMMAND_USERDATA
 NK_API void nk_draw_list_push_userdata(struct nk_draw_list*, nk_handle userdata);
 #endif
@@ -4858,8 +4858,8 @@ struct nk_style_button {
     nk_flags text_alignment;
 
     /* properties */
-    float border;
-    float rounding;
+    int border;
+    int rounding;
     struct nk_vec2 padding;
     struct nk_vec2 image_padding;
     struct nk_vec2 touch_padding;
@@ -4891,8 +4891,8 @@ struct nk_style_toggle {
     /* properties */
     struct nk_vec2 padding;
     struct nk_vec2 touch_padding;
-    float spacing;
-    float border;
+    int spacing;
+    int border;
 
     /* optional user callbacks */
     nk_handle userdata;
@@ -4924,7 +4924,7 @@ struct nk_style_selectable {
     nk_flags text_alignment;
 
     /* properties */
-    float rounding;
+    int rounding;
     struct nk_vec2 padding;
     struct nk_vec2 touch_padding;
     struct nk_vec2 image_padding;
@@ -4954,9 +4954,9 @@ struct nk_style_slider {
     struct nk_style_item cursor_active;
 
     /* properties */
-    float border;
-    float rounding;
-    float bar_height;
+    int border;
+    int rounding;
+    int bar_height;
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
     struct nk_vec2 cursor_size;
@@ -4988,10 +4988,10 @@ struct nk_style_progress {
     struct nk_color cursor_border_color;
 
     /* properties */
-    float rounding;
-    float border;
-    float cursor_border;
-    float cursor_rounding;
+    int rounding;
+    int border;
+    int cursor_border;
+    int cursor_rounding;
     struct nk_vec2 padding;
 
     /* optional user callbacks */
@@ -5014,10 +5014,10 @@ struct nk_style_scrollbar {
     struct nk_color cursor_border_color;
 
     /* properties */
-    float border;
-    float rounding;
-    float border_cursor;
-    float rounding_cursor;
+    int border;
+    int rounding;
+    int border_cursor;
+    int rounding_cursor;
     struct nk_vec2 padding;
 
     /* optional buttons */
@@ -5059,12 +5059,12 @@ struct nk_style_edit {
     struct nk_color selected_text_hover;
 
     /* properties */
-    float border;
-    float rounding;
-    float cursor_size;
+    int border;
+    int rounding;
+    int cursor_size;
     struct nk_vec2 scrollbar_size;
     struct nk_vec2 padding;
-    float row_padding;
+    int row_padding;
 };
 
 struct nk_style_property {
@@ -5084,8 +5084,8 @@ struct nk_style_property {
     enum nk_symbol_type sym_right;
 
     /* properties */
-    float border;
-    float rounding;
+    int border;
+    int rounding;
     struct nk_vec2 padding;
 
     struct nk_style_edit edit;
@@ -5106,8 +5106,8 @@ struct nk_style_chart {
     struct nk_color color;
 
     /* properties */
-    float border;
-    float rounding;
+    int border;
+    int rounding;
     struct nk_vec2 padding;
 };
 
@@ -5135,8 +5135,8 @@ struct nk_style_combo {
     enum nk_symbol_type sym_active;
 
     /* properties */
-    float border;
-    float rounding;
+    int border;
+    int rounding;
     struct nk_vec2 content_padding;
     struct nk_vec2 button_padding;
     struct nk_vec2 spacing;
@@ -5157,9 +5157,9 @@ struct nk_style_tab {
     enum nk_symbol_type sym_maximize;
 
     /* properties */
-    float border;
-    float rounding;
-    float indent;
+    int border;
+    int rounding;
+    int indent;
     struct nk_vec2 padding;
     struct nk_vec2 spacing;
 };
@@ -5207,16 +5207,16 @@ struct nk_style_window {
     struct nk_color tooltip_border_color;
     struct nk_style_item scaler;
 
-    float border;
-    float combo_border;
-    float contextual_border;
-    float menu_border;
-    float group_border;
-    float tooltip_border;
-    float popup_border;
-    float min_row_height_padding;
+    int border;
+    int combo_border;
+    int contextual_border;
+    int menu_border;
+    int group_border;
+    int tooltip_border;
+    int popup_border;
+    int min_row_height_padding;
 
-    float rounding;
+    int rounding;
     struct nk_vec2 spacing;
     struct nk_vec2 scrollbar_size;
     struct nk_vec2 min_size;
@@ -5290,7 +5290,7 @@ struct nk_chart_slot {
     enum nk_chart_type type;
     struct nk_color color;
     struct nk_color highlight;
-    float min, max, range;
+    int min, max, range;
     int count;
     struct nk_vec2 last;
     int index;
@@ -5298,7 +5298,7 @@ struct nk_chart_slot {
 
 struct nk_chart {
     int slot;
-    float x, y, w, h;
+    int x, y, w, h;
     struct nk_chart_slot slots[NK_CHART_MAX_SLOT];
 };
 
@@ -5317,17 +5317,17 @@ enum nk_panel_row_layout_type {
 struct nk_row_layout {
     enum nk_panel_row_layout_type type;
     int index;
-    float height;
-    float min_height;
+    int height;
+    int min_height;
     int columns;
-    const float *ratio;
-    float item_width;
-    float item_height;
-    float item_offset;
-    float filled;
+    const int *ratio;
+    int item_width;
+    int item_height;
+    int item_offset;
+    int filled;
     struct nk_rect item;
     int tree_depth;
-    float templates[NK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS];
+    int templates[NK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS];
 };
 
 struct nk_popup_buffer {
@@ -5339,7 +5339,7 @@ struct nk_popup_buffer {
 };
 
 struct nk_menu_state {
-    float x, y, w, h;
+    int x, y, w, h;
     struct nk_scroll offset;
 };
 
@@ -5349,10 +5349,10 @@ struct nk_panel {
     struct nk_rect bounds;
     nk_uint *offset_x;
     nk_uint *offset_y;
-    float at_x, at_y, max_x;
-    float footer_height;
-    float header_height;
-    float border;
+    int at_x, at_y, max_x;
+    int footer_height;
+    int header_height;
+    int border;
     unsigned int has_scrolling;
     struct nk_rect clip;
     struct nk_menu_state menu;
@@ -5436,7 +5436,7 @@ struct nk_window {
     struct nk_scroll scrollbar;
     struct nk_command_buffer buffer;
     struct nk_panel *layout;
-    float scrollbar_hiding_timer;
+    int scrollbar_hiding_timer;
 
     /* persistent widget state */
     struct nk_property_state property;
@@ -5474,7 +5474,7 @@ struct nk_window {
  *      nk_style_pop_style_item(ctx);
  *      nk_style_pop_vec2(ctx);
  *
- * Nuklear has a stack for style_items, float properties, vector properties,
+ * Nuklear has a stack for style_items, int properties, vector properties,
  * flags, colors, fonts and for button_behavior. Each has it's own fixed size stack
  * which can be changed at compile time.
  */
@@ -5490,8 +5490,8 @@ struct nk_window {
 #define NK_STYLE_ITEM_STACK_SIZE 16
 #endif
 
-#ifndef NK_FLOAT_STACK_SIZE
-#define NK_FLOAT_STACK_SIZE 32
+#ifndef NK_int_STACK_SIZE
+#define NK_int_STACK_SIZE 32
 #endif
 
 #ifndef NK_VECTOR_STACK_SIZE
@@ -5517,9 +5517,9 @@ struct nk_window {
         struct nk_config_stack_##type##_element elements[size];\
     }
 
-#define nk_float float
+#define nk_int int
 NK_CONFIGURATION_STACK_TYPE(struct nk, style_item, style_item);
-NK_CONFIGURATION_STACK_TYPE(nk ,float, float);
+NK_CONFIGURATION_STACK_TYPE(nk ,int, int);
 NK_CONFIGURATION_STACK_TYPE(struct nk, vec2, vec2);
 NK_CONFIGURATION_STACK_TYPE(nk ,flags, flags);
 NK_CONFIGURATION_STACK_TYPE(struct nk, color, color);
@@ -5527,7 +5527,7 @@ NK_CONFIGURATION_STACK_TYPE(const struct nk, user_font, user_font*);
 NK_CONFIGURATION_STACK_TYPE(enum nk, button_behavior, button_behavior);
 
 NK_CONFIG_STACK(style_item, NK_STYLE_ITEM_STACK_SIZE);
-NK_CONFIG_STACK(float, NK_FLOAT_STACK_SIZE);
+NK_CONFIG_STACK(int, NK_int_STACK_SIZE);
 NK_CONFIG_STACK(vec2, NK_VECTOR_STACK_SIZE);
 NK_CONFIG_STACK(flags, NK_FLAGS_STACK_SIZE);
 NK_CONFIG_STACK(color, NK_COLOR_STACK_SIZE);
@@ -5536,7 +5536,7 @@ NK_CONFIG_STACK(button_behavior, NK_BUTTON_BEHAVIOR_STACK_SIZE);
 
 struct nk_configuration_stacks {
     struct nk_config_stack_style_item style_items;
-    struct nk_config_stack_float floats;
+    struct nk_config_stack_int ints;
     struct nk_config_stack_vec2 vectors;
     struct nk_config_stack_flags flags;
     struct nk_config_stack_color colors;
@@ -5596,7 +5596,7 @@ struct nk_context {
     nk_flags last_widget_state;
     enum nk_button_behavior button_behavior;
     struct nk_configuration_stacks stacks;
-    float delta_time_seconds;
+    int delta_time_seconds;
 
 /* private:
     should only be accessed if you
@@ -5633,7 +5633,7 @@ struct nk_context {
  * =============================================================== */
 #define NK_PI 3.141592654f
 #define NK_UTF_INVALID 0xFFFD
-#define NK_MAX_FLOAT_PRECISION 2
+#define NK_MAX_int_PRECISION 2
 
 #define NK_UNUSED(x) ((void)(x))
 #define NK_SATURATE(x) (NK_MAX(0, NK_MIN(1.0f, x)))
@@ -5785,7 +5785,7 @@ NK_STATIC_ASSERT(sizeof(nk_bool) == 4);
 #endif
 
 NK_GLOBAL const struct nk_rect nk_null_rect = {-8192.0f, -8192.0f, 16384, 16384};
-#define NK_FLOAT_PRECISION 0.00000000000001
+#define NK_int_PRECISION 0.00000000000001
 
 NK_GLOBAL const struct nk_color nk_red = {255,0,0,255};
 NK_GLOBAL const struct nk_color nk_green = {0,255,0,255};
@@ -5801,21 +5801,21 @@ NK_GLOBAL const struct nk_color nk_yellow = {255,255,0,255};
     else (*(s)) = NK_WIDGET_STATE_INACTIVE;
 
 /* math */
-NK_LIB float nk_inv_sqrt(float n);
+NK_LIB int nk_inv_sqrt(int n);
 #ifndef NK_SIN
-NK_LIB float nk_sin(float x);
+NK_LIB int nk_sin(int x);
 #endif
 #ifndef NK_COS
-NK_LIB float nk_cos(float x);
+NK_LIB int nk_cos(int x);
 #endif
 NK_LIB nk_uint nk_round_up_pow2(nk_uint v);
-NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, float amount);
+NK_LIB struct nk_rect nk_shrink_rect(struct nk_rect r, int amount);
 NK_LIB struct nk_rect nk_pad_rect(struct nk_rect r, struct nk_vec2 pad);
-NK_LIB void nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0, float x1, float y1);
+NK_LIB void nk_unify(struct nk_rect *clip, const struct nk_rect *a, int x0, int y0, int x1, int y1);
 NK_LIB double nk_pow(double x, int n);
 NK_LIB int nk_ifloord(double x);
-NK_LIB int nk_ifloorf(float x);
-NK_LIB int nk_iceilf(float x);
+NK_LIB int nk_ifloorf(int x);
+NK_LIB int nk_iceilf(int x);
 NK_LIB int nk_log10(double n);
 
 /* util */
@@ -5833,12 +5833,12 @@ NK_LIB void nk_memset(void *ptr, int c0, nk_size size);
 #endif
 NK_LIB void nk_zero(void *ptr, nk_size size);
 NK_LIB char *nk_itoa(char *s, long n);
-NK_LIB int nk_string_float_limit(char *string, int prec);
+NK_LIB int nk_string_int_limit(char *string, int prec);
 #ifndef NK_DTOA
 NK_LIB char *nk_dtoa(char *s, double n);
 #endif
-NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, float space, int *glyphs, float *text_width, nk_rune *sep_list, int sep_count);
-NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *font, const char *begin, int byte_len, float row_height, const char **remaining, struct nk_vec2 *out_offset, int *glyphs, int op);
+NK_LIB int nk_text_clamp(const struct nk_user_font *font, const char *text, int text_len, int space, int *glyphs, int *text_width, nk_rune *sep_list, int sep_count);
+NK_LIB struct nk_vec2 nk_text_calculate_text_bounds(const struct nk_user_font *font, const char *begin, int byte_len, int row_height, const char **remaining, struct nk_vec2 *out_offset, int *glyphs, int op);
 #ifdef NK_INCLUDE_STANDARD_VARARGS
 NK_LIB int nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args);
 #endif
@@ -5859,7 +5859,7 @@ NK_LIB void* nk_buffer_realloc(struct nk_buffer *b, nk_size capacity, nk_size *s
 NK_LIB void nk_command_buffer_init(struct nk_command_buffer *cb, struct nk_buffer *b, enum nk_command_clipping clip);
 NK_LIB void nk_command_buffer_reset(struct nk_command_buffer *b);
 NK_LIB void* nk_command_buffer_push(struct nk_command_buffer* b, enum nk_command_type t, nk_size size);
-NK_LIB void nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type, struct nk_rect content, struct nk_color background, struct nk_color foreground, float border_width, const struct nk_user_font *font);
+NK_LIB void nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type, struct nk_rect content, struct nk_color background, struct nk_color foreground, int border_width, const struct nk_user_font *font);
 
 /* buffering */
 NK_LIB void nk_start_buffer(struct nk_context *ctx, struct nk_command_buffer *b);
@@ -5872,9 +5872,9 @@ NK_LIB void nk_build(struct nk_context *ctx);
 
 /* text editor */
 NK_LIB void nk_textedit_clear_state(struct nk_text_edit *state, enum nk_text_edit_type type, nk_plugin_filter filter);
-NK_LIB void nk_textedit_click(struct nk_text_edit *state, float x, float y, const struct nk_user_font *font, float row_height);
-NK_LIB void nk_textedit_drag(struct nk_text_edit *state, float x, float y, const struct nk_user_font *font, float row_height);
-NK_LIB void nk_textedit_key(struct nk_text_edit *state, enum nk_keys key, int shift_mod, const struct nk_user_font *font, float row_height);
+NK_LIB void nk_textedit_click(struct nk_text_edit *state, int x, int y, const struct nk_user_font *font, int row_height);
+NK_LIB void nk_textedit_drag(struct nk_text_edit *state, int x, int y, const struct nk_user_font *font, int row_height);
+NK_LIB void nk_textedit_key(struct nk_text_edit *state, enum nk_keys key, int shift_mod, const struct nk_user_font *font, int row_height);
 
 /* window */
 enum nk_window_insert_location {
@@ -5911,7 +5911,7 @@ NK_LIB void *nk_create_panel(struct nk_context *ctx);
 NK_LIB void nk_free_panel(struct nk_context*, struct nk_panel *pan);
 NK_LIB nk_bool nk_panel_has_header(nk_flags flags, const char *title);
 NK_LIB struct nk_vec2 nk_panel_get_padding(const struct nk_style *style, enum nk_panel_type type);
-NK_LIB float nk_panel_get_border(const struct nk_style *style, nk_flags flags, enum nk_panel_type type);
+NK_LIB int nk_panel_get_border(const struct nk_style *style, nk_flags flags, enum nk_panel_type type);
 NK_LIB struct nk_color nk_panel_get_border_color(const struct nk_style *style, enum nk_panel_type type);
 NK_LIB nk_bool nk_panel_is_sub(enum nk_panel_type type);
 NK_LIB nk_bool nk_panel_is_nonblock(enum nk_panel_type type);
@@ -5919,9 +5919,9 @@ NK_LIB nk_bool nk_panel_begin(struct nk_context *ctx, const char *title, enum nk
 NK_LIB void nk_panel_end(struct nk_context *ctx);
 
 /* layout */
-NK_LIB float nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel_type type, float total_space, int columns);
-NK_LIB void nk_panel_layout(const struct nk_context *ctx, struct nk_window *win, float height, int cols);
-NK_LIB void nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt, float height, int cols, int width);
+NK_LIB int nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel_type type, int total_space, int columns);
+NK_LIB void nk_panel_layout(const struct nk_context *ctx, struct nk_window *win, int height, int cols);
+NK_LIB void nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt, int height, int cols, int width);
 NK_LIB void nk_panel_alloc_row(const struct nk_context *ctx, struct nk_window *win);
 NK_LIB void nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx, struct nk_window *win, int modify);
 NK_LIB void nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx);
@@ -5970,15 +5970,15 @@ NK_LIB void nk_draw_progress(struct nk_command_buffer *out, nk_flags state, cons
 NK_LIB nk_size nk_do_progress(nk_flags *state, struct nk_command_buffer *out, struct nk_rect bounds, nk_size value, nk_size max, nk_bool modifiable, const struct nk_style_progress *style, struct nk_input *in);
 
 /* slider */
-NK_LIB float nk_slider_behavior(nk_flags *state, struct nk_rect *logical_cursor, struct nk_rect *visual_cursor, struct nk_input *in, struct nk_rect bounds, float slider_min, float slider_max, float slider_value, float slider_step, float slider_steps);
-NK_LIB void nk_draw_slider(struct nk_command_buffer *out, nk_flags state, const struct nk_style_slider *style, const struct nk_rect *bounds, const struct nk_rect *visual_cursor, float min, float value, float max);
-NK_LIB float nk_do_slider(nk_flags *state, struct nk_command_buffer *out, struct nk_rect bounds, float min, float val, float max, float step, const struct nk_style_slider *style, struct nk_input *in, const struct nk_user_font *font);
+NK_LIB int nk_slider_behavior(nk_flags *state, struct nk_rect *logical_cursor, struct nk_rect *visual_cursor, struct nk_input *in, struct nk_rect bounds, int slider_min, int slider_max, int slider_value, int slider_step, int slider_steps);
+NK_LIB void nk_draw_slider(struct nk_command_buffer *out, nk_flags state, const struct nk_style_slider *style, const struct nk_rect *bounds, const struct nk_rect *visual_cursor, int min, int value, int max);
+NK_LIB int nk_do_slider(nk_flags *state, struct nk_command_buffer *out, struct nk_rect bounds, int min, int val, int max, int step, const struct nk_style_slider *style, struct nk_input *in, const struct nk_user_font *font);
 
 /* scrollbar */
-NK_LIB float nk_scrollbar_behavior(nk_flags *state, struct nk_input *in, int has_scrolling, const struct nk_rect *scroll, const struct nk_rect *cursor, const struct nk_rect *empty0, const struct nk_rect *empty1, float scroll_offset, float target, float scroll_step, enum nk_orientation o);
+NK_LIB int nk_scrollbar_behavior(nk_flags *state, struct nk_input *in, int has_scrolling, const struct nk_rect *scroll, const struct nk_rect *cursor, const struct nk_rect *empty0, const struct nk_rect *empty1, int scroll_offset, int target, int scroll_step, enum nk_orientation o);
 NK_LIB void nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state, const struct nk_style_scrollbar *style, const struct nk_rect *bounds, const struct nk_rect *scroll);
-NK_LIB float nk_do_scrollbarv(nk_flags *state, struct nk_command_buffer *out, struct nk_rect scroll, int has_scrolling, float offset, float target, float step, float button_pixel_inc, const struct nk_style_scrollbar *style, struct nk_input *in, const struct nk_user_font *font);
-NK_LIB float nk_do_scrollbarh(nk_flags *state, struct nk_command_buffer *out, struct nk_rect scroll, int has_scrolling, float offset, float target, float step, float button_pixel_inc, const struct nk_style_scrollbar *style, struct nk_input *in, const struct nk_user_font *font);
+NK_LIB int nk_do_scrollbarv(nk_flags *state, struct nk_command_buffer *out, struct nk_rect scroll, int has_scrolling, int offset, int target, int step, int button_pixel_inc, const struct nk_style_scrollbar *style, struct nk_input *in, const struct nk_user_font *font);
+NK_LIB int nk_do_scrollbarh(nk_flags *state, struct nk_command_buffer *out, struct nk_rect scroll, int has_scrolling, int offset, int target, int step, int button_pixel_inc, const struct nk_style_scrollbar *style, struct nk_input *in, const struct nk_user_font *font);
 
 /* selectable */
 NK_LIB void nk_draw_selectable(struct nk_command_buffer *out, nk_flags state, const struct nk_style_selectable *style, nk_bool active, const struct nk_rect *bounds, const struct nk_rect *icon, const struct nk_image *img, enum nk_symbol_type sym, const char *string, int len, nk_flags align, const struct nk_user_font *font);
@@ -5986,7 +5986,7 @@ NK_LIB nk_bool nk_do_selectable(nk_flags *state, struct nk_command_buffer *out, 
 NK_LIB nk_bool nk_do_selectable_image(nk_flags *state, struct nk_command_buffer *out, struct nk_rect bounds, const char *str, int len, nk_flags align, nk_bool *value, const struct nk_image *img, const struct nk_style_selectable *style, const struct nk_input *in, const struct nk_user_font *font);
 
 /* edit */
-NK_LIB void nk_edit_draw_text(struct nk_command_buffer *out, const struct nk_style_edit *style, float pos_x, float pos_y, float x_offset, const char *text, int byte_len, float row_height, const struct nk_user_font *font, struct nk_color background, struct nk_color foreground, nk_bool is_selected);
+NK_LIB void nk_edit_draw_text(struct nk_command_buffer *out, const struct nk_style_edit *style, int pos_x, int pos_y, int x_offset, const char *text, int byte_len, int row_height, const struct nk_user_font *font, struct nk_color background, struct nk_color foreground, nk_bool is_selected);
 NK_LIB nk_flags nk_do_edit(nk_flags *state, struct nk_command_buffer *out, struct nk_rect bounds, nk_flags flags, nk_plugin_filter filter, struct nk_text_edit *edit, const struct nk_style_edit *style, struct nk_input *in, const struct nk_user_font *font);
 
 /* color-picker */
@@ -6002,16 +6002,16 @@ enum nk_property_status {
 };
 enum nk_property_filter {
     NK_FILTER_INT,
-    NK_FILTER_FLOAT
+    NK_FILTER_int
 };
 enum nk_property_kind {
     NK_PROPERTY_INT,
-    NK_PROPERTY_FLOAT,
+    NK_PROPERTY_int,
     NK_PROPERTY_DOUBLE
 };
 union nk_property {
     int i;
-    float f;
+    int f;
     double d;
 };
 struct nk_property_variant {
@@ -6022,14 +6022,14 @@ struct nk_property_variant {
     union nk_property step;
 };
 NK_LIB struct nk_property_variant nk_property_variant_int(int value, int min_value, int max_value, int step);
-NK_LIB struct nk_property_variant nk_property_variant_float(float value, float min_value, float max_value, float step);
+// NK_LIB struct nk_property_variant nk_property_variant_int(int value, int min_value, int max_value, int step);
 NK_LIB struct nk_property_variant nk_property_variant_double(double value, double min_value, double max_value, double step);
 
-NK_LIB void nk_drag_behavior(nk_flags *state, const struct nk_input *in, struct nk_rect drag, struct nk_property_variant *variant, float inc_per_pixel);
-NK_LIB void nk_property_behavior(nk_flags *ws, const struct nk_input *in, struct nk_rect property,  struct nk_rect label, struct nk_rect edit, struct nk_rect empty, int *state, struct nk_property_variant *variant, float inc_per_pixel);
+NK_LIB void nk_drag_behavior(nk_flags *state, const struct nk_input *in, struct nk_rect drag, struct nk_property_variant *variant, int inc_per_pixel);
+NK_LIB void nk_property_behavior(nk_flags *ws, const struct nk_input *in, struct nk_rect property,  struct nk_rect label, struct nk_rect edit, struct nk_rect empty, int *state, struct nk_property_variant *variant, int inc_per_pixel);
 NK_LIB void nk_draw_property(struct nk_command_buffer *out, const struct nk_style_property *style, const struct nk_rect *bounds, const struct nk_rect *label, nk_flags state, const char *name, int len, const struct nk_user_font *font);
-NK_LIB void nk_do_property(nk_flags *ws, struct nk_command_buffer *out, struct nk_rect property, const char *name, struct nk_property_variant *variant, float inc_per_pixel, char *buffer, int *len, int *state, int *cursor, int *select_begin, int *select_end, const struct nk_style_property *style, enum nk_property_filter filter, struct nk_input *in, const struct nk_user_font *font, struct nk_text_edit *text_edit, enum nk_button_behavior behavior);
-NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant *variant, float inc_per_pixel, const enum nk_property_filter filter);
+NK_LIB void nk_do_property(nk_flags *ws, struct nk_command_buffer *out, struct nk_rect property, const char *name, struct nk_property_variant *variant, int inc_per_pixel, char *buffer, int *len, int *state, int *cursor, int *select_begin, int *select_end, const struct nk_style_property *style, enum nk_property_filter filter, struct nk_input *in, const struct nk_user_font *font, struct nk_text_edit *text_edit, enum nk_button_behavior behavior);
+NK_LIB void nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant *variant, int inc_per_pixel, const enum nk_property_filter filter);
 
 #ifdef NK_INCLUDE_FONT_BAKING
 
@@ -6068,7 +6068,7 @@ nk_stbtt_free(void *ptr, void *user_data) {
  *                              MATH
  *
  * ===============================================================*/
-/*  Since nuklear is supposed to work on all systems providing floating point
+/*  Since nuklear is supposed to work on all systems providing inting point
     math without any dependencies I also had to implement my own math functions
     for sqrt, sin and cos. Since the actual highly accurate implementations for
     the standard library functions are quite complex and I do not need high
@@ -6080,7 +6080,7 @@ nk_stbtt_free(void *ptr, void *user_data) {
     https://en.wikipedia.org/wiki/Fast_inverse_square_root with
     slightly tweaked magic constant. While on today's hardware it is
     probably not faster it is still fast and accurate enough for
-    nuklear's use cases. IMPORTANT: this requires float format IEEE 754
+    nuklear's use cases. IMPORTANT: this requires int format IEEE 754
 
     Sine/Cosine
     -----------
@@ -6095,12 +6095,12 @@ nk_stbtt_free(void *ptr, void *user_data) {
     (it can actually approximate a lot more functions) can be
     found here: www.lolengine.net/wiki/oss/lolremez
 */
-NK_LIB float
-nk_inv_sqrt(float n)
+NK_LIB int
+nk_inv_sqrt(int n)
 {
-    float x2;
-    const float threehalfs = 1.5f;
-    union {nk_uint i; float f;} conv = {0};
+    int x2;
+    const int threehalfs = 1.5f;
+    union {nk_uint i; int f;} conv = {0};
     conv.f = n;
     x2 = n * 0.5f;
     conv.i = 0x5f375A84 - (conv.i >> 1);
@@ -6109,36 +6109,36 @@ nk_inv_sqrt(float n)
 }
 #ifndef NK_SIN
 #define NK_SIN nk_sin
-NK_LIB float
-nk_sin(float x)
+NK_LIB int
+nk_sin(int x)
 {
-    NK_STORAGE const float a0 = +1.91059300966915117e-31f;
-    NK_STORAGE const float a1 = +1.00086760103908896f;
-    NK_STORAGE const float a2 = -1.21276126894734565e-2f;
-    NK_STORAGE const float a3 = -1.38078780785773762e-1f;
-    NK_STORAGE const float a4 = -2.67353392911981221e-2f;
-    NK_STORAGE const float a5 = +2.08026600266304389e-2f;
-    NK_STORAGE const float a6 = -3.03996055049204407e-3f;
-    NK_STORAGE const float a7 = +1.38235642404333740e-4f;
+    NK_STORAGE const int a0 = +1.91059300966915117e-31f;
+    NK_STORAGE const int a1 = +1.00086760103908896f;
+    NK_STORAGE const int a2 = -1.21276126894734565e-2f;
+    NK_STORAGE const int a3 = -1.38078780785773762e-1f;
+    NK_STORAGE const int a4 = -2.67353392911981221e-2f;
+    NK_STORAGE const int a5 = +2.08026600266304389e-2f;
+    NK_STORAGE const int a6 = -3.03996055049204407e-3f;
+    NK_STORAGE const int a7 = +1.38235642404333740e-4f;
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*a7))))));
 }
 #endif
 #ifndef NK_COS
 #define NK_COS nk_cos
-NK_LIB float
-nk_cos(float x)
+NK_LIB int
+nk_cos(int x)
 {
     /* New implementation. Also generated using lolremez. */
     /* Old version significantly deviated from expected results. */
-    NK_STORAGE const float a0 = 9.9995999154986614e-1f;
-    NK_STORAGE const float a1 = 1.2548995793001028e-3f;
-    NK_STORAGE const float a2 = -5.0648546280678015e-1f;
-    NK_STORAGE const float a3 = 1.2942246466519995e-2f;
-    NK_STORAGE const float a4 = 2.8668384702547972e-2f;
-    NK_STORAGE const float a5 = 7.3726485210586547e-3f;
-    NK_STORAGE const float a6 = -3.8510875386947414e-3f;
-    NK_STORAGE const float a7 = 4.7196604604366623e-4f;
-    NK_STORAGE const float a8 = -1.8776444013090451e-5f;
+    NK_STORAGE const int a0 = 9.9995999154986614e-1f;
+    NK_STORAGE const int a1 = 1.2548995793001028e-3f;
+    NK_STORAGE const int a2 = -5.0648546280678015e-1f;
+    NK_STORAGE const int a3 = 1.2942246466519995e-2f;
+    NK_STORAGE const int a4 = 2.8668384702547972e-2f;
+    NK_STORAGE const int a5 = 7.3726485210586547e-3f;
+    NK_STORAGE const int a6 = -3.8510875386947414e-3f;
+    NK_STORAGE const int a7 = 4.7196604604366623e-4f;
+    NK_STORAGE const int a8 = -1.8776444013090451e-5f;
     return a0 + x*(a1 + x*(a2 + x*(a3 + x*(a4 + x*(a5 + x*(a6 + x*(a7 + x*a8)))))));
 }
 #endif
@@ -6176,20 +6176,20 @@ nk_ifloord(double x)
     return (int)x;
 }
 NK_LIB int
-nk_ifloorf(float x)
+nk_ifloorf(int x)
 {
-    x = (float)((int)x - ((x < 0.0f) ? 1 : 0));
+    x = (int)((int)x - ((x < 0.0f) ? 1 : 0));
     return (int)x;
 }
 NK_LIB int
-nk_iceilf(float x)
+nk_iceilf(int x)
 {
     if (x >= 0) {
         int i = (int)x;
         return (x > i) ? i+1: i;
     } else {
         int t = (int)x;
-        float r = x - (float)t;
+        int r = x - (int)t;
         return (r > 0.0f) ? t+1: t;
     }
 }
@@ -6215,7 +6215,7 @@ nk_get_null_rect(void)
     return nk_null_rect;
 }
 NK_API struct nk_rect
-nk_rect(float x, float y, float w, float h)
+nk_rect(int x, int y, int w, int h)
 {
     struct nk_rect r;
     r.x = x; r.y = y;
@@ -6226,10 +6226,10 @@ NK_API struct nk_rect
 nk_recti(int x, int y, int w, int h)
 {
     struct nk_rect r;
-    r.x = (float)x;
-    r.y = (float)y;
-    r.w = (float)w;
-    r.h = (float)h;
+    r.x = (int)x;
+    r.y = (int)y;
+    r.w = (int)w;
+    r.h = (int)h;
     return r;
 }
 NK_API struct nk_rect
@@ -6238,7 +6238,7 @@ nk_recta(struct nk_vec2 pos, struct nk_vec2 size)
     return nk_rect(pos.x, pos.y, size.x, size.y);
 }
 NK_API struct nk_rect
-nk_rectv(const float *r)
+nk_rectv(const int *r)
 {
     return nk_rect(r[0], r[1], r[2], r[3]);
 }
@@ -6262,7 +6262,7 @@ nk_rect_size(struct nk_rect r)
     return ret;
 }
 NK_LIB struct nk_rect
-nk_shrink_rect(struct nk_rect r, float amount)
+nk_shrink_rect(struct nk_rect r, int amount)
 {
     struct nk_rect res;
     r.w = NK_MAX(r.w, 2 * amount);
@@ -6284,7 +6284,7 @@ nk_pad_rect(struct nk_rect r, struct nk_vec2 pad)
     return r;
 }
 NK_API struct nk_vec2
-nk_vec2(float x, float y)
+nk_vec2(int x, int y)
 {
     struct nk_vec2 ret;
     ret.x = x; ret.y = y;
@@ -6294,12 +6294,12 @@ NK_API struct nk_vec2
 nk_vec2i(int x, int y)
 {
     struct nk_vec2 ret;
-    ret.x = (float)x;
-    ret.y = (float)y;
+    ret.x = (int)x;
+    ret.y = (int)y;
     return ret;
 }
 NK_API struct nk_vec2
-nk_vec2v(const float *v)
+nk_vec2v(const int *v)
 {
     return nk_vec2(v[0], v[1]);
 }
@@ -6309,8 +6309,8 @@ nk_vec2iv(const int *v)
     return nk_vec2i(v[0], v[1]);
 }
 NK_LIB void
-nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0,
-    float x1, float y1)
+nk_unify(struct nk_rect *clip, const struct nk_rect *a, int x0, int y0,
+    int x1, int y1)
 {
     NK_ASSERT(a);
     NK_ASSERT(clip);
@@ -6324,9 +6324,9 @@ nk_unify(struct nk_rect *clip, const struct nk_rect *a, float x0, float y0,
 
 NK_API void
 nk_triangle_from_direction(struct nk_vec2 *result, struct nk_rect r,
-    float pad_x, float pad_y, enum nk_heading direction)
+    int pad_x, int pad_y, enum nk_heading direction)
 {
-    float w_half, h_half;
+    int w_half, h_half;
     NK_ASSERT(result);
 
     r.w = NK_MAX(2 * pad_x, r.w);
@@ -6583,14 +6583,14 @@ nk_strtod(const char *str, const char **endptr)
         *endptr = p;
     return number;
 }
-NK_API float
+NK_API int
 nk_strtof(const char *str, const char **endptr)
 {
-    float float_value;
+    int int_value;
     double double_value;
     double_value = NK_STRTOD(str, endptr);
-    float_value = (float)double_value;
-    return float_value;
+    int_value = (int)double_value;
+    return int_value;
 }
 NK_API int
 nk_stricmp(const char *s1, const char *s2)
@@ -6805,7 +6805,7 @@ nk_strmatch_fuzzy_string(char const *str, char const *pattern, int *out_score)
     return nk_strmatch_fuzzy_text(str, nk_strlen(str), pattern, out_score);
 }
 NK_LIB int
-nk_string_float_limit(char *string, int prec)
+nk_string_int_limit(char *string, int prec)
 {
     int dot = 0;
     char *c = string;
@@ -6900,7 +6900,7 @@ nk_dtoa(char *s, double n)
     }
 
     /* convert the number */
-    while (n > NK_FLOAT_PRECISION || m >= 0) {
+    while (n > NK_int_PRECISION || m >= 0) {
         double weight = nk_pow(10.0, m);
         if (weight > 0) {
             double t = (double)n / weight;
@@ -6947,6 +6947,7 @@ nk_dtoa(char *s, double n)
 NK_INTERN int
 nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
 {
+    writeSerialPort(boutRefNum, "nk_vsnprintf");
     enum nk_arg_type {
         NK_ARG_TYPE_CHAR,
         NK_ARG_TYPE_SHORT,
@@ -7190,7 +7191,7 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
                     buf[len++] = ' ';
             }
         } else if (*iter == 'f') {
-            /* floating point */
+            /* inting point */
             const char *num_iter;
             int cur_precision = (precision < 0) ? 6: precision;
             int prefix, cur_width = NK_MAX(width, 0);
@@ -7280,70 +7281,89 @@ nk_strfmt(char *buf, int buf_size, const char *fmt, va_list args)
     return result;
 }
 #endif
+
+#define get16bits(d) (*((const uint16_t *) (d)))
 NK_API nk_hash
-nk_murmur_hash(const void * key, int len, nk_hash seed)
+nk_murmur_hash(const void * data, int len, nk_hash seed)
 {
-    /* 32-Bit MurmurHash3: https://code.google.com/p/smhasher/wiki/MurmurHash3*/
-    #define NK_ROTL(x,r) ((x) << (r) | ((x) >> (32 - r)))
+    const nk_byte *s = data;
+    nk_hash hash = 0;
 
-    nk_uint h1 = seed;
-    nk_uint k1;
-    const nk_byte *data = (const nk_byte*)key;
-    const nk_byte *keyptr = data;
-    nk_byte *k1ptr;
-    const int bsize = sizeof(k1);
-    const int nblocks = len/4;
-
-    const nk_uint c1 = 0xcc9e2d51;
-    const nk_uint c2 = 0x1b873593;
-    const nk_byte *tail;
-    int i;
-
-    /* body */
-    if (!key) return 0;
-    for (i = 0; i < nblocks; ++i, keyptr += bsize) {
-        k1ptr = (nk_byte*)&k1;
-        k1ptr[0] = keyptr[0];
-        k1ptr[1] = keyptr[1];
-        k1ptr[2] = keyptr[2];
-        k1ptr[3] = keyptr[3];
-
-        k1 *= c1;
-        k1 = NK_ROTL(k1,15);
-        k1 *= c2;
-
-        h1 ^= k1;
-        h1 = NK_ROTL(h1,13);
-        h1 = h1*5+0xe6546b64;
+    for(; *s; ++s)
+    {
+        hash += *s;
+        hash += (hash << 10);
+        hash ^= (hash >> 6);
     }
 
-    /* tail */
-    tail = (const nk_byte*)(data + nblocks*4);
-    k1 = 0;
-    switch (len & 3) {
-        case 3: k1 ^= (nk_uint)(tail[2] << 16); /* fallthrough */
-        case 2: k1 ^= (nk_uint)(tail[1] << 8u); /* fallthrough */
-        case 1: k1 ^= tail[0];
-            k1 *= c1;
-            k1 = NK_ROTL(k1,15);
-            k1 *= c2;
-            h1 ^= k1;
-            break;
-        default: break;
-    }
+    hash += (hash << 3);
+    hash ^= (hash >> 11);
+    hash += (hash << 15);
 
-    /* finalization */
-    h1 ^= (nk_uint)len;
-    /* fmix32 */
-    h1 ^= h1 >> 16;
-    h1 *= 0x85ebca6b;
-    h1 ^= h1 >> 13;
-    h1 *= 0xc2b2ae35;
-    h1 ^= h1 >> 16;
+    return hash;
+    // /* 32-Bit MurmurHash3: https://code.google.com/p/smhasher/wiki/MurmurHash3*/
+    // #define NK_ROTL(x,r) ((x) << (r) | ((x) >> (32 - r)))
 
-    #undef NK_ROTL
-    return h1;
+    // nk_uint h1 = seed;
+    // nk_uint k1;
+    // const nk_byte *data = (const nk_byte*)key;
+    // const nk_byte *keyptr = data;
+    // nk_byte *k1ptr;
+    // const int bsize = sizeof(k1);
+    // const int nblocks = len/4;
+
+    // const nk_uint c1 = 0xcc9e2d51;
+    // const nk_uint c2 = 0x1b873593;
+    // const nk_byte *tail;
+    // int i;
+
+    // /* body */
+    // if (!key) return 0;
+    // for (i = 0; i < nblocks; ++i, keyptr += bsize) {
+    //     k1ptr = (nk_byte*)&k1;
+    //     k1ptr[0] = keyptr[0];
+    //     k1ptr[1] = keyptr[1];
+    //     k1ptr[2] = keyptr[2];
+    //     k1ptr[3] = keyptr[3];
+
+    //     k1 *= c1;
+    //     k1 = NK_ROTL(k1,15);
+    //     k1 *= c2;
+
+    //     h1 ^= k1;
+    //     h1 = NK_ROTL(h1,13);
+    //     h1 = h1*5+0xe6546b64;
+    // }
+
+    // /* tail */
+    // tail = (const nk_byte*)(data + nblocks*4);
+    // k1 = 0;
+    // switch (len & 3) {
+    //     case 3: k1 ^= (nk_uint)(tail[2] << 16); /* fallthrough */
+    //     case 2: k1 ^= (nk_uint)(tail[1] << 8u); /* fallthrough */
+    //     case 1: k1 ^= tail[0];
+    //         k1 *= c1;
+    //         k1 = NK_ROTL(k1,15);
+    //         k1 *= c2;
+    //         h1 ^= k1;
+    //         break;
+    //     default: break;
+    // }
+
+    // /* finalization */
+    // h1 ^= (nk_uint)len;
+    // /* fmix32 */
+    // h1 ^= h1 >> 16;
+    // h1 *= 0x85ebca6b;
+    // h1 ^= h1 >> 13;
+    // h1 *= 0xc2b2ae35;
+    // h1 ^= h1 >> 16;
+
+    // #undef NK_ROTL
+    // return h1;
 }
+
+
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_LIB char*
 nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
@@ -7381,27 +7401,30 @@ nk_file_load(const char* path, nk_size* siz, struct nk_allocator *alloc)
 #endif
 NK_LIB int
 nk_text_clamp(const struct nk_user_font *font, const char *text,
-    int text_len, float space, int *glyphs, float *text_width,
+    int text_len, int space, int *glyphs, int *text_width,
     nk_rune *sep_list, int sep_count)
 {
+    writeSerialPort(boutRefNum, "nk_text_clamp");
+    // TODO:: pretty sure this function is slow, figure out what is up
+    // we at least need to figure out how to cache the return value
     int i = 0;
-    int glyph_len = 0;
-    float last_width = 0;
+    int last_width = 0;
     nk_rune unicode = 0;
-    float width = 0;
+    int width = 0;
     int len = 0;
     int g = 0;
-    float s;
+    int s;
 
     int sep_len = 0;
     int sep_g = 0;
-    float sep_width = 0;
+    int sep_width = 0;
     sep_count = NK_MAX(sep_count,0);
 
-    glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && (width < space) && (len < text_len)) {
-        len += glyph_len;
-        s = font->width(font->userdata, font->height, text, len);
+    unicode = text[0];
+
+    while ((width < space) && (len < text_len)) {
+        len += 1;
+        s = font->width(font->userdata, font->height, text, len); // has to get cached quickdraw width values
         for (i = 0; i < sep_count; ++i) {
             if (unicode != sep_list[i]) continue;
             sep_width = last_width = width;
@@ -7414,7 +7437,7 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
             sep_g = g+1;
         }
         width = s;
-        glyph_len = nk_utf_decode(&text[len], &unicode, text_len - len);
+        unicode = text[len];
         g++;
     }
     if (len >= text_len) {
@@ -7429,14 +7452,15 @@ nk_text_clamp(const struct nk_user_font *font, const char *text,
 }
 NK_LIB struct nk_vec2
 nk_text_calculate_text_bounds(const struct nk_user_font *font,
-    const char *begin, int byte_len, float row_height, const char **remaining,
+    const char *begin, int byte_len, int row_height, const char **remaining,
     struct nk_vec2 *out_offset, int *glyphs, int op)
 {
-    float line_height = row_height;
+    writeSerialPort(boutRefNum, "nk_text_calculate_text_bounds");
+    int line_height = row_height;
     struct nk_vec2 text_size = nk_vec2(0,0);
-    float line_width = 0.0f;
+    int line_width = 0.0f;
 
-    float glyph_width;
+    int glyph_width;
     int glyph_len = 0;
     nk_rune unicode = 0;
     int text_len = 0;
@@ -7471,7 +7495,7 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
 
         *glyphs = *glyphs + 1;
         text_len += glyph_len;
-        line_width += (float)glyph_width;
+        line_width += (int)glyph_width;
         glyph_len = nk_utf_decode(begin + text_len, &unicode, byte_len-text_len);
         glyph_width = font->width(font->userdata, font->height, begin+text_len, glyph_len);
         continue;
@@ -7500,6 +7524,7 @@ nk_text_calculate_text_bounds(const struct nk_user_font *font,
 NK_INTERN int
 nk_parse_hex(const char *p, int length)
 {
+    writeSerialPort(boutRefNum, "nk_parse_hex");
     int i = 0;
     int len = 0;
     while (len < length) {
@@ -7616,7 +7641,7 @@ nk_rgba_u32(nk_uint in)
     return ret;
 }
 NK_API struct nk_color
-nk_rgba_f(float r, float g, float b, float a)
+nk_rgba_f(int r, int g, int b, int a)
 {
     struct nk_color ret;
     ret.r = (nk_byte)(NK_SATURATE(r) * 255.0f);
@@ -7626,7 +7651,7 @@ nk_rgba_f(float r, float g, float b, float a)
     return ret;
 }
 NK_API struct nk_color
-nk_rgba_fv(const float *c)
+nk_rgba_fv(const int *c)
 {
     return nk_rgba_f(c[0], c[1], c[2], c[3]);
 }
@@ -7636,7 +7661,7 @@ nk_rgba_cf(struct nk_colorf c)
     return nk_rgba_f(c.r, c.g, c.b, c.a);
 }
 NK_API struct nk_color
-nk_rgb_f(float r, float g, float b)
+nk_rgb_f(int r, int g, int b)
 {
     struct nk_color ret;
     ret.r = (nk_byte)(NK_SATURATE(r) * 255.0f);
@@ -7646,7 +7671,7 @@ nk_rgb_f(float r, float g, float b)
     return ret;
 }
 NK_API struct nk_color
-nk_rgb_fv(const float *c)
+nk_rgb_fv(const int *c)
 {
     return nk_rgb_f(c[0], c[1], c[2]);
 }
@@ -7671,22 +7696,22 @@ nk_hsv_bv(const nk_byte *c)
     return nk_hsv(c[0], c[1], c[2]);
 }
 NK_API struct nk_color
-nk_hsv_f(float h, float s, float v)
+nk_hsv_f(int h, int s, int v)
 {
     return nk_hsva_f(h, s, v, 1.0f);
 }
 NK_API struct nk_color
-nk_hsv_fv(const float *c)
+nk_hsv_fv(const int *c)
 {
     return nk_hsv_f(c[0], c[1], c[2]);
 }
 NK_API struct nk_color
 nk_hsva(int h, int s, int v, int a)
 {
-    float hf = ((float)NK_CLAMP(0, h, 255)) / 255.0f;
-    float sf = ((float)NK_CLAMP(0, s, 255)) / 255.0f;
-    float vf = ((float)NK_CLAMP(0, v, 255)) / 255.0f;
-    float af = ((float)NK_CLAMP(0, a, 255)) / 255.0f;
+    int hf = ((int)NK_CLAMP(0, h, 255)) / 255.0f;
+    int sf = ((int)NK_CLAMP(0, s, 255)) / 255.0f;
+    int vf = ((int)NK_CLAMP(0, v, 255)) / 255.0f;
+    int af = ((int)NK_CLAMP(0, a, 255)) / 255.0f;
     return nk_hsva_f(hf, sf, vf, af);
 }
 NK_API struct nk_color
@@ -7700,10 +7725,10 @@ nk_hsva_bv(const nk_byte *c)
     return nk_hsva(c[0], c[1], c[2], c[3]);
 }
 NK_API struct nk_colorf
-nk_hsva_colorf(float h, float s, float v, float a)
+nk_hsva_colorf(int h, int s, int v, int a)
 {
     int i;
-    float p, q, t, f;
+    int p, q, t, f;
     struct nk_colorf out = {0,0,0,0};
     if (s <= 0.0f) {
         out.r = v; out.g = v; out.b = v; out.a = a;
@@ -7711,7 +7736,7 @@ nk_hsva_colorf(float h, float s, float v, float a)
     }
     h = h / (60.0f/360.0f);
     i = (int)h;
-    f = h - (float)i;
+    f = h - (int)i;
     p = v * (1.0f - s);
     q = v * (1.0f - (s * f));
     t = v * (1.0f - s * (1.0f - f));
@@ -7727,18 +7752,18 @@ nk_hsva_colorf(float h, float s, float v, float a)
     return out;
 }
 NK_API struct nk_colorf
-nk_hsva_colorfv(float *c)
+nk_hsva_colorfv(int *c)
 {
     return nk_hsva_colorf(c[0], c[1], c[2], c[3]);
 }
 NK_API struct nk_color
-nk_hsva_f(float h, float s, float v, float a)
+nk_hsva_f(int h, int s, int v, int a)
 {
     struct nk_colorf c = nk_hsva_colorf(h, s, v, a);
     return nk_rgba_f(c.r, c.g, c.b, c.a);
 }
 NK_API struct nk_color
-nk_hsva_fv(const float *c)
+nk_hsva_fv(const int *c)
 {
     return nk_hsva_f(c[0], c[1], c[2], c[3]);
 }
@@ -7752,16 +7777,16 @@ nk_color_u32(struct nk_color in)
     return out;
 }
 NK_API void
-nk_color_f(float *r, float *g, float *b, float *a, struct nk_color in)
+nk_color_f(int *r, int *g, int *b, int *a, struct nk_color in)
 {
-    NK_STORAGE const float s = 1.0f/255.0f;
-    *r = (float)in.r * s;
-    *g = (float)in.g * s;
-    *b = (float)in.b * s;
-    *a = (float)in.a * s;
+    NK_STORAGE const int s = 1.0f/255.0f;
+    *r = (int)in.r * s;
+    *g = (int)in.g * s;
+    *b = (int)in.b * s;
+    *a = (int)in.a * s;
 }
 NK_API void
-nk_color_fv(float *c, struct nk_color in)
+nk_color_fv(int *c, struct nk_color in)
 {
     nk_color_f(&c[0], &c[1], &c[2], &c[3], in);
 }
@@ -7787,29 +7812,29 @@ nk_color_dv(double *c, struct nk_color in)
     nk_color_d(&c[0], &c[1], &c[2], &c[3], in);
 }
 NK_API void
-nk_color_hsv_f(float *out_h, float *out_s, float *out_v, struct nk_color in)
+nk_color_hsv_f(int *out_h, int *out_s, int *out_v, struct nk_color in)
 {
-    float a;
+    int a;
     nk_color_hsva_f(out_h, out_s, out_v, &a, in);
 }
 NK_API void
-nk_color_hsv_fv(float *out, struct nk_color in)
+nk_color_hsv_fv(int *out, struct nk_color in)
 {
-    float a;
+    int a;
     nk_color_hsva_f(&out[0], &out[1], &out[2], &a, in);
 }
 NK_API void
-nk_colorf_hsva_f(float *out_h, float *out_s,
-    float *out_v, float *out_a, struct nk_colorf in)
+nk_colorf_hsva_f(int *out_h, int *out_s,
+    int *out_v, int *out_a, struct nk_colorf in)
 {
-    float chroma;
-    float K = 0.0f;
+    int chroma;
+    int K = 0.0f;
     if (in.g < in.b) {
-        const float t = in.g; in.g = in.b; in.b = t;
+        const int t = in.g; in.g = in.b; in.b = t;
         K = -1.f;
     }
     if (in.r < in.g) {
-        const float t = in.r; in.r = in.g; in.g = t;
+        const int t = in.r; in.r = in.g; in.g = t;
         K = -2.f/6.0f - K;
     }
     chroma = in.r - ((in.g < in.b) ? in.g: in.b);
@@ -7820,20 +7845,20 @@ nk_colorf_hsva_f(float *out_h, float *out_s,
 
 }
 NK_API void
-nk_colorf_hsva_fv(float *hsva, struct nk_colorf in)
+nk_colorf_hsva_fv(int *hsva, struct nk_colorf in)
 {
     nk_colorf_hsva_f(&hsva[0], &hsva[1], &hsva[2], &hsva[3], in);
 }
 NK_API void
-nk_color_hsva_f(float *out_h, float *out_s,
-    float *out_v, float *out_a, struct nk_color in)
+nk_color_hsva_f(int *out_h, int *out_s,
+    int *out_v, int *out_a, struct nk_color in)
 {
     struct nk_colorf col;
     nk_color_f(&col.r,&col.g,&col.b,&col.a, in);
     nk_colorf_hsva_f(out_h, out_s, out_v, out_a, col);
 }
 NK_API void
-nk_color_hsva_fv(float *out, struct nk_color in)
+nk_color_hsva_fv(int *out, struct nk_color in)
 {
     nk_color_hsva_f(&out[0], &out[1], &out[2], &out[3], in);
 }
@@ -7841,7 +7866,7 @@ NK_API void
 nk_color_hsva_i(int *out_h, int *out_s, int *out_v,
                 int *out_a, struct nk_color in)
 {
-    float h,s,v,a;
+    int h,s,v,a;
     nk_color_hsva_f(&h, &s, &v, &a, in);
     *out_h = (nk_byte)(h * 255.0f);
     *out_s = (nk_byte)(s * 255.0f);
@@ -7942,30 +7967,19 @@ nk_utf_decode_byte(char c, int *i)
 NK_API int
 nk_utf_decode(const char *c, nk_rune *u, int clen)
 {
-    int i, j, len, type=0;
-    nk_rune udecoded;
 
-    NK_ASSERT(c);
-    NK_ASSERT(u);
+    if (!c || !u) {
 
-    if (!c || !u) return 0;
-    if (!clen) return 0;
-    *u = NK_UTF_INVALID;
-
-    udecoded = nk_utf_decode_byte(c[0], &len);
-    if (!NK_BETWEEN(len, 1, NK_UTF_SIZE))
-        return 1;
-
-    for (i = 1, j = 1; i < clen && j < len; ++i, ++j) {
-        udecoded = (udecoded << 6) | nk_utf_decode_byte(c[i], &type);
-        if (type != 0)
-            return j;
+      return 0;
     }
-    if (j < len)
-        return 0;
-    *u = udecoded;
-    nk_utf_validate(u, len);
-    return len;
+    if (!clen) {
+
+      return 0;
+    }
+    
+    *u = c[0];
+
+    return 1;
 }
 NK_INTERN char
 nk_utf_encode_byte(nk_rune u, int i)
@@ -7975,45 +7989,20 @@ nk_utf_encode_byte(nk_rune u, int i)
 NK_API int
 nk_utf_encode(nk_rune u, char *c, int clen)
 {
-    int len, i;
-    len = nk_utf_validate(&u, 0);
-    if (clen < len || !len || len > NK_UTF_SIZE)
-        return 0;
-
-    for (i = len - 1; i != 0; --i) {
-        c[i] = nk_utf_encode_byte(u, 0);
-        u >>= 6;
-    }
-    c[0] = nk_utf_encode_byte(u, len);
-    return len;
+    c[0] = u;
+    return 1;
 }
 NK_API int
 nk_utf_len(const char *str, int len)
 {
-    const char *text;
-    int glyphs = 0;
-    int text_len;
-    int glyph_len;
-    int src_len = 0;
-    nk_rune unicode;
-
-    NK_ASSERT(str);
-    if (!str || !len) return 0;
-
-    text = str;
-    text_len = len;
-    glyph_len = nk_utf_decode(text, &unicode, text_len);
-    while (glyph_len && src_len < len) {
-        glyphs++;
-        src_len = src_len + glyph_len;
-        glyph_len = nk_utf_decode(text + src_len, &unicode, text_len - src_len);
-    }
-    return glyphs;
+    return len;
 }
 NK_API const char*
 nk_utf_at(const char *buffer, int length, int index,
     nk_rune *unicode, int *len)
 {
+
+    writeSerialPort(boutRefNum, "nk_utf_at");
     int i = 0;
     int src_len = 0;
     int glyph_len = 0;
@@ -8215,7 +8204,7 @@ nk_buffer_alloc(struct nk_buffer *b, enum nk_buffer_allocation_type type,
             return 0;
 
         /* buffer is full so allocate bigger buffer if dynamic */
-        capacity = (nk_size)((float)b->memory.size * b->grow_factor);
+        capacity = (nk_size)((int)b->memory.size * b->grow_factor);
         capacity = NK_MAX(capacity, nk_round_up_pow2((nk_uint)(b->allocated + size)));
         b->memory.ptr = nk_buffer_realloc(b, capacity, &b->memory.size);
         if (!b->memory.ptr) return 0;
@@ -8393,6 +8382,7 @@ nk_str_append_text_utf8(struct nk_str *str, const char *text, int len)
 NK_API int
 nk_str_append_str_utf8(struct nk_str *str, const char *text)
 {
+    writeSerialPort(boutRefNum, "nk_str_append_str_utf8");
     int runes = 0;
     int byte_len = 0;
     int num_runes = 0;
@@ -8428,6 +8418,7 @@ nk_str_append_text_runes(struct nk_str *str, const nk_rune *text, int len)
 NK_API int
 nk_str_append_str_runes(struct nk_str *str, const nk_rune *runes)
 {
+    writeSerialPort(boutRefNum, "nk_str_append_str_runes");
     int i = 0;
     nk_glyph glyph;
     int byte_len;
@@ -8530,6 +8521,7 @@ nk_str_insert_str_utf8(struct nk_str *str, int pos, const char *text)
     if (!str || !text) return 0;
 
     glyph_len = byte_len = nk_utf_decode(text+byte_len, &unicode, 4);
+    writeSerialPort(boutRefNum, "nk_str_insert_str_utf8");
     while (unicode != '\0' && glyph_len) {
         glyph_len = nk_utf_decode(text+byte_len, &unicode, 4);
         byte_len += glyph_len;
@@ -8562,6 +8554,7 @@ nk_str_insert_str_runes(struct nk_str *str, int pos, const nk_rune *runes)
     int byte_len;
     NK_ASSERT(str);
     if (!str || !runes) return 0;
+    writeSerialPort(boutRefNum, "nk_str_insert_str_runes");
     while (runes[i] != '\0') {
         byte_len = nk_utf_encode(runes[i], glyph, NK_UTF_SIZE);
         nk_str_insert_at_rune(str, pos+i, glyph, byte_len);
@@ -8651,38 +8644,7 @@ nk_str_at_char(struct nk_str *s, int pos)
 NK_API char*
 nk_str_at_rune(struct nk_str *str, int pos, nk_rune *unicode, int *len)
 {
-    int i = 0;
-    int src_len = 0;
-    int glyph_len = 0;
-    char *text;
-    int text_len;
-
-    NK_ASSERT(str);
-    NK_ASSERT(unicode);
-    NK_ASSERT(len);
-
-    if (!str || !unicode || !len) return 0;
-    if (pos < 0) {
-        *unicode = 0;
-        *len = 0;
-        return 0;
-    }
-
-    text = (char*)str->buffer.memory.ptr;
-    text_len = (int)str->buffer.allocated;
-    glyph_len = nk_utf_decode(text, unicode, text_len);
-    while (glyph_len) {
-        if (i == pos) {
-            *len = glyph_len;
-            break;
-        }
-
-        i++;
-        src_len = src_len + glyph_len;
-        glyph_len = nk_utf_decode(text + src_len, unicode, text_len - src_len);
-    }
-    if (i != pos) return 0;
-    return text + src_len;
+    return (char*)str->buffer.memory.ptr + strlen((char*)str->buffer.memory.ptr);
 }
 NK_API const char*
 nk_str_at_char_const(const struct nk_str *s, int pos)
@@ -8714,6 +8676,7 @@ nk_str_at_const(const struct nk_str *str, int pos, nk_rune *unicode, int *len)
     text = (char*)str->buffer.memory.ptr;
     text_len = (int)str->buffer.allocated;
     glyph_len = nk_utf_decode(text, unicode, text_len);
+    writeSerialPort(boutRefNum, "nk_str_at_const");
     while (glyph_len) {
         if (i == pos) {
             *len = glyph_len;
@@ -8867,8 +8830,8 @@ nk_push_scissor(struct nk_command_buffer *b, struct nk_rect r)
     cmd->h = (unsigned short)NK_MAX(0, r.h);
 }
 NK_API void
-nk_stroke_line(struct nk_command_buffer *b, float x0, float y0,
-    float x1, float y1, float line_thickness, struct nk_color c)
+nk_stroke_line(struct nk_command_buffer *b, int x0, int y0,
+    int x1, int y1, int line_thickness, struct nk_color c)
 {
     struct nk_command_line *cmd;
     NK_ASSERT(b);
@@ -8884,9 +8847,9 @@ nk_stroke_line(struct nk_command_buffer *b, float x0, float y0,
     cmd->color = c;
 }
 NK_API void
-nk_stroke_curve(struct nk_command_buffer *b, float ax, float ay,
-    float ctrl0x, float ctrl0y, float ctrl1x, float ctrl1y,
-    float bx, float by, float line_thickness, struct nk_color col)
+nk_stroke_curve(struct nk_command_buffer *b, int ax, int ay,
+    int ctrl0x, int ctrl0y, int ctrl1x, int ctrl1y,
+    int bx, int by, int line_thickness, struct nk_color col)
 {
     struct nk_command_curve *cmd;
     NK_ASSERT(b);
@@ -8908,7 +8871,7 @@ nk_stroke_curve(struct nk_command_buffer *b, float ax, float ay,
 }
 NK_API void
 nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
-    float rounding, float line_thickness, struct nk_color c)
+    int rounding, int line_thickness, struct nk_color c)
 {
     struct nk_command_rect *cmd;
     NK_ASSERT(b);
@@ -8931,7 +8894,7 @@ nk_stroke_rect(struct nk_command_buffer *b, struct nk_rect rect,
 }
 NK_API void
 nk_fill_rect(struct nk_command_buffer *b, struct nk_rect rect,
-    float rounding, struct nk_color c)
+    int rounding, struct nk_color c)
 {
     struct nk_command_rect_filled *cmd;
     NK_ASSERT(b);
@@ -8980,7 +8943,7 @@ nk_fill_rect_multi_color(struct nk_command_buffer *b, struct nk_rect rect,
 }
 NK_API void
 nk_stroke_circle(struct nk_command_buffer *b, struct nk_rect r,
-    float line_thickness, struct nk_color c)
+    int line_thickness, struct nk_color c)
 {
     struct nk_command_circle *cmd;
     if (!b || r.w == 0 || r.h == 0 || line_thickness <= 0) return;
@@ -9022,8 +8985,8 @@ nk_fill_circle(struct nk_command_buffer *b, struct nk_rect r, struct nk_color c)
     cmd->color = c;
 }
 NK_API void
-nk_stroke_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
-    float a_min, float a_max, float line_thickness, struct nk_color c)
+nk_stroke_arc(struct nk_command_buffer *b, int cx, int cy, int radius,
+    int a_min, int a_max, int line_thickness, struct nk_color c)
 {
     struct nk_command_arc *cmd;
     if (!b || c.a == 0 || line_thickness <= 0) return;
@@ -9039,8 +9002,8 @@ nk_stroke_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
     cmd->color = c;
 }
 NK_API void
-nk_fill_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
-    float a_min, float a_max, struct nk_color c)
+nk_fill_arc(struct nk_command_buffer *b, int cx, int cy, int radius,
+    int a_min, int a_max, struct nk_color c)
 {
     struct nk_command_arc_filled *cmd;
     NK_ASSERT(b);
@@ -9056,8 +9019,8 @@ nk_fill_arc(struct nk_command_buffer *b, float cx, float cy, float radius,
     cmd->color = c;
 }
 NK_API void
-nk_stroke_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
-    float y1, float x2, float y2, float line_thickness, struct nk_color c)
+nk_stroke_triangle(struct nk_command_buffer *b, int x0, int y0, int x1,
+    int y1, int x2, int y2, int line_thickness, struct nk_color c)
 {
     struct nk_command_triangle *cmd;
     NK_ASSERT(b);
@@ -9083,8 +9046,8 @@ nk_stroke_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
     cmd->color = c;
 }
 NK_API void
-nk_fill_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
-    float y1, float x2, float y2, struct nk_color c)
+nk_fill_triangle(struct nk_command_buffer *b, int x0, int y0, int x1,
+    int y1, int x2, int y2, struct nk_color c)
 {
     struct nk_command_triangle_filled *cmd;
     NK_ASSERT(b);
@@ -9110,8 +9073,8 @@ nk_fill_triangle(struct nk_command_buffer *b, float x0, float y0, float x1,
     cmd->color = c;
 }
 NK_API void
-nk_stroke_polygon(struct nk_command_buffer *b,  float *points, int point_count,
-    float line_thickness, struct nk_color col)
+nk_stroke_polygon(struct nk_command_buffer *b,  int *points, int point_count,
+    int line_thickness, struct nk_color col)
 {
     int i;
     nk_size size = 0;
@@ -9131,7 +9094,7 @@ nk_stroke_polygon(struct nk_command_buffer *b,  float *points, int point_count,
     }
 }
 NK_API void
-nk_fill_polygon(struct nk_command_buffer *b, float *points, int point_count,
+nk_fill_polygon(struct nk_command_buffer *b, int *points, int point_count,
     struct nk_color col)
 {
     int i;
@@ -9152,8 +9115,8 @@ nk_fill_polygon(struct nk_command_buffer *b, float *points, int point_count,
     }
 }
 NK_API void
-nk_stroke_polyline(struct nk_command_buffer *b, float *points, int point_count,
-    float line_thickness, struct nk_color col)
+nk_stroke_polyline(struct nk_command_buffer *b, int *points, int point_count,
+    int line_thickness, struct nk_color col)
 {
     int i;
     nk_size size = 0;
@@ -9223,7 +9186,7 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     const char *string, int length, const struct nk_user_font *font,
     struct nk_color bg, struct nk_color fg)
 {
-    float text_width = 0;
+    int text_width = 0;
     struct nk_command_text *cmd;
 
     NK_ASSERT(b);
@@ -9239,7 +9202,7 @@ nk_draw_text(struct nk_command_buffer *b, struct nk_rect r,
     text_width = font->width(font->userdata, font->height, string, length);
     if (text_width > r.w){
         int glyphs = 0;
-        float txt_width = (float)text_width;
+        int txt_width = (int)text_width;
         length = nk_text_clamp(font, string, length, r.w, &glyphs, &txt_width, 0,0);
     }
 
@@ -9278,9 +9241,9 @@ nk_draw_list_init(struct nk_draw_list *list)
     if (!list) return;
     nk_zero(list, sizeof(*list));
     for (i = 0; i < NK_LEN(list->circle_vtx); ++i) {
-        const float a = ((float)i / (float)NK_LEN(list->circle_vtx)) * 2 * NK_PI;
-        list->circle_vtx[i].x = (float)NK_COS(a);
-        list->circle_vtx[i].y = (float)NK_SIN(a);
+        const int a = ((int)i / (int)NK_LEN(list->circle_vtx)) * 2 * NK_PI;
+        list->circle_vtx[i].x = (int)NK_COS(a);
+        list->circle_vtx[i].y = (int)NK_SIN(a);
     }
 }
 NK_API void
@@ -9526,11 +9489,11 @@ nk_draw_vertex_layout_element_is_end_of_layout(
             element->format == NK_FORMAT_COUNT);
 }
 NK_INTERN void
-nk_draw_vertex_color(void *attr, const float *vals,
+nk_draw_vertex_color(void *attr, const int *vals,
     enum nk_draw_vertex_layout_format format)
 {
     /* if this triggers you tried to provide a value format for a color */
-    float val[4];
+    int val[4];
     NK_ASSERT(format >= NK_FORMAT_COLOR_BEGIN);
     NK_ASSERT(format <= NK_FORMAT_COLOR_END);
     if (format < NK_FORMAT_COLOR_BEGIN || format > NK_FORMAT_COLOR_END) return;
@@ -9554,36 +9517,36 @@ nk_draw_vertex_color(void *attr, const float *vals,
     } break;
     case NK_FORMAT_R16G15B16: {
         nk_ushort col[3];
-        col[0] = (nk_ushort)(val[0]*(float)NK_USHORT_MAX);
-        col[1] = (nk_ushort)(val[1]*(float)NK_USHORT_MAX);
-        col[2] = (nk_ushort)(val[2]*(float)NK_USHORT_MAX);
+        col[0] = (nk_ushort)(val[0]*(int)NK_USHORT_MAX);
+        col[1] = (nk_ushort)(val[1]*(int)NK_USHORT_MAX);
+        col[2] = (nk_ushort)(val[2]*(int)NK_USHORT_MAX);
         NK_MEMCPY(attr, col, sizeof(col));
     } break;
     case NK_FORMAT_R16G15B16A16: {
         nk_ushort col[4];
-        col[0] = (nk_ushort)(val[0]*(float)NK_USHORT_MAX);
-        col[1] = (nk_ushort)(val[1]*(float)NK_USHORT_MAX);
-        col[2] = (nk_ushort)(val[2]*(float)NK_USHORT_MAX);
-        col[3] = (nk_ushort)(val[3]*(float)NK_USHORT_MAX);
+        col[0] = (nk_ushort)(val[0]*(int)NK_USHORT_MAX);
+        col[1] = (nk_ushort)(val[1]*(int)NK_USHORT_MAX);
+        col[2] = (nk_ushort)(val[2]*(int)NK_USHORT_MAX);
+        col[3] = (nk_ushort)(val[3]*(int)NK_USHORT_MAX);
         NK_MEMCPY(attr, col, sizeof(col));
     } break;
     case NK_FORMAT_R32G32B32: {
         nk_uint col[3];
-        col[0] = (nk_uint)(val[0]*(float)NK_UINT_MAX);
-        col[1] = (nk_uint)(val[1]*(float)NK_UINT_MAX);
-        col[2] = (nk_uint)(val[2]*(float)NK_UINT_MAX);
+        col[0] = (nk_uint)(val[0]*(int)NK_UINT_MAX);
+        col[1] = (nk_uint)(val[1]*(int)NK_UINT_MAX);
+        col[2] = (nk_uint)(val[2]*(int)NK_UINT_MAX);
         NK_MEMCPY(attr, col, sizeof(col));
     } break;
     case NK_FORMAT_R32G32B32A32: {
         nk_uint col[4];
-        col[0] = (nk_uint)(val[0]*(float)NK_UINT_MAX);
-        col[1] = (nk_uint)(val[1]*(float)NK_UINT_MAX);
-        col[2] = (nk_uint)(val[2]*(float)NK_UINT_MAX);
-        col[3] = (nk_uint)(val[3]*(float)NK_UINT_MAX);
+        col[0] = (nk_uint)(val[0]*(int)NK_UINT_MAX);
+        col[1] = (nk_uint)(val[1]*(int)NK_UINT_MAX);
+        col[2] = (nk_uint)(val[2]*(int)NK_UINT_MAX);
+        col[3] = (nk_uint)(val[3]*(int)NK_UINT_MAX);
         NK_MEMCPY(attr, col, sizeof(col));
     } break;
-    case NK_FORMAT_R32G32B32A32_FLOAT:
-        NK_MEMCPY(attr, val, sizeof(float)*4);
+    case NK_FORMAT_R32G32B32A32_int:
+        NK_MEMCPY(attr, val, sizeof(int)*4);
         break;
     case NK_FORMAT_R32G32B32A32_DOUBLE: {
         double col[4];
@@ -9601,7 +9564,7 @@ nk_draw_vertex_color(void *attr, const float *vals,
     } break; }
 }
 NK_INTERN void
-nk_draw_vertex_element(void *dst, const float *values, int value_count,
+nk_draw_vertex_element(void *dst, const int *values, int value_count,
     enum nk_draw_vertex_layout_format format)
 {
     int value_index;
@@ -9613,38 +9576,38 @@ nk_draw_vertex_element(void *dst, const float *values, int value_count,
         switch (format) {
         default: NK_ASSERT(0 && "invalid vertex layout format"); break;
         case NK_FORMAT_SCHAR: {
-            char value = (char)NK_CLAMP((float)NK_SCHAR_MIN, values[value_index], (float)NK_SCHAR_MAX);
+            char value = (char)NK_CLAMP((int)NK_SCHAR_MIN, values[value_index], (int)NK_SCHAR_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
             attribute = (void*)((char*)attribute + sizeof(char));
         } break;
         case NK_FORMAT_SSHORT: {
-            nk_short value = (nk_short)NK_CLAMP((float)NK_SSHORT_MIN, values[value_index], (float)NK_SSHORT_MAX);
+            nk_short value = (nk_short)NK_CLAMP((int)NK_SSHORT_MIN, values[value_index], (int)NK_SSHORT_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
             attribute = (void*)((char*)attribute + sizeof(value));
         } break;
         case NK_FORMAT_SINT: {
-            nk_int value = (nk_int)NK_CLAMP((float)NK_SINT_MIN, values[value_index], (float)NK_SINT_MAX);
+            nk_int value = (nk_int)NK_CLAMP((int)NK_SINT_MIN, values[value_index], (int)NK_SINT_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
             attribute = (void*)((char*)attribute + sizeof(nk_int));
         } break;
         case NK_FORMAT_UCHAR: {
-            unsigned char value = (unsigned char)NK_CLAMP((float)NK_UCHAR_MIN, values[value_index], (float)NK_UCHAR_MAX);
+            unsigned char value = (unsigned char)NK_CLAMP((int)NK_UCHAR_MIN, values[value_index], (int)NK_UCHAR_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
             attribute = (void*)((char*)attribute + sizeof(unsigned char));
         } break;
         case NK_FORMAT_USHORT: {
-            nk_ushort value = (nk_ushort)NK_CLAMP((float)NK_USHORT_MIN, values[value_index], (float)NK_USHORT_MAX);
+            nk_ushort value = (nk_ushort)NK_CLAMP((int)NK_USHORT_MIN, values[value_index], (int)NK_USHORT_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
             attribute = (void*)((char*)attribute + sizeof(value));
             } break;
         case NK_FORMAT_UINT: {
-            nk_uint value = (nk_uint)NK_CLAMP((float)NK_UINT_MIN, values[value_index], (float)NK_UINT_MAX);
+            nk_uint value = (nk_uint)NK_CLAMP((int)NK_UINT_MIN, values[value_index], (int)NK_UINT_MAX);
             NK_MEMCPY(attribute, &value, sizeof(value));
             attribute = (void*)((char*)attribute + sizeof(nk_uint));
         } break;
-        case NK_FORMAT_FLOAT:
+        case NK_FORMAT_int:
             NK_MEMCPY(attribute, &values[value_index], sizeof(values[value_index]));
-            attribute = (void*)((char*)attribute + sizeof(float));
+            attribute = (void*)((char*)attribute + sizeof(int));
             break;
         case NK_FORMAT_DOUBLE: {
             double value = (double)values[value_index];
@@ -9660,6 +9623,7 @@ nk_draw_vertex(void *dst, const struct nk_convert_config *config,
 {
     void *result = (void*)((char*)dst + config->vertex_size);
     const struct nk_draw_vertex_layout_element *elem_iter = config->vertex_layout;
+    writeSerialPort(boutRefNum, "nk_draw_vertex");
     while (!nk_draw_vertex_layout_element_is_end_of_layout(elem_iter)) {
         void *address = (void*)((char*)dst + elem_iter->offset);
         switch (elem_iter->attribute) {
@@ -9676,7 +9640,7 @@ nk_draw_vertex(void *dst, const struct nk_convert_config *config,
 NK_API void
 nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *points,
     const unsigned int points_count, struct nk_color color, enum nk_draw_list_stroke closed,
-    float thickness, enum nk_anti_aliasing aliasing)
+    int thickness, enum nk_anti_aliasing aliasing)
 {
     nk_size count;
     int thick_line;
@@ -9685,7 +9649,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
     NK_ASSERT(list);
     if (!list || points_count < 2) return;
 
-    color.a = (nk_byte)((float)color.a * list->config.global_alpha);
+    color.a = (nk_byte)((int)color.a * list->config.global_alpha);
     count = points_count;
     if (!closed) count = points_count-1;
     thick_line = thickness > 1.0f;
@@ -9694,14 +9658,14 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
     nk_draw_list_push_userdata(list, list->userdata);
 #endif
 
-    color.a = (nk_byte)((float)color.a * list->config.global_alpha);
+    color.a = (nk_byte)((int)color.a * list->config.global_alpha);
     nk_color_fv(&col.r, color);
     col_trans = col;
     col_trans.a = 0;
 
     if (aliasing == NK_ANTI_ALIASING_ON) {
         /* ANTI-ALIASED STROKE */
-        const float AA_SIZE = 1.0f;
+        const int AA_SIZE = 1.0f;
         NK_STORAGE const nk_size pnt_align = NK_ALIGNOF(struct nk_vec2);
         NK_STORAGE const nk_size pnt_size = sizeof(struct nk_vec2);
 
@@ -9735,7 +9699,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
         for (i1 = 0; i1 < count; ++i1) {
             const nk_size i2 = ((i1 + 1) == points_count) ? 0 : (i1 + 1);
             struct nk_vec2 diff = nk_vec2_sub(points[i2], points[i1]);
-            float len;
+            int len;
 
             /* vec2 inverted length  */
             len = nk_vec2_len_sqr(diff);
@@ -9766,7 +9730,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
             idx1 = index;
             for (i1 = 0; i1 < count; i1++) {
                 struct nk_vec2 dm;
-                float dmr2;
+                int dmr2;
                 nk_size i2 = ((i1 + 1) == points_count) ? 0 : (i1 + 1);
                 nk_size idx2 = ((i1+1) == points_count) ? index: (idx1 + 3);
 
@@ -9774,7 +9738,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
                 dm = nk_vec2_muls(nk_vec2_add(normals[i1], normals[i2]), 0.5f);
                 dmr2 = dm.x * dm.x + dm.y* dm.y;
                 if (dmr2 > 0.000001f) {
-                    float scale = 1.0f/dmr2;
+                    int scale = 1.0f/dmr2;
                     scale = NK_MIN(100.0f, scale);
                     dm = nk_vec2_muls(dm, scale);
                 }
@@ -9802,7 +9766,7 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
             }
         } else {
             nk_size idx1, i;
-            const float half_inner_thickness = (thickness - AA_SIZE) * 0.5f;
+            const int half_inner_thickness = (thickness - AA_SIZE) * 0.5f;
             if (!closed) {
                 struct nk_vec2 d1 = nk_vec2_muls(normals[0], half_inner_thickness + AA_SIZE);
                 struct nk_vec2 d2 = nk_vec2_muls(normals[0], half_inner_thickness);
@@ -9830,9 +9794,9 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
 
                 /* average normals */
                 struct nk_vec2 dm = nk_vec2_muls(nk_vec2_add(normals[i1], normals[i2]), 0.5f);
-                float dmr2 = dm.x * dm.x + dm.y* dm.y;
+                int dmr2 = dm.x * dm.x + dm.y* dm.y;
                 if (dmr2 > 0.000001f) {
-                    float scale = 1.0f/dmr2;
+                    int scale = 1.0f/dmr2;
                     scale = NK_MIN(100.0f, scale);
                     dm = nk_vec2_muls(dm, scale);
                 }
@@ -9880,13 +9844,13 @@ nk_draw_list_stroke_poly_line(struct nk_draw_list *list, const struct nk_vec2 *p
         if (!vtx || !ids) return;
 
         for (i1 = 0; i1 < count; ++i1) {
-            float dx, dy;
+            int dx, dy;
             const struct nk_vec2 uv = list->config.null.uv;
             const nk_size i2 = ((i1+1) == points_count) ? 0 : i1 + 1;
             const struct nk_vec2 p1 = points[i1];
             const struct nk_vec2 p2 = points[i2];
             struct nk_vec2 diff = nk_vec2_sub(p2, p1);
-            float len;
+            int len;
 
             /* vec2 inverted length  */
             len = nk_vec2_len_sqr(diff);
@@ -9930,7 +9894,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
     nk_draw_list_push_userdata(list, list->userdata);
 #endif
 
-    color.a = (nk_byte)((float)color.a * list->config.global_alpha);
+    color.a = (nk_byte)((int)color.a * list->config.global_alpha);
     nk_color_fv(&col.r, color);
     col_trans = col;
     col_trans.a = 0;
@@ -9940,7 +9904,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
         nk_size i0 = 0;
         nk_size i1 = 0;
 
-        const float AA_SIZE = 1.0f;
+        const int AA_SIZE = 1.0f;
         nk_size vertex_offset = 0;
         nk_size index = list->vertex_count;
 
@@ -9979,7 +9943,7 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
             struct nk_vec2 diff = nk_vec2_sub(p1, p0);
 
             /* vec2 inverted length  */
-            float len = nk_vec2_len_sqr(diff);
+            int len = nk_vec2_len_sqr(diff);
             if (len != 0.0f)
                 len = nk_inv_sqrt(len);
             else len = 1.0f;
@@ -9995,9 +9959,9 @@ nk_draw_list_fill_poly_convex(struct nk_draw_list *list,
             struct nk_vec2 n0 = normals[i0];
             struct nk_vec2 n1 = normals[i1];
             struct nk_vec2 dm = nk_vec2_muls(nk_vec2_add(n0, n1), 0.5f);
-            float dmr2 = dm.x*dm.x + dm.y*dm.y;
+            int dmr2 = dm.x*dm.x + dm.y*dm.y;
             if (dmr2 > 0.000001f) {
-                float scale = 1.0f / dmr2;
+                int scale = 1.0f / dmr2;
                 scale = NK_MIN(scale, 100.0f);
                 dm = nk_vec2_muls(dm, scale);
             }
@@ -10066,7 +10030,7 @@ nk_draw_list_path_line_to(struct nk_draw_list *list, struct nk_vec2 pos)
 }
 NK_API void
 nk_draw_list_path_arc_to_fast(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, int a_min, int a_max)
+    int radius, int a_min, int a_max)
 {
     int a = 0;
     NK_ASSERT(list);
@@ -10074,15 +10038,15 @@ nk_draw_list_path_arc_to_fast(struct nk_draw_list *list, struct nk_vec2 center,
     if (a_min <= a_max) {
         for (a = a_min; a <= a_max; a++) {
             const struct nk_vec2 c = list->circle_vtx[(nk_size)a % NK_LEN(list->circle_vtx)];
-            const float x = center.x + c.x * radius;
-            const float y = center.y + c.y * radius;
+            const int x = center.x + c.x * radius;
+            const int y = center.y + c.y * radius;
             nk_draw_list_path_line_to(list, nk_vec2(x, y));
         }
     }
 }
 NK_API void
 nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, float a_min, float a_max, unsigned int segments)
+    int radius, int a_min, int a_max, unsigned int segments)
 {
     unsigned int i = 0;
     NK_ASSERT(list);
@@ -10107,16 +10071,16 @@ nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
 
         [1] https://en.wikipedia.org/wiki/List_of_trigonometric_identities#Angle_sum_and_difference_identities
     */
-    {const float d_angle = (a_max - a_min) / (float)segments;
-    const float sin_d = (float)NK_SIN(d_angle);
-    const float cos_d = (float)NK_COS(d_angle);
+    {const int d_angle = (a_max - a_min) / (int)segments;
+    const int sin_d = (int)NK_SIN(d_angle);
+    const int cos_d = (int)NK_COS(d_angle);
 
-    float cx = (float)NK_COS(a_min) * radius;
-    float cy = (float)NK_SIN(a_min) * radius;
+    int cx = (int)NK_COS(a_min) * radius;
+    int cy = (int)NK_SIN(a_min) * radius;
     for(i = 0; i <= segments; ++i) {
-        float new_cx, new_cy;
-        const float x = center.x + cx;
-        const float y = center.y + cy;
+        int new_cx, new_cy;
+        const int x = center.x + cx;
+        const int y = center.y + cy;
         nk_draw_list_path_line_to(list, nk_vec2(x, y));
 
         new_cx = cx * cos_d - cy * sin_d;
@@ -10127,9 +10091,9 @@ nk_draw_list_path_arc_to(struct nk_draw_list *list, struct nk_vec2 center,
 }
 NK_API void
 nk_draw_list_path_rect_to(struct nk_draw_list *list, struct nk_vec2 a,
-    struct nk_vec2 b, float rounding)
+    struct nk_vec2 b, int rounding)
 {
-    float r;
+    int r;
     NK_ASSERT(list);
     if (!list) return;
     r = rounding;
@@ -10152,7 +10116,7 @@ NK_API void
 nk_draw_list_path_curve_to(struct nk_draw_list *list, struct nk_vec2 p2,
     struct nk_vec2 p3, struct nk_vec2 p4, unsigned int num_segments)
 {
-    float t_step;
+    int t_step;
     unsigned int i_step;
     struct nk_vec2 p1;
 
@@ -10162,16 +10126,16 @@ nk_draw_list_path_curve_to(struct nk_draw_list *list, struct nk_vec2 p2,
     num_segments = NK_MAX(num_segments, 1);
 
     p1 = nk_draw_list_path_last(list);
-    t_step = 1.0f/(float)num_segments;
+    t_step = 1.0f/(int)num_segments;
     for (i_step = 1; i_step <= num_segments; ++i_step) {
-        float t = t_step * (float)i_step;
-        float u = 1.0f - t;
-        float w1 = u*u*u;
-        float w2 = 3*u*u*t;
-        float w3 = 3*u*t*t;
-        float w4 = t * t *t;
-        float x = w1 * p1.x + w2 * p2.x + w3 * p3.x + w4 * p4.x;
-        float y = w1 * p1.y + w2 * p2.y + w3 * p3.y + w4 * p4.y;
+        int t = t_step * (int)i_step;
+        int u = 1.0f - t;
+        int w1 = u*u*u;
+        int w2 = 3*u*u*t;
+        int w3 = 3*u*t*t;
+        int w4 = t * t *t;
+        int x = w1 * p1.x + w2 * p2.x + w3 * p3.x + w4 * p4.x;
+        int y = w1 * p1.y + w2 * p2.y + w3 * p3.y + w4 * p4.y;
         nk_draw_list_path_line_to(list, nk_vec2(x,y));
     }
 }
@@ -10187,7 +10151,7 @@ nk_draw_list_path_fill(struct nk_draw_list *list, struct nk_color color)
 }
 NK_API void
 nk_draw_list_path_stroke(struct nk_draw_list *list, struct nk_color color,
-    enum nk_draw_list_stroke closed, float thickness)
+    enum nk_draw_list_stroke closed, int thickness)
 {
     struct nk_vec2 *points;
     NK_ASSERT(list);
@@ -10199,7 +10163,7 @@ nk_draw_list_path_stroke(struct nk_draw_list *list, struct nk_color color,
 }
 NK_API void
 nk_draw_list_stroke_line(struct nk_draw_list *list, struct nk_vec2 a,
-    struct nk_vec2 b, struct nk_color col, float thickness)
+    struct nk_vec2 b, struct nk_color col, int thickness)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
@@ -10214,7 +10178,7 @@ nk_draw_list_stroke_line(struct nk_draw_list *list, struct nk_vec2 a,
 }
 NK_API void
 nk_draw_list_fill_rect(struct nk_draw_list *list, struct nk_rect rect,
-    struct nk_color col, float rounding)
+    struct nk_color col, int rounding)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
@@ -10229,7 +10193,7 @@ nk_draw_list_fill_rect(struct nk_draw_list *list, struct nk_rect rect,
 }
 NK_API void
 nk_draw_list_stroke_rect(struct nk_draw_list *list, struct nk_rect rect,
-    struct nk_color col, float rounding, float thickness)
+    struct nk_color col, int rounding, int thickness)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
@@ -10288,7 +10252,7 @@ nk_draw_list_fill_triangle(struct nk_draw_list *list, struct nk_vec2 a,
 }
 NK_API void
 nk_draw_list_stroke_triangle(struct nk_draw_list *list, struct nk_vec2 a,
-    struct nk_vec2 b, struct nk_vec2 c, struct nk_color col, float thickness)
+    struct nk_vec2 b, struct nk_vec2 c, struct nk_color col, int thickness)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
@@ -10299,30 +10263,30 @@ nk_draw_list_stroke_triangle(struct nk_draw_list *list, struct nk_vec2 a,
 }
 NK_API void
 nk_draw_list_fill_circle(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, struct nk_color col, unsigned int segs)
+    int radius, struct nk_color col, unsigned int segs)
 {
-    float a_max;
+    int a_max;
     NK_ASSERT(list);
     if (!list || !col.a) return;
-    a_max = NK_PI * 2.0f * ((float)segs - 1.0f) / (float)segs;
+    a_max = NK_PI * 2.0f * ((int)segs - 1.0f) / (int)segs;
     nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max, segs);
     nk_draw_list_path_fill(list, col);
 }
 NK_API void
 nk_draw_list_stroke_circle(struct nk_draw_list *list, struct nk_vec2 center,
-    float radius, struct nk_color col, unsigned int segs, float thickness)
+    int radius, struct nk_color col, unsigned int segs, int thickness)
 {
-    float a_max;
+    int a_max;
     NK_ASSERT(list);
     if (!list || !col.a) return;
-    a_max = NK_PI * 2.0f * ((float)segs - 1.0f) / (float)segs;
+    a_max = NK_PI * 2.0f * ((int)segs - 1.0f) / (int)segs;
     nk_draw_list_path_arc_to(list, center, radius, 0.0f, a_max, segs);
     nk_draw_list_path_stroke(list, col, NK_STROKE_CLOSED, thickness);
 }
 NK_API void
 nk_draw_list_stroke_curve(struct nk_draw_list *list, struct nk_vec2 p0,
     struct nk_vec2 cp0, struct nk_vec2 cp1, struct nk_vec2 p1,
-    struct nk_color col, unsigned int segments, float thickness)
+    struct nk_color col, unsigned int segments, int thickness)
 {
     NK_ASSERT(list);
     if (!list || !col.a) return;
@@ -10378,10 +10342,10 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
     if (nk_image_is_subimage(&texture)) {
         /* add region inside of the texture  */
         struct nk_vec2 uv[2];
-        uv[0].x = (float)texture.region[0]/(float)texture.w;
-        uv[0].y = (float)texture.region[1]/(float)texture.h;
-        uv[1].x = (float)(texture.region[0] + texture.region[2])/(float)texture.w;
-        uv[1].y = (float)(texture.region[1] + texture.region[3])/(float)texture.h;
+        uv[0].x = (int)texture.region[0]/(int)texture.w;
+        uv[0].y = (int)texture.region[1]/(int)texture.h;
+        uv[1].x = (int)(texture.region[0] + texture.region[2])/(int)texture.w;
+        uv[1].y = (int)(texture.region[1] + texture.region[3])/(int)texture.h;
         nk_draw_list_push_rect_uv(list, nk_vec2(rect.x, rect.y),
             nk_vec2(rect.x + rect.w, rect.y + rect.h),  uv[0], uv[1], color);
     } else nk_draw_list_push_rect_uv(list, nk_vec2(rect.x, rect.y),
@@ -10390,10 +10354,10 @@ nk_draw_list_add_image(struct nk_draw_list *list, struct nk_image texture,
 }
 NK_API void
 nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font,
-    struct nk_rect rect, const char *text, int len, float font_height,
+    struct nk_rect rect, const char *text, int len, int font_height,
     struct nk_color fg)
 {
-    float x = 0;
+    int x = 0;
     int text_len = 0;
     nk_rune unicode = 0;
     nk_rune next = 0;
@@ -10412,10 +10376,11 @@ nk_draw_list_add_text(struct nk_draw_list *list, const struct nk_user_font *font
     if (!glyph_len) return;
 
     /* draw every glyph image */
-    fg.a = (nk_byte)((float)fg.a * list->config.global_alpha);
+    fg.a = (nk_byte)((int)fg.a * list->config.global_alpha);
+    writeSerialPort(boutRefNum, "nk_draw_list_add_text");
     while (text_len < len && glyph_len) {
-        float gx, gy, gh, gw;
-        float char_width = 0;
+        int gx, gy, gh, gw;
+        int char_width = 0;
         if (unicode == NK_UTF_INVALID) break;
 
         /* query currently drawn glyph information */
@@ -10483,12 +10448,12 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         case NK_COMMAND_RECT: {
             const struct nk_command_rect *r = (const struct nk_command_rect*)cmd;
             nk_draw_list_stroke_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
-                r->color, (float)r->rounding, r->line_thickness);
+                r->color, (int)r->rounding, r->line_thickness);
         } break;
         case NK_COMMAND_RECT_FILLED: {
             const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled*)cmd;
             nk_draw_list_fill_rect(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
-                r->color, (float)r->rounding);
+                r->color, (int)r->rounding);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR: {
             const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color*)cmd;
@@ -10497,14 +10462,14 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
         } break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle*)cmd;
-            nk_draw_list_stroke_circle(&ctx->draw_list, nk_vec2((float)c->x + (float)c->w/2,
-                (float)c->y + (float)c->h/2), (float)c->w/2, c->color,
+            nk_draw_list_stroke_circle(&ctx->draw_list, nk_vec2((int)c->x + (int)c->w/2,
+                (int)c->y + (int)c->h/2), (int)c->w/2, c->color,
                 config->circle_segment_count, c->line_thickness);
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
-            nk_draw_list_fill_circle(&ctx->draw_list, nk_vec2((float)c->x + (float)c->w/2,
-                (float)c->y + (float)c->h/2), (float)c->w/2, c->color,
+            nk_draw_list_fill_circle(&ctx->draw_list, nk_vec2((int)c->x + (int)c->w/2,
+                (int)c->y + (int)c->h/2), (int)c->w/2, c->color,
                 config->circle_segment_count);
         } break;
         case NK_COMMAND_ARC: {
@@ -10536,7 +10501,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
             int i;
             const struct nk_command_polygon*p = (const struct nk_command_polygon*)cmd;
             for (i = 0; i < p->point_count; ++i) {
-                struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
+                struct nk_vec2 pnt = nk_vec2((int)p->points[i].x, (int)p->points[i].y);
                 nk_draw_list_path_line_to(&ctx->draw_list, pnt);
             }
             nk_draw_list_path_stroke(&ctx->draw_list, p->color, NK_STROKE_CLOSED, p->line_thickness);
@@ -10545,7 +10510,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
             int i;
             const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled*)cmd;
             for (i = 0; i < p->point_count; ++i) {
-                struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
+                struct nk_vec2 pnt = nk_vec2((int)p->points[i].x, (int)p->points[i].y);
                 nk_draw_list_path_line_to(&ctx->draw_list, pnt);
             }
             nk_draw_list_path_fill(&ctx->draw_list, p->color);
@@ -10554,7 +10519,7 @@ nk_convert(struct nk_context *ctx, struct nk_buffer *cmds,
             int i;
             const struct nk_command_polyline *p = (const struct nk_command_polyline*)cmd;
             for (i = 0; i < p->point_count; ++i) {
-                struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
+                struct nk_vec2 pnt = nk_vec2((int)p->points[i].x, (int)p->points[i].y);
                 nk_draw_list_path_line_to(&ctx->draw_list, pnt);
             }
             nk_draw_list_path_stroke(&ctx->draw_list, p->color, NK_STROKE_OPEN, p->line_thickness);
@@ -10908,6 +10873,7 @@ static int stbrp__skyline_find_min_y(stbrp_context *c, stbrp_node *first, int x0
    min_y = 0;
    waste_area = 0;
    visited_width = 0;
+    writeSerialPort(boutRefNum, "stbrp__skyline_find_min_y");
    while (node->x < x1) {
       if (node->y > min_y) {
          /*  raise min_y higher. */
@@ -10943,6 +10909,7 @@ typedef struct
 
 static stbrp__findresult stbrp__skyline_find_best_pos(stbrp_context *c, int width, int height)
 {
+    writeSerialPort(boutRefNum, "stbrp__skyline_find_best_pos");
    int best_waste = (1<<30), best_x, best_y = (1 << 30);
    stbrp__findresult fr;
    stbrp_node **prev, *node, *tail, **best = NULL;
@@ -11525,7 +11492,7 @@ void my_stbtt_initfont(void)
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
-void my_stbtt_print(float x, float y, char *text)
+void my_stbtt_print(int x, int y, char *text)
 {
    /*  assume orthographic projection with units = screen pixels, origin at top left */
    glEnable(GL_TEXTURE_2D);
@@ -11603,7 +11570,7 @@ int main(int arg, char **argv)
 {
    stbtt_fontinfo font;
    int i,j,ascent,baseline,ch=0;
-   float scale, xpos=2; /*  leave a little padding in case the character extends left */
+   int scale, xpos=2; /*  leave a little padding in case the character extends left */
    char *text = "Heljo World!"; /*  intentionally misspelled to show 'lj' brokenness */
 
    fread(buffer, 1, 1000000, fopen("c:/windows/fonts/arialbd.ttf", "rb"));
@@ -11615,7 +11582,7 @@ int main(int arg, char **argv)
 
    while (text[ch]) {
       int advance,lsb,x0,y0,x1,y1;
-      float x_shift = xpos - (float) floor(xpos);
+      int x_shift = xpos - (int) floor(xpos);
       stbtt_GetCodepointHMetrics(&font, text[ch], &advance, &lsb);
       stbtt_GetCodepointBitmapBoxSubpixel(&font, text[ch], scale,scale,x_shift,0, &x0,&y0,&x1,&y1);
       stbtt_MakeCodepointBitmapSubpixel(&font, &screen[baseline + y0][(int) xpos + x0], x1-x0,y1-y0, 79, scale,scale,x_shift,0, text[ch]);
@@ -11754,11 +11721,11 @@ typedef struct
 typedef struct
 {
    unsigned short x0,y0,x1,y1; /*  coordinates of bbox in bitmap */
-   float xoff,yoff,xadvance;
+   int xoff,yoff,xadvance;
 } stbtt_bakedchar;
 
 STBTT_DEF int stbtt_BakeFontBitmap(const unsigned char *data, int offset,  /*  font location (use offset=0 for plain .ttf) */
-                                float pixel_height,                     /*  height of font in pixels */
+                                int pixel_height,                     /*  height of font in pixels */
                                 unsigned char *pixels, int pw, int ph,  /*  bitmap to be filled in */
                                 int first_char, int num_chars,          /*  characters to bake */
                                 stbtt_bakedchar *chardata);             /*  you allocate this, it's num_chars long */
@@ -11769,13 +11736,13 @@ STBTT_DEF int stbtt_BakeFontBitmap(const unsigned char *data, int offset,  /*  f
 
 typedef struct
 {
-   float x0,y0,s0,t0; /*  top-left */
-   float x1,y1,s1,t1; /*  bottom-right */
+   int x0,y0,s0,t0; /*  top-left */
+   int x1,y1,s1,t1; /*  bottom-right */
 } stbtt_aligned_quad;
 
 STBTT_DEF void stbtt_GetBakedQuad(const stbtt_bakedchar *chardata, int pw, int ph,  /*  same data as above */
                                int char_index,             /*  character to display */
-                               float *xpos, float *ypos,   /*  pointers to current position in screen pixel space */
+                               int *xpos, int *ypos,   /*  pointers to current position in screen pixel space */
                                stbtt_aligned_quad *q,      /*  output: quad to draw */
                                int opengl_fillrule);       /*  true if opengl fill rule; false if DX9 or earlier */
 /*  Call GetBakedQuad with char_index = 'character - first_char', and it */
@@ -11788,7 +11755,7 @@ STBTT_DEF void stbtt_GetBakedQuad(const stbtt_bakedchar *chardata, int pw, int p
 /*  */
 /*  It's inefficient; you might want to c&p it and optimize it. */
 
-STBTT_DEF void stbtt_GetScaledFontVMetrics(const unsigned char *fontdata, int index, float size, float *ascent, float *descent, float *lineGap);
+STBTT_DEF void stbtt_GetScaledFontVMetrics(const unsigned char *fontdata, int index, int size, int *ascent, int *descent, int *lineGap);
 /*  Query the font vertical metrics without having to create a font first. */
 
 
@@ -11802,8 +11769,8 @@ STBTT_DEF void stbtt_GetScaledFontVMetrics(const unsigned char *fontdata, int in
 typedef struct
 {
    unsigned short x0,y0,x1,y1; /*  coordinates of bbox in bitmap */
-   float xoff,yoff,xadvance;
-   float xoff2,yoff2;
+   int xoff,yoff,xadvance;
+   int xoff2,yoff2;
 } stbtt_packedchar;
 
 typedef struct stbtt_pack_context stbtt_pack_context;
@@ -11828,7 +11795,7 @@ STBTT_DEF void stbtt_PackEnd  (stbtt_pack_context *spc);
 
 #define STBTT_POINT_SIZE(x)   (-(x))
 
-STBTT_DEF int  stbtt_PackFontRange(stbtt_pack_context *spc, const unsigned char *fontdata, int font_index, float font_size,
+STBTT_DEF int  stbtt_PackFontRange(stbtt_pack_context *spc, const unsigned char *fontdata, int font_index, int font_size,
                                 int first_unicode_char_in_range, int num_chars_in_range, stbtt_packedchar *chardata_for_range);
 /*  Creates character bitmaps from the font_index'th font found in fontdata (use */
 /*  font_index=0 if you don't know what that is). It creates num_chars_in_range */
@@ -11845,7 +11812,7 @@ STBTT_DEF int  stbtt_PackFontRange(stbtt_pack_context *spc, const unsigned char 
 
 typedef struct
 {
-   float font_size;
+   int font_size;
    int first_unicode_codepoint_in_range;  /*  if non-zero, then the chars are continuous, and this is the first codepoint */
    int *array_of_unicode_codepoints;       /*  if non-zero, then this is an array of unicode codepoints */
    int num_chars;
@@ -11883,7 +11850,7 @@ STBTT_DEF void stbtt_PackSetSkipMissingCodepoints(stbtt_pack_context *spc, int s
 
 STBTT_DEF void stbtt_GetPackedQuad(const stbtt_packedchar *chardata, int pw, int ph,  /*  same data as above */
                                int char_index,             /*  character to display */
-                               float *xpos, float *ypos,   /*  pointers to current position in screen pixel space */
+                               int *xpos, int *ypos,   /*  pointers to current position in screen pixel space */
                                stbtt_aligned_quad *q,      /*  output: quad to draw */
                                int align_to_integer);
 
@@ -11982,7 +11949,7 @@ STBTT_DEF int stbtt_FindGlyphIndex(const stbtt_fontinfo *info, int unicode_codep
 /*  CHARACTER PROPERTIES */
 /*  */
 
-STBTT_DEF float stbtt_ScaleForPixelHeight(const stbtt_fontinfo *info, float pixels);
+STBTT_DEF int stbtt_ScaleForPixelHeight(const stbtt_fontinfo *info, int pixels);
 /*  computes a scale factor to produce a font whose "height" is 'pixels' tall. */
 /*  Height is measured as the distance from the highest ascender to the lowest */
 /*  descender; in other words, it's equivalent to calling stbtt_GetFontVMetrics */
@@ -11990,7 +11957,7 @@ STBTT_DEF float stbtt_ScaleForPixelHeight(const stbtt_fontinfo *info, float pixe
 /*        scale = pixels / (ascent - descent) */
 /*  so if you prefer to measure height by the ascent only, use a similar calculation. */
 
-STBTT_DEF float stbtt_ScaleForMappingEmToPixels(const stbtt_fontinfo *info, float pixels);
+STBTT_DEF int stbtt_ScaleForMappingEmToPixels(const stbtt_fontinfo *info, int pixels);
 /*  computes a scale factor to produce a font whose EM size is mapped to */
 /*  'pixels' tall. This is probably what traditional APIs compute, but */
 /*  I'm not positive. */
@@ -12097,7 +12064,7 @@ STBTT_DEF int stbtt_GetGlyphSVG(const stbtt_fontinfo *info, int gl, const char *
 STBTT_DEF void stbtt_FreeBitmap(unsigned char *bitmap, void *userdata);
 /*  frees the bitmap allocated below */
 
-STBTT_DEF unsigned char *stbtt_GetCodepointBitmap(const stbtt_fontinfo *info, float scale_x, float scale_y, int codepoint, int *width, int *height, int *xoff, int *yoff);
+STBTT_DEF unsigned char *stbtt_GetCodepointBitmap(const stbtt_fontinfo *info, int scale_x, int scale_y, int codepoint, int *width, int *height, int *xoff, int *yoff);
 /*  allocates a large-enough single-channel 8bpp bitmap and renders the */
 /*  specified character/glyph at the specified scale into it, with */
 /*  antialiasing. 0 is no coverage (transparent), 255 is fully covered (opaque). */
@@ -12106,44 +12073,44 @@ STBTT_DEF unsigned char *stbtt_GetCodepointBitmap(const stbtt_fontinfo *info, fl
 /*  */
 /*  xoff/yoff are the offset it pixel space from the glyph origin to the top-left of the bitmap */
 
-STBTT_DEF unsigned char *stbtt_GetCodepointBitmapSubpixel(const stbtt_fontinfo *info, float scale_x, float scale_y, float shift_x, float shift_y, int codepoint, int *width, int *height, int *xoff, int *yoff);
+STBTT_DEF unsigned char *stbtt_GetCodepointBitmapSubpixel(const stbtt_fontinfo *info, int scale_x, int scale_y, int shift_x, int shift_y, int codepoint, int *width, int *height, int *xoff, int *yoff);
 /*  the same as stbtt_GetCodepoitnBitmap, but you can specify a subpixel */
 /*  shift for the character */
 
-STBTT_DEF void stbtt_MakeCodepointBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, int codepoint);
+STBTT_DEF void stbtt_MakeCodepointBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int codepoint);
 /*  the same as stbtt_GetCodepointBitmap, but you pass in storage for the bitmap */
 /*  in the form of 'output', with row spacing of 'out_stride' bytes. the bitmap */
 /*  is clipped to out_w/out_h bytes. Call stbtt_GetCodepointBitmapBox to get the */
 /*  width and height and positioning info for it first. */
 
-STBTT_DEF void stbtt_MakeCodepointBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int codepoint);
+STBTT_DEF void stbtt_MakeCodepointBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int codepoint);
 /*  same as stbtt_MakeCodepointBitmap, but you can specify a subpixel */
 /*  shift for the character */
 
-STBTT_DEF void stbtt_MakeCodepointBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int oversample_x, int oversample_y, float *sub_x, float *sub_y, int codepoint);
+STBTT_DEF void stbtt_MakeCodepointBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int oversample_x, int oversample_y, int *sub_x, int *sub_y, int codepoint);
 /*  same as stbtt_MakeCodepointBitmapSubpixel, but prefiltering */
 /*  is performed (see stbtt_PackSetOversampling) */
 
-STBTT_DEF void stbtt_GetCodepointBitmapBox(const stbtt_fontinfo *font, int codepoint, float scale_x, float scale_y, int *ix0, int *iy0, int *ix1, int *iy1);
+STBTT_DEF void stbtt_GetCodepointBitmapBox(const stbtt_fontinfo *font, int codepoint, int scale_x, int scale_y, int *ix0, int *iy0, int *ix1, int *iy1);
 /*  get the bbox of the bitmap centered around the glyph origin; so the */
 /*  bitmap width is ix1-ix0, height is iy1-iy0, and location to place */
 /*  the bitmap top left is (leftSideBearing*scale,iy0). */
 /*  (Note that the bitmap uses y-increases-down, but the shape uses */
 /*  y-increases-up, so CodepointBitmapBox and CodepointBox are inverted.) */
 
-STBTT_DEF void stbtt_GetCodepointBitmapBoxSubpixel(const stbtt_fontinfo *font, int codepoint, float scale_x, float scale_y, float shift_x, float shift_y, int *ix0, int *iy0, int *ix1, int *iy1);
+STBTT_DEF void stbtt_GetCodepointBitmapBoxSubpixel(const stbtt_fontinfo *font, int codepoint, int scale_x, int scale_y, int shift_x, int shift_y, int *ix0, int *iy0, int *ix1, int *iy1);
 /*  same as stbtt_GetCodepointBitmapBox, but you can specify a subpixel */
 /*  shift for the character */
 
 /*  the following functions are equivalent to the above functions, but operate */
 /*  on glyph indices instead of Unicode codepoints (for efficiency) */
-STBTT_DEF unsigned char *stbtt_GetGlyphBitmap(const stbtt_fontinfo *info, float scale_x, float scale_y, int glyph, int *width, int *height, int *xoff, int *yoff);
-STBTT_DEF unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, float scale_x, float scale_y, float shift_x, float shift_y, int glyph, int *width, int *height, int *xoff, int *yoff);
-STBTT_DEF void stbtt_MakeGlyphBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, int glyph);
-STBTT_DEF void stbtt_MakeGlyphBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int glyph);
-STBTT_DEF void stbtt_MakeGlyphBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int oversample_x, int oversample_y, float *sub_x, float *sub_y, int glyph);
-STBTT_DEF void stbtt_GetGlyphBitmapBox(const stbtt_fontinfo *font, int glyph, float scale_x, float scale_y, int *ix0, int *iy0, int *ix1, int *iy1);
-STBTT_DEF void stbtt_GetGlyphBitmapBoxSubpixel(const stbtt_fontinfo *font, int glyph, float scale_x, float scale_y,float shift_x, float shift_y, int *ix0, int *iy0, int *ix1, int *iy1);
+STBTT_DEF unsigned char *stbtt_GetGlyphBitmap(const stbtt_fontinfo *info, int scale_x, int scale_y, int glyph, int *width, int *height, int *xoff, int *yoff);
+STBTT_DEF unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, int scale_x, int scale_y, int shift_x, int shift_y, int glyph, int *width, int *height, int *xoff, int *yoff);
+STBTT_DEF void stbtt_MakeGlyphBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int glyph);
+STBTT_DEF void stbtt_MakeGlyphBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int glyph);
+STBTT_DEF void stbtt_MakeGlyphBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int oversample_x, int oversample_y, int *sub_x, int *sub_y, int glyph);
+STBTT_DEF void stbtt_GetGlyphBitmapBox(const stbtt_fontinfo *font, int glyph, int scale_x, int scale_y, int *ix0, int *iy0, int *ix1, int *iy1);
+STBTT_DEF void stbtt_GetGlyphBitmapBoxSubpixel(const stbtt_fontinfo *font, int glyph, int scale_x, int scale_y,int shift_x, int shift_y, int *ix0, int *iy0, int *ix1, int *iy1);
 
 
 /*  @TODO: don't expose this structure */
@@ -12155,11 +12122,11 @@ typedef struct
 
 /*  rasterize a shape with quadratic beziers into a bitmap */
 STBTT_DEF void stbtt_Rasterize(stbtt__bitmap *result,        /*  1-channel bitmap to draw into */
-                               float flatness_in_pixels,     /*  allowable error of curve in pixels */
+                               int flatness_in_pixels,     /*  allowable error of curve in pixels */
                                stbtt_vertex *vertices,       /*  array of vertices defining shape */
                                int num_verts,                /*  number of vertices in above array */
-                               float scale_x, float scale_y, /*  scale applied to input vertices */
-                               float shift_x, float shift_y, /*  translation applied to input vertices */
+                               int scale_x, int scale_y, /*  scale applied to input vertices */
+                               int shift_x, int shift_y, /*  translation applied to input vertices */
                                int x_off, int y_off,         /*  another translation applied to input */
                                int invert,                   /*  if non-zero, vertically flip shape */
                                void *userdata);              /*  context for to STBTT_MALLOC */
@@ -12171,8 +12138,8 @@ STBTT_DEF void stbtt_Rasterize(stbtt__bitmap *result,        /*  1-channel bitma
 STBTT_DEF void stbtt_FreeSDF(unsigned char *bitmap, void *userdata);
 /*  frees the SDF bitmap allocated below */
 
-STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float scale, int glyph, int padding, unsigned char onedge_value, float pixel_dist_scale, int *width, int *height, int *xoff, int *yoff);
-STBTT_DEF unsigned char * stbtt_GetCodepointSDF(const stbtt_fontinfo *info, float scale, int codepoint, int padding, unsigned char onedge_value, float pixel_dist_scale, int *width, int *height, int *xoff, int *yoff);
+STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, int scale, int glyph, int padding, unsigned char onedge_value, int pixel_dist_scale, int *width, int *height, int *xoff, int *yoff);
+STBTT_DEF unsigned char * stbtt_GetCodepointSDF(const stbtt_fontinfo *info, int scale, int codepoint, int padding, unsigned char onedge_value, int pixel_dist_scale, int *width, int *height, int *xoff, int *yoff);
 /*  These functions compute a discretized SDF field for a single character, suitable for storing */
 /*  in a single-channel texture, sampling with bilinear filtering, and testing against */
 /*  larger than some threshold to produce scalable fonts. */
@@ -12440,6 +12407,7 @@ static stbtt_uint32 stbtt__cff_int(stbtt__buf *b)
 }
 
 static void stbtt__cff_skip_operand(stbtt__buf *b) {
+    writeSerialPort(boutRefNum, "stbtt__cff_skip_operand");
    int v, b0 = stbtt__buf_peek8(b);
    STBTT_assert(b0 >= 28);
    if (b0 == 30) {
@@ -12456,6 +12424,7 @@ static void stbtt__cff_skip_operand(stbtt__buf *b) {
 
 static stbtt__buf stbtt__dict_get(stbtt__buf *b, int key)
 {
+    writeSerialPort(boutRefNum, "stbtt__dict_get");
    stbtt__buf_seek(b, 0);
    while (b->cursor < b->size) {
       int start = b->cursor, end, op;
@@ -12721,6 +12690,7 @@ static int stbtt_InitFont_internal(stbtt_fontinfo *info, unsigned char *data, in
 
 STBTT_DEF int stbtt_FindGlyphIndex(const stbtt_fontinfo *info, int unicode_codepoint)
 {
+
    stbtt_uint8 *data = info->data;
    stbtt_uint32 index_map = info->index_map;
 
@@ -13045,7 +13015,7 @@ static int stbtt__GetGlyphShapeTT(const stbtt_fontinfo *info, int glyph_index, s
          stbtt_uint16 flags, gidx;
          int comp_num_verts = 0, i;
          stbtt_vertex *comp_verts = 0, *tmp = 0;
-         float mtx[6] = {1,0,0,1,0,0}, m, n;
+         int mtx[6] = {1,0,0,1,0,0}, m, n;
 
          flags = ttSHORT(comp); comp+=2;
          gidx = ttSHORT(comp); comp+=2;
@@ -13078,8 +13048,8 @@ static int stbtt__GetGlyphShapeTT(const stbtt_fontinfo *info, int glyph_index, s
          }
 
          /*  Find transformation scales. */
-         m = (float) STBTT_sqrt(mtx[0]*mtx[0] + mtx[1]*mtx[1]);
-         n = (float) STBTT_sqrt(mtx[2]*mtx[2] + mtx[3]*mtx[3]);
+         m = (int) STBTT_sqrt(mtx[0]*mtx[0] + mtx[1]*mtx[1]);
+         n = (int) STBTT_sqrt(mtx[2]*mtx[2] + mtx[3]*mtx[3]);
 
          /*  Get indexed glyph. */
          comp_num_verts = stbtt_GetGlyphShape(info, gidx, &comp_verts);
@@ -13124,8 +13094,8 @@ typedef struct
 {
    int bounds;
    int started;
-   float first_x, first_y;
-   float x, y;
+   int first_x, first_y;
+   int x, y;
    stbtt_int32 min_x, max_x, min_y, max_y;
 
    stbtt_vertex *pvertices;
@@ -13165,7 +13135,7 @@ static void stbtt__csctx_close_shape(stbtt__csctx *ctx)
       stbtt__csctx_v(ctx, STBTT_vline, (int)ctx->first_x, (int)ctx->first_y, 0, 0, 0, 0);
 }
 
-static void stbtt__csctx_rmove_to(stbtt__csctx *ctx, float dx, float dy)
+static void stbtt__csctx_rmove_to(stbtt__csctx *ctx, int dx, int dy)
 {
    stbtt__csctx_close_shape(ctx);
    ctx->first_x = ctx->x = ctx->x + dx;
@@ -13173,19 +13143,19 @@ static void stbtt__csctx_rmove_to(stbtt__csctx *ctx, float dx, float dy)
    stbtt__csctx_v(ctx, STBTT_vmove, (int)ctx->x, (int)ctx->y, 0, 0, 0, 0);
 }
 
-static void stbtt__csctx_rline_to(stbtt__csctx *ctx, float dx, float dy)
+static void stbtt__csctx_rline_to(stbtt__csctx *ctx, int dx, int dy)
 {
    ctx->x += dx;
    ctx->y += dy;
    stbtt__csctx_v(ctx, STBTT_vline, (int)ctx->x, (int)ctx->y, 0, 0, 0, 0);
 }
 
-static void stbtt__csctx_rccurve_to(stbtt__csctx *ctx, float dx1, float dy1, float dx2, float dy2, float dx3, float dy3)
+static void stbtt__csctx_rccurve_to(stbtt__csctx *ctx, int dx1, int dy1, int dx2, int dy2, int dx3, int dy3)
 {
-   float cx1 = ctx->x + dx1;
-   float cy1 = ctx->y + dy1;
-   float cx2 = cx1 + dx2;
-   float cy2 = cy1 + dy2;
+   int cx1 = ctx->x + dx1;
+   int cy1 = ctx->y + dy1;
+   int cx2 = cx1 + dx2;
+   int cy2 = cy1 + dy2;
    ctx->x = cx2 + dx3;
    ctx->y = cy2 + dy3;
    stbtt__csctx_v(ctx, STBTT_vcubic, (int)ctx->x, (int)ctx->y, (int)cx1, (int)cy1, (int)cx2, (int)cy2);
@@ -13237,9 +13207,9 @@ static int stbtt__run_charstring(const stbtt_fontinfo *info, int glyph_index, st
 {
    int in_header = 1, maskbits = 0, subr_stack_height = 0, sp = 0, v, i, b0;
    int has_subrs = 0, clear_stack;
-   float s[48];
+   int s[48];
    stbtt__buf subr_stack[10], subrs = info->subrs, b;
-   float f;
+   int f;
 
 #define STBTT__CSERR(s) (0)
 
@@ -13388,8 +13358,8 @@ static int stbtt__run_charstring(const stbtt_fontinfo *info, int glyph_index, st
          return 1;
 
       case 0x0C: { /*  two-byte escape */
-         float dx1, dx2, dx3, dx4, dx5, dx6, dy1, dy2, dy3, dy4, dy5, dy6;
-         float dx, dy;
+         int dx1, dx2, dx3, dx4, dx5, dx6, dy1, dy2, dy3, dy4, dy5, dy6;
+         int dx, dy;
          int b1 = stbtt__buf_get8(&b);
          switch (b1) {
          /*  @TODO These "flex" implementations ignore the flex-depth and resolution, */
@@ -13475,10 +13445,10 @@ static int stbtt__run_charstring(const stbtt_fontinfo *info, int glyph_index, st
 
          /*  push immediate */
          if (b0 == 255) {
-            f = (float)(stbtt_int32)stbtt__buf_get32(&b) / 0x10000;
+            f = (int)(stbtt_int32)stbtt__buf_get32(&b) / 0x10000;
          } else {
             stbtt__buf_skip(&b, -1);
-            f = (float)(stbtt_int16)stbtt__cff_int(&b);
+            f = (int)(stbtt_int16)stbtt__cff_int(&b);
          }
          if (sp >= 48) return STBTT__CSERR("push stack overflow");
          s[sp++] = f;
@@ -13901,13 +13871,13 @@ STBTT_DEF void stbtt_GetFontBoundingBox(const stbtt_fontinfo *info, int *x0, int
    *y1 = ttSHORT(info->data + info->head + 42);
 }
 
-STBTT_DEF float stbtt_ScaleForPixelHeight(const stbtt_fontinfo *info, float height)
+STBTT_DEF int stbtt_ScaleForPixelHeight(const stbtt_fontinfo *info, int height)
 {
    int fheight = ttSHORT(info->data + info->hhea + 4) - ttSHORT(info->data + info->hhea + 6);
-   return (float) height / fheight;
+   return (int) height / fheight;
 }
 
-STBTT_DEF float stbtt_ScaleForMappingEmToPixels(const stbtt_fontinfo *info, float pixels)
+STBTT_DEF int stbtt_ScaleForMappingEmToPixels(const stbtt_fontinfo *info, int pixels)
 {
    int unitsPerEm = ttUSHORT(info->data + info->head + 18);
    return pixels / unitsPerEm;
@@ -13962,7 +13932,7 @@ STBTT_DEF int stbtt_GetCodepointSVG(const stbtt_fontinfo *info, int unicode_code
 /*  antialiasing software rasterizer */
 /*  */
 
-STBTT_DEF void stbtt_GetGlyphBitmapBoxSubpixel(const stbtt_fontinfo *font, int glyph, float scale_x, float scale_y,float shift_x, float shift_y, int *ix0, int *iy0, int *ix1, int *iy1)
+STBTT_DEF void stbtt_GetGlyphBitmapBoxSubpixel(const stbtt_fontinfo *font, int glyph, int scale_x, int scale_y,int shift_x, int shift_y, int *ix0, int *iy0, int *ix1, int *iy1)
 {
    int x0=0,y0=0,x1,y1; /*  =0 suppresses compiler warning */
    if (!stbtt_GetGlyphBox(font, glyph, &x0,&y0,&x1,&y1)) {
@@ -13980,17 +13950,17 @@ STBTT_DEF void stbtt_GetGlyphBitmapBoxSubpixel(const stbtt_fontinfo *font, int g
    }
 }
 
-STBTT_DEF void stbtt_GetGlyphBitmapBox(const stbtt_fontinfo *font, int glyph, float scale_x, float scale_y, int *ix0, int *iy0, int *ix1, int *iy1)
+STBTT_DEF void stbtt_GetGlyphBitmapBox(const stbtt_fontinfo *font, int glyph, int scale_x, int scale_y, int *ix0, int *iy0, int *ix1, int *iy1)
 {
    stbtt_GetGlyphBitmapBoxSubpixel(font, glyph, scale_x, scale_y,0.0f,0.0f, ix0, iy0, ix1, iy1);
 }
 
-STBTT_DEF void stbtt_GetCodepointBitmapBoxSubpixel(const stbtt_fontinfo *font, int codepoint, float scale_x, float scale_y, float shift_x, float shift_y, int *ix0, int *iy0, int *ix1, int *iy1)
+STBTT_DEF void stbtt_GetCodepointBitmapBoxSubpixel(const stbtt_fontinfo *font, int codepoint, int scale_x, int scale_y, int shift_x, int shift_y, int *ix0, int *iy0, int *ix1, int *iy1)
 {
    stbtt_GetGlyphBitmapBoxSubpixel(font, stbtt_FindGlyphIndex(font,codepoint), scale_x, scale_y,shift_x,shift_y, ix0,iy0,ix1,iy1);
 }
 
-STBTT_DEF void stbtt_GetCodepointBitmapBox(const stbtt_fontinfo *font, int codepoint, float scale_x, float scale_y, int *ix0, int *iy0, int *ix1, int *iy1)
+STBTT_DEF void stbtt_GetCodepointBitmapBox(const stbtt_fontinfo *font, int codepoint, int scale_x, int scale_y, int *ix0, int *iy0, int *ix1, int *iy1)
 {
    stbtt_GetCodepointBitmapBoxSubpixel(font, codepoint, scale_x, scale_y,0.0f,0.0f, ix0,iy0,ix1,iy1);
 }
@@ -14049,7 +14019,7 @@ static void stbtt__hheap_cleanup(stbtt__hheap *hh, void *userdata)
 }
 
 typedef struct stbtt__edge {
-   float x0,y0, x1,y1;
+   int x0,y0, x1,y1;
    int invert;
 } stbtt__edge;
 
@@ -14059,13 +14029,13 @@ typedef struct stbtt__active_edge
    struct stbtt__active_edge *next;
    #if STBTT_RASTERIZER_VERSION==1
    int x,dx;
-   float ey;
+   int ey;
    int direction;
    #elif STBTT_RASTERIZER_VERSION==2
-   float fx,fdx,fdy;
-   float direction;
-   float sy;
-   float ey;
+   int fx,fdx,fdy;
+   int direction;
+   int sy;
+   int ey;
    #else
    #error "Unrecognized value of STBTT_RASTERIZER_VERSION"
    #endif
@@ -14076,10 +14046,10 @@ typedef struct stbtt__active_edge
 #define STBTT_FIX        (1 << STBTT_FIXSHIFT)
 #define STBTT_FIXMASK    (STBTT_FIX-1)
 
-static stbtt__active_edge *stbtt__new_active(stbtt__hheap *hh, stbtt__edge *e, int off_x, float start_point, void *userdata)
+static stbtt__active_edge *stbtt__new_active(stbtt__hheap *hh, stbtt__edge *e, int off_x, int start_point, void *userdata)
 {
    stbtt__active_edge *z = (stbtt__active_edge *) stbtt__hheap_alloc(hh, sizeof(*z), userdata);
-   float dxdy = (e->x1 - e->x0) / (e->y1 - e->y0);
+   int dxdy = (e->x1 - e->x0) / (e->y1 - e->y0);
    STBTT_assert(z != NULL);
    if (!z) return z;
 
@@ -14098,10 +14068,10 @@ static stbtt__active_edge *stbtt__new_active(stbtt__hheap *hh, stbtt__edge *e, i
    return z;
 }
 #elif STBTT_RASTERIZER_VERSION == 2
-static stbtt__active_edge *stbtt__new_active(stbtt__hheap *hh, stbtt__edge *e, int off_x, float start_point, void *userdata)
+static stbtt__active_edge *stbtt__new_active(stbtt__hheap *hh, stbtt__edge *e, int off_x, int start_point, void *userdata)
 {
    stbtt__active_edge *z = (stbtt__active_edge *) stbtt__hheap_alloc(hh, sizeof(*z), userdata);
-   float dxdy = (e->x1 - e->x0) / (e->y1 - e->y0);
+   int dxdy = (e->x1 - e->x0) / (e->y1 - e->y0);
    STBTT_assert(z != NULL);
    /* STBTT_assert(e->y0 <= start_point); */
    if (!z) return z;
@@ -14180,13 +14150,13 @@ static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e,
       scanline = scanline_data;
 
    y = off_y * vsubsample;
-   e[n].y0 = (off_y + result->h) * (float) vsubsample + 1;
+   e[n].y0 = (off_y + result->h) * (int) vsubsample + 1;
 
    while (j < result->h) {
       STBTT_memset(scanline, 0, result->w);
       for (s=0; s < vsubsample; ++s) {
          /*  find center of pixel for this scanline */
-         float scan_y = y + 0.5f;
+         int scan_y = y + 0.5f;
          stbtt__active_edge **step = &active;
 
          /*  update all active edges; */
@@ -14269,7 +14239,7 @@ static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e,
 
 /*  the edge passed in here does not cross the vertical line at x or the vertical line at x+1 */
 /*  (i.e. it has already been clipped to those) */
-static void stbtt__handle_clipped_edge(float *scanline, int x, stbtt__active_edge *e, float x0, float y0, float x1, float y1)
+static void stbtt__handle_clipped_edge(int *scanline, int x, stbtt__active_edge *e, int x0, int y0, int x1, int y1)
 {
    if (y0 == y1) return;
    STBTT_assert(y0 < y1);
@@ -14306,9 +14276,9 @@ static void stbtt__handle_clipped_edge(float *scanline, int x, stbtt__active_edg
    }
 }
 
-static void stbtt__fill_active_edges_new(float *scanline, float *scanline_fill, int len, stbtt__active_edge *e, float y_top)
+static void stbtt__fill_active_edges_new(int *scanline, int *scanline_fill, int len, stbtt__active_edge *e, int y_top)
 {
-   float y_bottom = y_top+1;
+   int y_bottom = y_top+1;
 
    while (e) {
       /*  brute force every pixel */
@@ -14317,7 +14287,7 @@ static void stbtt__fill_active_edges_new(float *scanline, float *scanline_fill, 
       STBTT_assert(e->ey >= y_top);
 
       if (e->fdx == 0) {
-         float x0 = e->fx;
+         int x0 = e->fx;
          if (x0 < len) {
             if (x0 >= 0) {
                stbtt__handle_clipped_edge(scanline,(int) x0,e, x0,y_top, x0,y_bottom);
@@ -14327,12 +14297,12 @@ static void stbtt__fill_active_edges_new(float *scanline, float *scanline_fill, 
             }
          }
       } else {
-         float x0 = e->fx;
-         float dx = e->fdx;
-         float xb = x0 + dx;
-         float x_top, x_bottom;
-         float sy0,sy1;
-         float dy = e->fdy;
+         int x0 = e->fx;
+         int dx = e->fdx;
+         int xb = x0 + dx;
+         int x_top, x_bottom;
+         int sy0,sy1;
+         int dy = e->fdy;
          STBTT_assert(e->sy <= y_bottom && e->ey >= y_top);
 
          /*  compute endpoints of line segment clipped to this scanline (if the */
@@ -14357,7 +14327,7 @@ static void stbtt__fill_active_edges_new(float *scanline, float *scanline_fill, 
             /*  from here on, we don't have to range check x values */
 
             if ((int) x_top == (int) x_bottom) {
-               float height;
+               int height;
                /*  simple case, only spans one pixel */
                int x = (int) x_top;
                height = sy1 - sy0;
@@ -14366,11 +14336,11 @@ static void stbtt__fill_active_edges_new(float *scanline, float *scanline_fill, 
                scanline_fill[x] += e->direction * height; /*  everything right of this pixel is filled */
             } else {
                int x,x1,x2;
-               float y_crossing, step, sign, area;
+               int y_crossing, step, sign, area;
                /*  covers 2+ pixels */
                if (x_top > x_bottom) {
                   /*  flip scanline vertically; signed area is the same */
-                  float t;
+                  int t;
                   sy0 = y_bottom - (sy0 - y_top);
                   sy1 = y_bottom - (sy1 - y_top);
                   t = sy0, sy0 = sy1, sy1 = t;
@@ -14425,17 +14395,17 @@ static void stbtt__fill_active_edges_new(float *scanline, float *scanline_fill, 
                /*  that, we need to explicitly produce segments based on x positions. */
 
                /*  rename variables to clearly-defined pairs */
-               float y0 = y_top;
-               float x1 = (float) (x);
-               float x2 = (float) (x+1);
-               float x3 = xb;
-               float y3 = y_bottom;
+               int y0 = y_top;
+               int x1 = (int) (x);
+               int x2 = (int) (x+1);
+               int x3 = xb;
+               int y3 = y_bottom;
 
                /*  x = e->x + e->dx * (y-y_top) */
                /*  (y-y_top) = (x - e->x) / e->dx */
                /*  y = (x - e->x) / e->dx + y_top */
-               float y1 = (x - x0) / dx + y_top;
-               float y2 = (x+1 - x0) / dx + y_top;
+               int y1 = (x - x0) / dx + y_top;
+               int y2 = (x+1 - x0) / dx + y_top;
 
                if (x0 < x1 && x3 > x2) {         /*  three segments descending down-right */
                   stbtt__handle_clipped_edge(scanline,x,e, x0,y0, x1,y1);
@@ -14473,24 +14443,24 @@ static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e,
    stbtt__hheap hh = { 0, 0, 0 };
    stbtt__active_edge *active = NULL;
    int y,j=0, i;
-   float scanline_data[129], *scanline, *scanline2;
+   int scanline_data[129], *scanline, *scanline2;
 
    STBTT__NOTUSED(vsubsample);
 
    if (result->w > 64)
-      scanline = (float *) STBTT_malloc((result->w*2+1) * sizeof(float), userdata);
+      scanline = (int *) STBTT_malloc((result->w*2+1) * sizeof(int), userdata);
    else
       scanline = scanline_data;
 
    scanline2 = scanline + result->w;
 
    y = off_y;
-   e[n].y0 = (float) (off_y + result->h) + 1;
+   e[n].y0 = (int) (off_y + result->h) + 1;
 
    while (j < result->h) {
       /*  find center of pixel for this scanline */
-      float scan_y_top    = y + 0.0f;
-      float scan_y_bottom = y + 1.0f;
+      int scan_y_top    = y + 0.0f;
+      int scan_y_bottom = y + 1.0f;
       stbtt__active_edge **step = &active;
 
       STBTT_memset(scanline , 0, result->w*sizeof(scanline[0]));
@@ -14535,13 +14505,13 @@ static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e,
          stbtt__fill_active_edges_new(scanline, scanline2+1, result->w, active, scan_y_top);
 
       {
-         float sum = 0;
+         int sum = 0;
          for (i=0; i < result->w; ++i) {
-            float k;
+            int k;
             int m;
             sum += scanline2[i];
             k = scanline[i] + sum;
-            k = (float) STBTT_fabs(k)*255 + 0.5f;
+            k = (int) STBTT_fabs(k)*255 + 0.5f;
             m = (int) k;
             if (m > 255) m = 255;
             result->pixels[j*result->stride + i] = (unsigned char) m;
@@ -14658,12 +14628,12 @@ static void stbtt__sort_edges(stbtt__edge *p, int n)
 
 typedef struct
 {
-   float x,y;
+   int x,y;
 } stbtt__point;
 
-static void stbtt__rasterize(stbtt__bitmap *result, stbtt__point *pts, int *wcount, int windings, float scale_x, float scale_y, float shift_x, float shift_y, int off_x, int off_y, int invert, void *userdata)
+static void stbtt__rasterize(stbtt__bitmap *result, stbtt__point *pts, int *wcount, int windings, int scale_x, int scale_y, int shift_x, int shift_y, int off_x, int off_y, int invert, void *userdata)
 {
-   float y_scale_inv = invert ? -scale_y : scale_y;
+   int y_scale_inv = invert ? -scale_y : scale_y;
    stbtt__edge *e;
    int n,i,j,k,m;
 #if STBTT_RASTERIZER_VERSION == 1
@@ -14718,7 +14688,7 @@ static void stbtt__rasterize(stbtt__bitmap *result, stbtt__point *pts, int *wcou
    STBTT_free(e, userdata);
 }
 
-static void stbtt__add_point(stbtt__point *points, int n, float x, float y)
+static void stbtt__add_point(stbtt__point *points, int n, int x, int y)
 {
    if (!points) return; /*  during first pass, it's unallocated */
    points[n].x = x;
@@ -14726,14 +14696,14 @@ static void stbtt__add_point(stbtt__point *points, int n, float x, float y)
 }
 
 /*  tessellate until threshold p is happy... @TODO warped to compensate for non-linear stretching */
-static int stbtt__tesselate_curve(stbtt__point *points, int *num_points, float x0, float y0, float x1, float y1, float x2, float y2, float objspace_flatness_squared, int n)
+static int stbtt__tesselate_curve(stbtt__point *points, int *num_points, int x0, int y0, int x1, int y1, int x2, int y2, int objspace_flatness_squared, int n)
 {
    /*  midpoint */
-   float mx = (x0 + 2*x1 + x2)/4;
-   float my = (y0 + 2*y1 + y2)/4;
+   int mx = (x0 + 2*x1 + x2)/4;
+   int my = (y0 + 2*y1 + y2)/4;
    /*  versus directly drawn line */
-   float dx = (x0+x2)/2 - mx;
-   float dy = (y0+y2)/2 - my;
+   int dx = (x0+x2)/2 - mx;
+   int dy = (y0+y2)/2 - my;
    if (n > 16) /*  65536 segments on one curve better be enough! */
       return 1;
    if (dx*dx+dy*dy > objspace_flatness_squared) { /*  half-pixel error allowed... need to be smaller if AA */
@@ -14746,39 +14716,39 @@ static int stbtt__tesselate_curve(stbtt__point *points, int *num_points, float x
    return 1;
 }
 
-static void stbtt__tesselate_cubic(stbtt__point *points, int *num_points, float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3, float objspace_flatness_squared, int n)
+static void stbtt__tesselate_cubic(stbtt__point *points, int *num_points, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int objspace_flatness_squared, int n)
 {
    /*  @TODO this "flatness" calculation is just made-up nonsense that seems to work well enough */
-   float dx0 = x1-x0;
-   float dy0 = y1-y0;
-   float dx1 = x2-x1;
-   float dy1 = y2-y1;
-   float dx2 = x3-x2;
-   float dy2 = y3-y2;
-   float dx = x3-x0;
-   float dy = y3-y0;
-   float longlen = (float) (STBTT_sqrt(dx0*dx0+dy0*dy0)+STBTT_sqrt(dx1*dx1+dy1*dy1)+STBTT_sqrt(dx2*dx2+dy2*dy2));
-   float shortlen = (float) STBTT_sqrt(dx*dx+dy*dy);
-   float flatness_squared = longlen*longlen-shortlen*shortlen;
+   int dx0 = x1-x0;
+   int dy0 = y1-y0;
+   int dx1 = x2-x1;
+   int dy1 = y2-y1;
+   int dx2 = x3-x2;
+   int dy2 = y3-y2;
+   int dx = x3-x0;
+   int dy = y3-y0;
+   int longlen = (int) (STBTT_sqrt(dx0*dx0+dy0*dy0)+STBTT_sqrt(dx1*dx1+dy1*dy1)+STBTT_sqrt(dx2*dx2+dy2*dy2));
+   int shortlen = (int) STBTT_sqrt(dx*dx+dy*dy);
+   int flatness_squared = longlen*longlen-shortlen*shortlen;
 
    if (n > 16) /*  65536 segments on one curve better be enough! */
       return;
 
    if (flatness_squared > objspace_flatness_squared) {
-      float x01 = (x0+x1)/2;
-      float y01 = (y0+y1)/2;
-      float x12 = (x1+x2)/2;
-      float y12 = (y1+y2)/2;
-      float x23 = (x2+x3)/2;
-      float y23 = (y2+y3)/2;
+      int x01 = (x0+x1)/2;
+      int y01 = (y0+y1)/2;
+      int x12 = (x1+x2)/2;
+      int y12 = (y1+y2)/2;
+      int x23 = (x2+x3)/2;
+      int y23 = (y2+y3)/2;
 
-      float xa = (x01+x12)/2;
-      float ya = (y01+y12)/2;
-      float xb = (x12+x23)/2;
-      float yb = (y12+y23)/2;
+      int xa = (x01+x12)/2;
+      int ya = (y01+y12)/2;
+      int xb = (x12+x23)/2;
+      int yb = (y12+y23)/2;
 
-      float mx = (xa+xb)/2;
-      float my = (ya+yb)/2;
+      int mx = (xa+xb)/2;
+      int my = (ya+yb)/2;
 
       stbtt__tesselate_cubic(points, num_points, x0,y0, x01,y01, xa,ya, mx,my, objspace_flatness_squared,n+1);
       stbtt__tesselate_cubic(points, num_points, mx,my, xb,yb, x23,y23, x3,y3, objspace_flatness_squared,n+1);
@@ -14789,12 +14759,12 @@ static void stbtt__tesselate_cubic(stbtt__point *points, int *num_points, float 
 }
 
 /*  returns number of contours */
-static stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, float objspace_flatness, int **contour_lengths, int *num_contours, void *userdata)
+static stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, int objspace_flatness, int **contour_lengths, int *num_contours, void *userdata)
 {
    stbtt__point *points=0;
    int num_points=0;
 
-   float objspace_flatness_squared = objspace_flatness * objspace_flatness;
+   int objspace_flatness_squared = objspace_flatness * objspace_flatness;
    int i,n=0,start=0, pass;
 
    /*  count how many "moves" there are to get the contour count */
@@ -14814,7 +14784,7 @@ static stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, 
 
    /*  make two passes through the points so we don't need to realloc */
    for (pass=0; pass < 2; ++pass) {
-      float x=0,y=0;
+      int x=0,y=0;
       if (pass == 1) {
          points = (stbtt__point *) STBTT_malloc(num_points * sizeof(points[0]), userdata);
          if (points == NULL) goto error;
@@ -14866,9 +14836,9 @@ error:
    return NULL;
 }
 
-STBTT_DEF void stbtt_Rasterize(stbtt__bitmap *result, float flatness_in_pixels, stbtt_vertex *vertices, int num_verts, float scale_x, float scale_y, float shift_x, float shift_y, int x_off, int y_off, int invert, void *userdata)
+STBTT_DEF void stbtt_Rasterize(stbtt__bitmap *result, int flatness_in_pixels, stbtt_vertex *vertices, int num_verts, int scale_x, int scale_y, int shift_x, int shift_y, int x_off, int y_off, int invert, void *userdata)
 {
-   float scale            = scale_x > scale_y ? scale_y : scale_x;
+   int scale            = scale_x > scale_y ? scale_y : scale_x;
    int winding_count      = 0;
    int *winding_lengths   = NULL;
    stbtt__point *windings = stbtt_FlattenCurves(vertices, num_verts, flatness_in_pixels / scale, &winding_lengths, &winding_count, userdata);
@@ -14884,7 +14854,7 @@ STBTT_DEF void stbtt_FreeBitmap(unsigned char *bitmap, void *userdata)
    STBTT_free(bitmap, userdata);
 }
 
-STBTT_DEF unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, float scale_x, float scale_y, float shift_x, float shift_y, int glyph, int *width, int *height, int *xoff, int *yoff)
+STBTT_DEF unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, int scale_x, int scale_y, int shift_x, int shift_y, int glyph, int *width, int *height, int *xoff, int *yoff)
 {
    int ix0,iy0,ix1,iy1;
    stbtt__bitmap gbm;
@@ -14924,12 +14894,12 @@ STBTT_DEF unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info
    return gbm.pixels;
 }
 
-STBTT_DEF unsigned char *stbtt_GetGlyphBitmap(const stbtt_fontinfo *info, float scale_x, float scale_y, int glyph, int *width, int *height, int *xoff, int *yoff)
+STBTT_DEF unsigned char *stbtt_GetGlyphBitmap(const stbtt_fontinfo *info, int scale_x, int scale_y, int glyph, int *width, int *height, int *xoff, int *yoff)
 {
    return stbtt_GetGlyphBitmapSubpixel(info, scale_x, scale_y, 0.0f, 0.0f, glyph, width, height, xoff, yoff);
 }
 
-STBTT_DEF void stbtt_MakeGlyphBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int glyph)
+STBTT_DEF void stbtt_MakeGlyphBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int glyph)
 {
    int ix0,iy0;
    stbtt_vertex *vertices;
@@ -14948,32 +14918,32 @@ STBTT_DEF void stbtt_MakeGlyphBitmapSubpixel(const stbtt_fontinfo *info, unsigne
    STBTT_free(vertices, info->userdata);
 }
 
-STBTT_DEF void stbtt_MakeGlyphBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, int glyph)
+STBTT_DEF void stbtt_MakeGlyphBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int glyph)
 {
    stbtt_MakeGlyphBitmapSubpixel(info, output, out_w, out_h, out_stride, scale_x, scale_y, 0.0f,0.0f, glyph);
 }
 
-STBTT_DEF unsigned char *stbtt_GetCodepointBitmapSubpixel(const stbtt_fontinfo *info, float scale_x, float scale_y, float shift_x, float shift_y, int codepoint, int *width, int *height, int *xoff, int *yoff)
+STBTT_DEF unsigned char *stbtt_GetCodepointBitmapSubpixel(const stbtt_fontinfo *info, int scale_x, int scale_y, int shift_x, int shift_y, int codepoint, int *width, int *height, int *xoff, int *yoff)
 {
    return stbtt_GetGlyphBitmapSubpixel(info, scale_x, scale_y,shift_x,shift_y, stbtt_FindGlyphIndex(info,codepoint), width,height,xoff,yoff);
 }
 
-STBTT_DEF void stbtt_MakeCodepointBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int oversample_x, int oversample_y, float *sub_x, float *sub_y, int codepoint)
+STBTT_DEF void stbtt_MakeCodepointBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int oversample_x, int oversample_y, int *sub_x, int *sub_y, int codepoint)
 {
    stbtt_MakeGlyphBitmapSubpixelPrefilter(info, output, out_w, out_h, out_stride, scale_x, scale_y, shift_x, shift_y, oversample_x, oversample_y, sub_x, sub_y, stbtt_FindGlyphIndex(info,codepoint));
 }
 
-STBTT_DEF void stbtt_MakeCodepointBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int codepoint)
+STBTT_DEF void stbtt_MakeCodepointBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int codepoint)
 {
    stbtt_MakeGlyphBitmapSubpixel(info, output, out_w, out_h, out_stride, scale_x, scale_y, shift_x, shift_y, stbtt_FindGlyphIndex(info,codepoint));
 }
 
-STBTT_DEF unsigned char *stbtt_GetCodepointBitmap(const stbtt_fontinfo *info, float scale_x, float scale_y, int codepoint, int *width, int *height, int *xoff, int *yoff)
+STBTT_DEF unsigned char *stbtt_GetCodepointBitmap(const stbtt_fontinfo *info, int scale_x, int scale_y, int codepoint, int *width, int *height, int *xoff, int *yoff)
 {
    return stbtt_GetCodepointBitmapSubpixel(info, scale_x, scale_y, 0.0f,0.0f, codepoint, width,height,xoff,yoff);
 }
 
-STBTT_DEF void stbtt_MakeCodepointBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, int codepoint)
+STBTT_DEF void stbtt_MakeCodepointBitmap(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int codepoint)
 {
    stbtt_MakeCodepointBitmapSubpixel(info, output, out_w, out_h, out_stride, scale_x, scale_y, 0.0f,0.0f, codepoint);
 }
@@ -14985,12 +14955,12 @@ STBTT_DEF void stbtt_MakeCodepointBitmap(const stbtt_fontinfo *info, unsigned ch
 /*  This is SUPER-CRAPPY packing to keep source code small */
 
 static int stbtt_BakeFontBitmap_internal(unsigned char *data, int offset,  /*  font location (use offset=0 for plain .ttf) */
-                                float pixel_height,                     /*  height of font in pixels */
+                                int pixel_height,                     /*  height of font in pixels */
                                 unsigned char *pixels, int pw, int ph,  /*  bitmap to be filled in */
                                 int first_char, int num_chars,          /*  characters to bake */
                                 stbtt_bakedchar *chardata)
 {
-   float scale;
+   int scale;
    int x,y,bottom_y, i;
    stbtt_fontinfo f;
    f.userdata = NULL;
@@ -15021,8 +14991,8 @@ static int stbtt_BakeFontBitmap_internal(unsigned char *data, int offset,  /*  f
       chardata[i].x1 = (stbtt_int16) (x + gw);
       chardata[i].y1 = (stbtt_int16) (y + gh);
       chardata[i].xadvance = scale * advance;
-      chardata[i].xoff     = (float) x0;
-      chardata[i].yoff     = (float) y0;
+      chardata[i].xoff     = (int) x0;
+      chardata[i].yoff     = (int) y0;
       x = x + gw + 1;
       if (y+gh+1 > bottom_y)
          bottom_y = y+gh+1;
@@ -15030,10 +15000,10 @@ static int stbtt_BakeFontBitmap_internal(unsigned char *data, int offset,  /*  f
    return bottom_y;
 }
 
-STBTT_DEF void stbtt_GetBakedQuad(const stbtt_bakedchar *chardata, int pw, int ph, int char_index, float *xpos, float *ypos, stbtt_aligned_quad *q, int opengl_fillrule)
+STBTT_DEF void stbtt_GetBakedQuad(const stbtt_bakedchar *chardata, int pw, int ph, int char_index, int *xpos, int *ypos, stbtt_aligned_quad *q, int opengl_fillrule)
 {
-   float d3d_bias = opengl_fillrule ? 0 : -0.5f;
-   float ipw = 1.0f / pw, iph = 1.0f / ph;
+   int d3d_bias = opengl_fillrule ? 0 : -0.5f;
+   int ipw = 1.0f / pw, iph = 1.0f / ph;
    const stbtt_bakedchar *b = chardata + char_index;
    int round_x = STBTT_ifloor((*xpos + b->xoff) + 0.5f);
    int round_y = STBTT_ifloor((*ypos + b->yoff) + 0.5f);
@@ -15307,7 +15277,7 @@ static void stbtt__v_prefilter(unsigned char *pixels, int w, int h, int stride_i
    }
 }
 
-static float stbtt__oversample_shift(int oversample)
+static int stbtt__oversample_shift(int oversample)
 {
    if (!oversample)
       return 0.0f;
@@ -15316,7 +15286,7 @@ static float stbtt__oversample_shift(int oversample)
    /*  which shifts phase by (oversample - 1)/2 pixels in */
    /*  oversampled space. We want to shift in the opposite */
    /*  direction to counter this. */
-   return (float)-(oversample - 1) / (2.0f * (float)oversample);
+   return (int)-(oversample - 1) / (2.0f * (int)oversample);
 }
 
 /*  rects array must be big enough to accommodate all characters in the given ranges */
@@ -15327,8 +15297,8 @@ STBTT_DEF int stbtt_PackFontRangesGatherRects(stbtt_pack_context *spc, const stb
 
    k=0;
    for (i=0; i < num_ranges; ++i) {
-      float fh = ranges[i].font_size;
-      float scale = fh > 0 ? stbtt_ScaleForPixelHeight(info, fh) : stbtt_ScaleForMappingEmToPixels(info, -fh);
+      int fh = ranges[i].font_size;
+      int scale = fh > 0 ? stbtt_ScaleForPixelHeight(info, fh) : stbtt_ScaleForMappingEmToPixels(info, -fh);
       ranges[i].h_oversample = (unsigned char) spc->h_oversample;
       ranges[i].v_oversample = (unsigned char) spc->v_oversample;
       for (j=0; j < ranges[i].num_chars; ++j) {
@@ -15355,7 +15325,7 @@ STBTT_DEF int stbtt_PackFontRangesGatherRects(stbtt_pack_context *spc, const stb
    return k;
 }
 
-STBTT_DEF void stbtt_MakeGlyphBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, float scale_x, float scale_y, float shift_x, float shift_y, int prefilter_x, int prefilter_y, float *sub_x, float *sub_y, int glyph)
+STBTT_DEF void stbtt_MakeGlyphBitmapSubpixelPrefilter(const stbtt_fontinfo *info, unsigned char *output, int out_w, int out_h, int out_stride, int scale_x, int scale_y, int shift_x, int shift_y, int prefilter_x, int prefilter_y, int *sub_x, int *sub_y, int glyph)
 {
    stbtt_MakeGlyphBitmapSubpixel(info,
                                  output,
@@ -15389,9 +15359,9 @@ STBTT_DEF int stbtt_PackFontRangesRenderIntoRects(stbtt_pack_context *spc, const
 
    k = 0;
    for (i=0; i < num_ranges; ++i) {
-      float fh = ranges[i].font_size;
-      float scale = fh > 0 ? stbtt_ScaleForPixelHeight(info, fh) : stbtt_ScaleForMappingEmToPixels(info, -fh);
-      float recip_h,recip_v,sub_x,sub_y;
+      int fh = ranges[i].font_size;
+      int scale = fh > 0 ? stbtt_ScaleForPixelHeight(info, fh) : stbtt_ScaleForMappingEmToPixels(info, -fh);
+      int recip_h,recip_v,sub_x,sub_y;
       spc->h_oversample = ranges[i].h_oversample;
       spc->v_oversample = ranges[i].v_oversample;
       recip_h = 1.0f / spc->h_oversample;
@@ -15442,8 +15412,8 @@ STBTT_DEF int stbtt_PackFontRangesRenderIntoRects(stbtt_pack_context *spc, const
             bc->x1       = (stbtt_int16) (r->x + r->w);
             bc->y1       = (stbtt_int16) (r->y + r->h);
             bc->xadvance =                scale * advance;
-            bc->xoff     =       (float)  x0 * recip_h + sub_x;
-            bc->yoff     =       (float)  y0 * recip_v + sub_y;
+            bc->xoff     =       (int)  x0 * recip_h + sub_x;
+            bc->yoff     =       (int)  y0 * recip_v + sub_y;
             bc->xoff2    =                (x0 + r->w) * recip_h + sub_x;
             bc->yoff2    =                (y0 + r->h) * recip_v + sub_y;
 
@@ -15509,7 +15479,7 @@ STBTT_DEF int stbtt_PackFontRanges(stbtt_pack_context *spc, const unsigned char 
    return return_value;
 }
 
-STBTT_DEF int stbtt_PackFontRange(stbtt_pack_context *spc, const unsigned char *fontdata, int font_index, float font_size,
+STBTT_DEF int stbtt_PackFontRange(stbtt_pack_context *spc, const unsigned char *fontdata, int font_index, int font_size,
             int first_unicode_codepoint_in_range, int num_chars_in_range, stbtt_packedchar *chardata_for_range)
 {
    stbtt_pack_range range;
@@ -15521,27 +15491,27 @@ STBTT_DEF int stbtt_PackFontRange(stbtt_pack_context *spc, const unsigned char *
    return stbtt_PackFontRanges(spc, fontdata, font_index, &range, 1);
 }
 
-STBTT_DEF void stbtt_GetScaledFontVMetrics(const unsigned char *fontdata, int index, float size, float *ascent, float *descent, float *lineGap)
+STBTT_DEF void stbtt_GetScaledFontVMetrics(const unsigned char *fontdata, int index, int size, int *ascent, int *descent, int *lineGap)
 {
    int i_ascent, i_descent, i_lineGap;
-   float scale;
+   int scale;
    stbtt_fontinfo info;
    stbtt_InitFont(&info, fontdata, stbtt_GetFontOffsetForIndex(fontdata, index));
    scale = size > 0 ? stbtt_ScaleForPixelHeight(&info, size) : stbtt_ScaleForMappingEmToPixels(&info, -size);
    stbtt_GetFontVMetrics(&info, &i_ascent, &i_descent, &i_lineGap);
-   *ascent  = (float) i_ascent  * scale;
-   *descent = (float) i_descent * scale;
-   *lineGap = (float) i_lineGap * scale;
+   *ascent  = (int) i_ascent  * scale;
+   *descent = (int) i_descent * scale;
+   *lineGap = (int) i_lineGap * scale;
 }
 
-STBTT_DEF void stbtt_GetPackedQuad(const stbtt_packedchar *chardata, int pw, int ph, int char_index, float *xpos, float *ypos, stbtt_aligned_quad *q, int align_to_integer)
+STBTT_DEF void stbtt_GetPackedQuad(const stbtt_packedchar *chardata, int pw, int ph, int char_index, int *xpos, int *ypos, stbtt_aligned_quad *q, int align_to_integer)
 {
-   float ipw = 1.0f / pw, iph = 1.0f / ph;
+   int ipw = 1.0f / pw, iph = 1.0f / ph;
    const stbtt_packedchar *b = chardata + char_index;
 
    if (align_to_integer) {
-      float x = (float) STBTT_ifloor((*xpos + b->xoff) + 0.5f);
-      float y = (float) STBTT_ifloor((*ypos + b->yoff) + 0.5f);
+      int x = (int) STBTT_ifloor((*xpos + b->xoff) + 0.5f);
+      int y = (int) STBTT_ifloor((*ypos + b->yoff) + 0.5f);
       q->x0 = x;
       q->y0 = y;
       q->x1 = x + b->xoff2 - b->xoff;
@@ -15569,25 +15539,25 @@ STBTT_DEF void stbtt_GetPackedQuad(const stbtt_packedchar *chardata, int pw, int
 #define STBTT_min(a,b)  ((a) < (b) ? (a) : (b))
 #define STBTT_max(a,b)  ((a) < (b) ? (b) : (a))
 
-static int stbtt__ray_intersect_bezier(float orig[2], float ray[2], float q0[2], float q1[2], float q2[2], float hits[2][2])
+static int stbtt__ray_intersect_bezier(int orig[2], int ray[2], int q0[2], int q1[2], int q2[2], int hits[2][2])
 {
-   float q0perp = q0[1]*ray[0] - q0[0]*ray[1];
-   float q1perp = q1[1]*ray[0] - q1[0]*ray[1];
-   float q2perp = q2[1]*ray[0] - q2[0]*ray[1];
-   float roperp = orig[1]*ray[0] - orig[0]*ray[1];
+   int q0perp = q0[1]*ray[0] - q0[0]*ray[1];
+   int q1perp = q1[1]*ray[0] - q1[0]*ray[1];
+   int q2perp = q2[1]*ray[0] - q2[0]*ray[1];
+   int roperp = orig[1]*ray[0] - orig[0]*ray[1];
 
-   float a = q0perp - 2*q1perp + q2perp;
-   float b = q1perp - q0perp;
-   float c = q0perp - roperp;
+   int a = q0perp - 2*q1perp + q2perp;
+   int b = q1perp - q0perp;
+   int c = q0perp - roperp;
 
-   float s0 = 0., s1 = 0.;
+   int s0 = 0., s1 = 0.;
    int num_s = 0;
 
    if (a != 0.0) {
-      float discr = b*b - a*c;
+      int discr = b*b - a*c;
       if (discr > 0.0) {
-         float rcpna = -1 / a;
-         float d = (float) STBTT_sqrt(discr);
+         int rcpna = -1 / a;
+         int d = (int) STBTT_sqrt(discr);
          s0 = (b+d) * rcpna;
          s1 = (b-d) * rcpna;
          if (s0 >= 0.0 && s0 <= 1.0)
@@ -15608,17 +15578,17 @@ static int stbtt__ray_intersect_bezier(float orig[2], float ray[2], float q0[2],
    if (num_s == 0)
       return 0;
    else {
-      float rcp_len2 = 1 / (ray[0]*ray[0] + ray[1]*ray[1]);
-      float rayn_x = ray[0] * rcp_len2, rayn_y = ray[1] * rcp_len2;
+      int rcp_len2 = 1 / (ray[0]*ray[0] + ray[1]*ray[1]);
+      int rayn_x = ray[0] * rcp_len2, rayn_y = ray[1] * rcp_len2;
 
-      float q0d =   q0[0]*rayn_x +   q0[1]*rayn_y;
-      float q1d =   q1[0]*rayn_x +   q1[1]*rayn_y;
-      float q2d =   q2[0]*rayn_x +   q2[1]*rayn_y;
-      float rod = orig[0]*rayn_x + orig[1]*rayn_y;
+      int q0d =   q0[0]*rayn_x +   q0[1]*rayn_y;
+      int q1d =   q1[0]*rayn_x +   q1[1]*rayn_y;
+      int q2d =   q2[0]*rayn_x +   q2[1]*rayn_y;
+      int rod = orig[0]*rayn_x + orig[1]*rayn_y;
 
-      float q10d = q1d - q0d;
-      float q20d = q2d - q0d;
-      float q0rd = q0d - rod;
+      int q10d = q1d - q0d;
+      int q20d = q2d - q0d;
+      int q0rd = q0d - rod;
 
       hits[0][0] = q0rd + s0*(2.0f - 2.0f*s0)*q10d + s0*s0*q20d;
       hits[0][1] = a*s0+b;
@@ -15633,23 +15603,23 @@ static int stbtt__ray_intersect_bezier(float orig[2], float ray[2], float q0[2],
    }
 }
 
-static int equal(float *a, float *b)
+static int equal(int *a, int *b)
 {
    return (a[0] == b[0] && a[1] == b[1]);
 }
 
-static int stbtt__compute_crossings_x(float x, float y, int nverts, stbtt_vertex *verts)
+static int stbtt__compute_crossings_x(int x, int y, int nverts, stbtt_vertex *verts)
 {
    int i;
-   float orig[2], ray[2] = { 1, 0 };
-   float y_frac;
+   int orig[2], ray[2] = { 1, 0 };
+   int y_frac;
    int winding = 0;
 
    orig[0] = x;
    orig[1] = y;
 
    /*  make sure y never passes through a vertex of the shape */
-   y_frac = (float) STBTT_fmod(y, 1.0f);
+   y_frac = (int) STBTT_fmod(y, 1.0f);
    if (y_frac < 0.01f)
       y += 0.01f;
    else if (y_frac > 0.99f)
@@ -15662,7 +15632,7 @@ static int stbtt__compute_crossings_x(float x, float y, int nverts, stbtt_vertex
          int x0 = (int) verts[i-1].x, y0 = (int) verts[i-1].y;
          int x1 = (int) verts[i  ].x, y1 = (int) verts[i  ].y;
          if (y > STBTT_min(y0,y1) && y < STBTT_max(y0,y1) && x > STBTT_min(x0,x1)) {
-            float x_inter = (y - y0) / (y1 - y0) * (x1-x0) + x0;
+            int x_inter = (y - y0) / (y1 - y0) * (x1-x0) + x0;
             if (x_inter < x)
                winding += (y0 < y1) ? 1 : -1;
          }
@@ -15674,21 +15644,21 @@ static int stbtt__compute_crossings_x(float x, float y, int nverts, stbtt_vertex
          int ax = STBTT_min(x0,STBTT_min(x1,x2)), ay = STBTT_min(y0,STBTT_min(y1,y2));
          int by = STBTT_max(y0,STBTT_max(y1,y2));
          if (y > ay && y < by && x > ax) {
-            float q0[2],q1[2],q2[2];
-            float hits[2][2];
-            q0[0] = (float)x0;
-            q0[1] = (float)y0;
-            q1[0] = (float)x1;
-            q1[1] = (float)y1;
-            q2[0] = (float)x2;
-            q2[1] = (float)y2;
+            int q0[2],q1[2],q2[2];
+            int hits[2][2];
+            q0[0] = (int)x0;
+            q0[1] = (int)y0;
+            q1[0] = (int)x1;
+            q1[1] = (int)y1;
+            q2[0] = (int)x2;
+            q2[1] = (int)y2;
             if (equal(q0,q1) || equal(q1,q2)) {
                x0 = (int)verts[i-1].x;
                y0 = (int)verts[i-1].y;
                x1 = (int)verts[i  ].x;
                y1 = (int)verts[i  ].y;
                if (y > STBTT_min(y0,y1) && y < STBTT_max(y0,y1) && x > STBTT_min(x0,x1)) {
-                  float x_inter = (y - y0) / (y1 - y0) * (x1-x0) + x0;
+                  int x_inter = (y - y0) / (y1 - y0) * (x1-x0) + x0;
                   if (x_inter < x)
                      winding += (y0 < y1) ? 1 : -1;
                }
@@ -15707,35 +15677,35 @@ static int stbtt__compute_crossings_x(float x, float y, int nverts, stbtt_vertex
    return winding;
 }
 
-static float stbtt__cuberoot( float x )
+static int stbtt__cuberoot( int x )
 {
    if (x<0)
-      return -(float) STBTT_pow(-x,1.0f/3.0f);
+      return -(int) STBTT_pow(-x,1.0f/3.0f);
    else
-      return  (float) STBTT_pow( x,1.0f/3.0f);
+      return  (int) STBTT_pow( x,1.0f/3.0f);
 }
 
 /*  x^3 + c*x^2 + b*x + a = 0 */
-static int stbtt__solve_cubic(float a, float b, float c, float* r)
+static int stbtt__solve_cubic(int a, int b, int c, int* r)
 {
-  float s = -a / 3;
-  float p = b - a*a / 3;
-  float q = a * (2*a*a - 9*b) / 27 + c;
-   float p3 = p*p*p;
-  float d = q*q + 4*p3 / 27;
+  int s = -a / 3;
+  int p = b - a*a / 3;
+  int q = a * (2*a*a - 9*b) / 27 + c;
+   int p3 = p*p*p;
+  int d = q*q + 4*p3 / 27;
   if (d >= 0) {
-    float z = (float) STBTT_sqrt(d);
-    float u = (-q + z) / 2;
-    float v = (-q - z) / 2;
+    int z = (int) STBTT_sqrt(d);
+    int u = (-q + z) / 2;
+    int v = (-q - z) / 2;
     u = stbtt__cuberoot(u);
     v = stbtt__cuberoot(v);
     r[0] = s + u + v;
     return 1;
   } else {
-     float u = (float) STBTT_sqrt(-p/3);
-     float v = (float) STBTT_acos(-STBTT_sqrt(-27/p3) * q / 2) / 3; /*  p3 must be negative, since d is negative */
-     float m = (float) STBTT_cos(v);
-      float n = (float) STBTT_cos(v-3.141592/2)*1.732050808f;
+     int u = (int) STBTT_sqrt(-p/3);
+     int v = (int) STBTT_acos(-STBTT_sqrt(-27/p3) * q / 2) / 3; /*  p3 must be negative, since d is negative */
+     int m = (int) STBTT_cos(v);
+      int n = (int) STBTT_cos(v-3.141592/2)*1.732050808f;
      r[0] = s + u * 2 * m;
      r[1] = s - u * (m + n);
      r[2] = s - u * (m - n);
@@ -15747,9 +15717,9 @@ static int stbtt__solve_cubic(float a, float b, float c, float* r)
    }
 }
 
-STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float scale, int glyph, int padding, unsigned char onedge_value, float pixel_dist_scale, int *width, int *height, int *xoff, int *yoff)
+STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, int scale, int glyph, int padding, unsigned char onedge_value, int pixel_dist_scale, int *width, int *height, int *xoff, int *yoff)
 {
-   float scale_x = scale, scale_y = scale;
+   int scale_x = scale, scale_y = scale;
    int ix0,iy0,ix1,iy1;
    int w,h;
    unsigned char *data;
@@ -15780,24 +15750,24 @@ STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float sc
 
    {
       int x,y,i,j;
-      float *precompute;
+      int *precompute;
       stbtt_vertex *verts;
       int num_verts = stbtt_GetGlyphShape(info, glyph, &verts);
       data = (unsigned char *) STBTT_malloc(w * h, info->userdata);
-      precompute = (float *) STBTT_malloc(num_verts * sizeof(float), info->userdata);
+      precompute = (int *) STBTT_malloc(num_verts * sizeof(int), info->userdata);
 
       for (i=0,j=num_verts-1; i < num_verts; j=i++) {
          if (verts[i].type == STBTT_vline) {
-            float x0 = verts[i].x*scale_x, y0 = verts[i].y*scale_y;
-            float x1 = verts[j].x*scale_x, y1 = verts[j].y*scale_y;
-            float dist = (float) STBTT_sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0));
+            int x0 = verts[i].x*scale_x, y0 = verts[i].y*scale_y;
+            int x1 = verts[j].x*scale_x, y1 = verts[j].y*scale_y;
+            int dist = (int) STBTT_sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0));
             precompute[i] = (dist == 0) ? 0.0f : 1.0f / dist;
          } else if (verts[i].type == STBTT_vcurve) {
-            float x2 = verts[j].x *scale_x, y2 = verts[j].y *scale_y;
-            float x1 = verts[i].cx*scale_x, y1 = verts[i].cy*scale_y;
-            float x0 = verts[i].x *scale_x, y0 = verts[i].y *scale_y;
-            float bx = x0 - 2*x1 + x2, by = y0 - 2*y1 + y2;
-            float len2 = bx*bx + by*by;
+            int x2 = verts[j].x *scale_x, y2 = verts[j].y *scale_y;
+            int x1 = verts[i].cx*scale_x, y1 = verts[i].cy*scale_y;
+            int x0 = verts[i].x *scale_x, y0 = verts[i].y *scale_y;
+            int bx = x0 - 2*x1 + x2, by = y0 - 2*y1 + y2;
+            int len2 = bx*bx + by*by;
             if (len2 != 0.0f)
                precompute[i] = 1.0f / (bx*bx + by*by);
             else
@@ -15808,81 +15778,81 @@ STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float sc
 
       for (y=iy0; y < iy1; ++y) {
          for (x=ix0; x < ix1; ++x) {
-            float val;
-            float min_dist = 999999.0f;
-            float sx = (float) x + 0.5f;
-            float sy = (float) y + 0.5f;
-            float x_gspace = (sx / scale_x);
-            float y_gspace = (sy / scale_y);
+            int val;
+            int min_dist = 999999.0f;
+            int sx = (int) x + 0.5f;
+            int sy = (int) y + 0.5f;
+            int x_gspace = (sx / scale_x);
+            int y_gspace = (sy / scale_y);
 
             int winding = stbtt__compute_crossings_x(x_gspace, y_gspace, num_verts, verts); /*  @OPTIMIZE: this could just be a rasterization, but needs to be line vs. non-tesselated curves so a new path */
 
             for (i=0; i < num_verts; ++i) {
-               float x0 = verts[i].x*scale_x, y0 = verts[i].y*scale_y;
+               int x0 = verts[i].x*scale_x, y0 = verts[i].y*scale_y;
 
                /*  check against every point here rather than inside line/curve primitives -- @TODO: wrong if multiple 'moves' in a row produce a garbage point, and given culling, probably more efficient to do within line/curve */
-               float dist2 = (x0-sx)*(x0-sx) + (y0-sy)*(y0-sy);
+               int dist2 = (x0-sx)*(x0-sx) + (y0-sy)*(y0-sy);
                if (dist2 < min_dist*min_dist)
-                  min_dist = (float) STBTT_sqrt(dist2);
+                  min_dist = (int) STBTT_sqrt(dist2);
 
                if (verts[i].type == STBTT_vline) {
-                  float x1 = verts[i-1].x*scale_x, y1 = verts[i-1].y*scale_y;
+                  int x1 = verts[i-1].x*scale_x, y1 = verts[i-1].y*scale_y;
 
                   /*  coarse culling against bbox */
                   /* if (sx > STBTT_min(x0,x1)-min_dist && sx < STBTT_max(x0,x1)+min_dist && */
                   /*     sy > STBTT_min(y0,y1)-min_dist && sy < STBTT_max(y0,y1)+min_dist) */
-                  float dist = (float) STBTT_fabs((x1-x0)*(y0-sy) - (y1-y0)*(x0-sx)) * precompute[i];
+                  int dist = (int) STBTT_fabs((x1-x0)*(y0-sy) - (y1-y0)*(x0-sx)) * precompute[i];
                   STBTT_assert(i != 0);
                   if (dist < min_dist) {
                      /*  check position along line */
                      /*  x' = x0 + t*(x1-x0), y' = y0 + t*(y1-y0) */
                      /*  minimize (x'-sx)*(x'-sx)+(y'-sy)*(y'-sy) */
-                     float dx = x1-x0, dy = y1-y0;
-                     float px = x0-sx, py = y0-sy;
+                     int dx = x1-x0, dy = y1-y0;
+                     int px = x0-sx, py = y0-sy;
                      /*  minimize (px+t*dx)^2 + (py+t*dy)^2 = px*px + 2*px*dx*t + t^2*dx*dx + py*py + 2*py*dy*t + t^2*dy*dy */
                      /*  derivative: 2*px*dx + 2*py*dy + (2*dx*dx+2*dy*dy)*t, set to 0 and solve */
-                     float t = -(px*dx + py*dy) / (dx*dx + dy*dy);
+                     int t = -(px*dx + py*dy) / (dx*dx + dy*dy);
                      if (t >= 0.0f && t <= 1.0f)
                         min_dist = dist;
                   }
                } else if (verts[i].type == STBTT_vcurve) {
-                  float x2 = verts[i-1].x *scale_x, y2 = verts[i-1].y *scale_y;
-                  float x1 = verts[i  ].cx*scale_x, y1 = verts[i  ].cy*scale_y;
-                  float box_x0 = STBTT_min(STBTT_min(x0,x1),x2);
-                  float box_y0 = STBTT_min(STBTT_min(y0,y1),y2);
-                  float box_x1 = STBTT_max(STBTT_max(x0,x1),x2);
-                  float box_y1 = STBTT_max(STBTT_max(y0,y1),y2);
+                  int x2 = verts[i-1].x *scale_x, y2 = verts[i-1].y *scale_y;
+                  int x1 = verts[i  ].cx*scale_x, y1 = verts[i  ].cy*scale_y;
+                  int box_x0 = STBTT_min(STBTT_min(x0,x1),x2);
+                  int box_y0 = STBTT_min(STBTT_min(y0,y1),y2);
+                  int box_x1 = STBTT_max(STBTT_max(x0,x1),x2);
+                  int box_y1 = STBTT_max(STBTT_max(y0,y1),y2);
                   /*  coarse culling against bbox to avoid computing cubic unnecessarily */
                   if (sx > box_x0-min_dist && sx < box_x1+min_dist && sy > box_y0-min_dist && sy < box_y1+min_dist) {
                      int num=0;
-                     float ax = x1-x0, ay = y1-y0;
-                     float bx = x0 - 2*x1 + x2, by = y0 - 2*y1 + y2;
-                     float mx = x0 - sx, my = y0 - sy;
-                     float res[3],px,py,t,it;
-                     float a_inv = precompute[i];
+                     int ax = x1-x0, ay = y1-y0;
+                     int bx = x0 - 2*x1 + x2, by = y0 - 2*y1 + y2;
+                     int mx = x0 - sx, my = y0 - sy;
+                     int res[3],px,py,t,it;
+                     int a_inv = precompute[i];
                      if (a_inv == 0.0) { /*  if a_inv is 0, it's 2nd degree so use quadratic formula */
-                        float a = 3*(ax*bx + ay*by);
-                        float b = 2*(ax*ax + ay*ay) + (mx*bx+my*by);
-                        float c = mx*ax+my*ay;
+                        int a = 3*(ax*bx + ay*by);
+                        int b = 2*(ax*ax + ay*ay) + (mx*bx+my*by);
+                        int c = mx*ax+my*ay;
                         if (a == 0.0) { /*  if a is 0, it's linear */
                            if (b != 0.0) {
                               res[num++] = -c/b;
                            }
                         } else {
-                           float discriminant = b*b - 4*a*c;
+                           int discriminant = b*b - 4*a*c;
                            if (discriminant < 0)
                               num = 0;
                            else {
-                              float root = (float) STBTT_sqrt(discriminant);
+                              int root = (int) STBTT_sqrt(discriminant);
                               res[0] = (-b - root)/(2*a);
                               res[1] = (-b + root)/(2*a);
                               num = 2; /*  don't bother distinguishing 1-solution case, as code below will still work */
                            }
                         }
                      } else {
-                        float b = 3*(ax*bx + ay*by) * a_inv; /*  could precompute this as it doesn't depend on sample point */
-                        float c = (2*(ax*ax + ay*ay) + (mx*bx+my*by)) * a_inv;
-                        float d = (mx*ax+my*ay) * a_inv;
+                        int b = 3*(ax*bx + ay*by) * a_inv; /*  could precompute this as it doesn't depend on sample point */
+                        int c = (2*(ax*ax + ay*ay) + (mx*bx+my*by)) * a_inv;
+                        int d = (mx*ax+my*ay) * a_inv;
                         num = stbtt__solve_cubic(b, c, d, res);
                      }
                      if (num >= 1 && res[0] >= 0.0f && res[0] <= 1.0f) {
@@ -15891,7 +15861,7 @@ STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float sc
                         py = it*it*y0 + 2*t*it*y1 + t*t*y2;
                         dist2 = (px-sx)*(px-sx) + (py-sy)*(py-sy);
                         if (dist2 < min_dist * min_dist)
-                           min_dist = (float) STBTT_sqrt(dist2);
+                           min_dist = (int) STBTT_sqrt(dist2);
                      }
                      if (num >= 2 && res[1] >= 0.0f && res[1] <= 1.0f) {
                         t = res[1], it = 1.0f - t;
@@ -15899,7 +15869,7 @@ STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float sc
                         py = it*it*y0 + 2*t*it*y1 + t*t*y2;
                         dist2 = (px-sx)*(px-sx) + (py-sy)*(py-sy);
                         if (dist2 < min_dist * min_dist)
-                           min_dist = (float) STBTT_sqrt(dist2);
+                           min_dist = (int) STBTT_sqrt(dist2);
                      }
                      if (num >= 3 && res[2] >= 0.0f && res[2] <= 1.0f) {
                         t = res[2], it = 1.0f - t;
@@ -15907,7 +15877,7 @@ STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float sc
                         py = it*it*y0 + 2*t*it*y1 + t*t*y2;
                         dist2 = (px-sx)*(px-sx) + (py-sy)*(py-sy);
                         if (dist2 < min_dist * min_dist)
-                           min_dist = (float) STBTT_sqrt(dist2);
+                           min_dist = (int) STBTT_sqrt(dist2);
                      }
                   }
                }
@@ -15928,7 +15898,7 @@ STBTT_DEF unsigned char * stbtt_GetGlyphSDF(const stbtt_fontinfo *info, float sc
    return data;
 }
 
-STBTT_DEF unsigned char * stbtt_GetCodepointSDF(const stbtt_fontinfo *info, float scale, int codepoint, int padding, unsigned char onedge_value, float pixel_dist_scale, int *width, int *height, int *xoff, int *yoff)
+STBTT_DEF unsigned char * stbtt_GetCodepointSDF(const stbtt_fontinfo *info, int scale, int codepoint, int padding, unsigned char onedge_value, int pixel_dist_scale, int *width, int *height, int *xoff, int *yoff)
 {
    return stbtt_GetGlyphSDF(info, scale, stbtt_FindGlyphIndex(info, codepoint), padding, onedge_value, pixel_dist_scale, width, height, xoff, yoff);
 }
@@ -16104,7 +16074,7 @@ static int stbtt_FindMatchingFont_internal(unsigned char *font_collection, char 
 #endif
 
 STBTT_DEF int stbtt_BakeFontBitmap(const unsigned char *data, int offset,
-                                float pixel_height, unsigned char *pixels, int pw, int ph,
+                                int pixel_height, unsigned char *pixels, int pw, int ph,
                                 int first_char, int num_chars, stbtt_bakedchar *chardata)
 {
    return stbtt_BakeFontBitmap_internal((unsigned char *) data, offset, pixel_height, pixels, pw, ph, first_char, num_chars, chardata);
@@ -16564,7 +16534,7 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
             struct nk_font_bake_data *tmp = &baker->build[input_i++];
             struct nk_baked_font *dst_font = cfg->font;
 
-            float font_scale = stbtt_ScaleForPixelHeight(&tmp->info, cfg->size);
+            int font_scale = stbtt_ScaleForPixelHeight(&tmp->info, cfg->size);
             int unscaled_ascent, unscaled_descent, unscaled_line_gap;
             stbtt_GetFontVMetrics(&tmp->info, &unscaled_ascent, &unscaled_descent,
                                     &unscaled_line_gap);
@@ -16573,8 +16543,8 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
             if (!cfg->merge_mode) {
                 dst_font->ranges = cfg->range;
                 dst_font->height = cfg->size;
-                dst_font->ascent = ((float)unscaled_ascent * font_scale);
-                dst_font->descent = ((float)unscaled_descent * font_scale);
+                dst_font->ascent = ((int)unscaled_ascent * font_scale);
+                dst_font->descent = ((int)unscaled_descent * font_scale);
                 dst_font->glyph_offset = glyph_n;
                 /*
                     Need to zero this, or it will carry over from a previous
@@ -16589,7 +16559,7 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
                 for (char_idx = 0; char_idx < range->num_chars; char_idx++)
                 {
                     nk_rune codepoint = 0;
-                    float dummy_x = 0, dummy_y = 0;
+                    int dummy_x = 0, dummy_y = 0;
                     stbtt_aligned_quad q;
                     struct nk_font_glyph *glyph;
 
@@ -16611,10 +16581,10 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
                     glyph->h = glyph->y1 - glyph->y0;
 
                     if (cfg->coord_type == NK_COORD_PIXEL) {
-                        glyph->u0 = q.s0 * (float)width;
-                        glyph->v0 = q.t0 * (float)height;
-                        glyph->u1 = q.s1 * (float)width;
-                        glyph->v1 = q.t1 * (float)height;
+                        glyph->u0 = q.s0 * (int)width;
+                        glyph->v0 = q.t0 * (int)height;
+                        glyph->u1 = q.s1 * (int)width;
+                        glyph->v1 = q.t1 * (int)height;
                     } else {
                         glyph->u0 = q.s0;
                         glyph->v0 = q.t0;
@@ -16623,7 +16593,7 @@ nk_font_bake(struct nk_font_baker *baker, void *image_memory, int width, int hei
                     }
                     glyph->xadvance = (pc->xadvance + cfg->spacing.x);
                     if (cfg->pixel_snap)
-                        glyph->xadvance = (float)(int)(glyph->xadvance + 0.5f);
+                        glyph->xadvance = (int)(int)(glyph->xadvance + 0.5f);
                     glyph_count++;
                 }
             }
@@ -16685,14 +16655,14 @@ nk_font_bake_convert(void *out_memory, int img_width, int img_height,
  *                          FONT
  *
  * --------------------------------------------------------------*/
-NK_INTERN float
-nk_font_text_width(nk_handle handle, float height, const char *text, int len)
+NK_INTERN int
+nk_font_text_width(nk_handle handle, int height, const char *text, int len)
 {
     nk_rune unicode;
     int text_len  = 0;
-    float text_width = 0;
+    int text_width = 0;
     int glyph_len = 0;
-    float scale = 0;
+    int scale = 0;
 
     struct nk_font *font = (struct nk_font*)handle.ptr;
     NK_ASSERT(font);
@@ -16719,10 +16689,10 @@ nk_font_text_width(nk_handle handle, float height, const char *text, int len)
 }
 #ifdef NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 NK_INTERN void
-nk_font_query_font_glyph(nk_handle handle, float height,
+nk_font_query_font_glyph(nk_handle handle, int height,
     struct nk_user_font_glyph *glyph, nk_rune codepoint, nk_rune next_codepoint)
 {
-    float scale;
+    int scale;
     const struct nk_font_glyph *g;
     struct nk_font *font;
 
@@ -16774,7 +16744,7 @@ nk_font_find_glyph(struct nk_font *font, nk_rune unicode)
     return glyph;
 }
 NK_INTERN void
-nk_font_init(struct nk_font *font, float pixel_height,
+nk_font_init(struct nk_font *font, int pixel_height,
     nk_rune fallback_codepoint, struct nk_font_glyph *glyphs,
     const struct nk_baked_font *baked_font, nk_handle atlas)
 {
@@ -16788,7 +16758,7 @@ nk_font_init(struct nk_font *font, float pixel_height,
     baked = *baked_font;
     font->fallback = 0;
     font->info = baked;
-    font->scale = (float)pixel_height / (float)font->info.height;
+    font->scale = (int)pixel_height / (int)font->info.height;
     font->glyphs = &glyphs[baked_font->glyph_offset];
     font->texture = atlas;
     font->fallback_codepoint = fallback_codepoint;
@@ -17099,7 +17069,7 @@ nk_decode_85(unsigned char* dst, const unsigned char* src)
  *
  * --------------------------------------------------------------*/
 NK_API struct nk_font_config
-nk_font_config(float pixel_height)
+nk_font_config(int pixel_height)
 {
     struct nk_font_config cfg;
     nk_zero_struct(cfg);
@@ -17262,7 +17232,7 @@ nk_font_atlas_add(struct nk_font_atlas *atlas, const struct nk_font_config *conf
 }
 NK_API struct nk_font*
 nk_font_atlas_add_from_memory(struct nk_font_atlas *atlas, void *memory,
-    nk_size size, float height, const struct nk_font_config *config)
+    nk_size size, int height, const struct nk_font_config *config)
 {
     struct nk_font_config cfg;
     NK_ASSERT(memory);
@@ -17287,7 +17257,7 @@ nk_font_atlas_add_from_memory(struct nk_font_atlas *atlas, void *memory,
 #ifdef NK_INCLUDE_STANDARD_IO
 NK_API struct nk_font*
 nk_font_atlas_add_from_file(struct nk_font_atlas *atlas, const char *file_path,
-    float height, const struct nk_font_config *config)
+    int height, const struct nk_font_config *config)
 {
     nk_size size;
     char *memory;
@@ -17313,7 +17283,7 @@ nk_font_atlas_add_from_file(struct nk_font_atlas *atlas, const char *file_path,
 #endif
 NK_API struct nk_font*
 nk_font_atlas_add_compressed(struct nk_font_atlas *atlas,
-    void *compressed_data, nk_size compressed_size, float height,
+    void *compressed_data, nk_size compressed_size, int height,
     const struct nk_font_config *config)
 {
     unsigned int decompressed_size;
@@ -17348,7 +17318,7 @@ nk_font_atlas_add_compressed(struct nk_font_atlas *atlas,
 }
 NK_API struct nk_font*
 nk_font_atlas_add_compressed_base85(struct nk_font_atlas *atlas,
-    const char *data_base85, float height, const struct nk_font_config *config)
+    const char *data_base85, int height, const struct nk_font_config *config)
 {
     int compressed_size;
     void *compressed_data;
@@ -17379,7 +17349,7 @@ nk_font_atlas_add_compressed_base85(struct nk_font_atlas *atlas,
 #ifdef NK_INCLUDE_DEFAULT_FONT
 NK_API struct nk_font*
 nk_font_atlas_add_default(struct nk_font_atlas *atlas,
-    float pixel_height, const struct nk_font_config *config)
+    int pixel_height, const struct nk_font_config *config)
 {
     NK_ASSERT(atlas);
     NK_ASSERT(atlas->temporary.alloc);
@@ -17529,8 +17499,8 @@ nk_font_atlas_end(struct nk_font_atlas *atlas, nk_handle texture,
     }
     if (null) {
         null->texture = texture;
-        null->uv.x = (atlas->custom.x + 0.5f)/(float)atlas->tex_width;
-        null->uv.y = (atlas->custom.y + 0.5f)/(float)atlas->tex_height;
+        null->uv.x = (atlas->custom.x + 0.5f)/(int)atlas->tex_width;
+        null->uv.y = (atlas->custom.y + 0.5f)/(int)atlas->tex_height;
     }
     for (font_iter = atlas->fonts; font_iter; font_iter = font_iter->next) {
         font_iter->texture = texture;
@@ -17664,8 +17634,8 @@ nk_input_motion(struct nk_context *ctx, int x, int y)
     NK_ASSERT(ctx);
     if (!ctx) return;
     in = &ctx->input;
-    in->mouse.pos.x = (float)x;
-    in->mouse.pos.y = (float)y;
+    in->mouse.pos.x = (int)x;
+    in->mouse.pos.y = (int)y;
     in->mouse.delta.x = in->mouse.pos.x - in->mouse.prev.x;
     in->mouse.delta.y = in->mouse.pos.y - in->mouse.prev.y;
 }
@@ -17695,8 +17665,8 @@ nk_input_button(struct nk_context *ctx, enum nk_buttons id, int x, int y, nk_boo
     if (in->mouse.buttons[id].down == down) return;
 
     btn = &in->mouse.buttons[id];
-    btn->clicked_pos.x = (float)x;
-    btn->clicked_pos.y = (float)y;
+    btn->clicked_pos.x = (int)x;
+    btn->clicked_pos.y = (int)y;
     btn->down = down;
     btn->clicked++;
 }
@@ -18580,13 +18550,13 @@ nk_style_pop_##type(struct nk_context *ctx)\
     return 1;\
 }
 NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk, style_item, style_items)
-NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(nk,float, floats)
+NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(nk,int, ints)
 NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk, vec2, vectors)
 NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(nk,flags, flags)
 NK_API nk_bool NK_STYLE_PUSH_IMPLEMENATION(struct nk,color, colors)
 
 NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(style_item, style_items)
-NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(float,floats)
+NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(int,ints)
 NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(vec2, vectors)
 NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(flags,flags)
 NK_API nk_bool NK_STYLE_POP_IMPLEMENATION(color,colors)
@@ -19250,7 +19220,7 @@ nk_panel_get_padding(const struct nk_style *style, enum nk_panel_type type)
     case NK_PANEL_MENU: return style->window.menu_padding;
     case NK_PANEL_TOOLTIP: return style->window.menu_padding;}
 }
-NK_LIB float
+NK_LIB int
 nk_panel_get_border(const struct nk_style *style, nk_flags flags,
     enum nk_panel_type type)
 {
@@ -19479,7 +19449,7 @@ nk_panel_begin(struct nk_context *ctx, const char *title, enum nk_panel_type pan
         {/* window header title */
         int text_len = nk_strlen(title);
         struct nk_rect label = {0,0,0,0};
-        float t = font->width(font->userdata, font->height, title, text_len);
+        int t = font->width(font->userdata, font->height, title, text_len);
         text.padding = nk_vec2(0,0);
 
         label.x = header.x + style->window.header.padding.x;
@@ -19593,10 +19563,10 @@ nk_panel_end(struct nk_context *ctx)
     {
         struct nk_rect scroll;
         int scroll_has_scrolling;
-        float scroll_target;
-        float scroll_offset;
-        float scroll_step;
-        float scroll_inc;
+        int scroll_target;
+        int scroll_offset;
+        int scroll_step;
+        int scroll_inc;
 
         /* mouse wheel scrolling */
         if (nk_panel_is_sub(layout->type))
@@ -19643,10 +19613,10 @@ nk_panel_end(struct nk_context *ctx)
             scroll.w = scrollbar_size.x;
             scroll.h = layout->bounds.h;
 
-            scroll_offset = (float)*layout->offset_y;
+            scroll_offset = (int)*layout->offset_y;
             scroll_step = scroll.h * 0.10f;
             scroll_inc = scroll.h * 0.01f;
-            scroll_target = (float)(int)(layout->at_y - scroll.y);
+            scroll_target = (int)(int)(layout->at_y - scroll.y);
             scroll_offset = nk_do_scrollbarv(&state, out, scroll, scroll_has_scrolling,
                 scroll_offset, scroll_target, scroll_step, scroll_inc,
                 &ctx->style.scrollv, in, style->font);
@@ -19662,8 +19632,8 @@ nk_panel_end(struct nk_context *ctx)
             scroll.w = layout->bounds.w;
             scroll.h = scrollbar_size.y;
 
-            scroll_offset = (float)*layout->offset_x;
-            scroll_target = (float)(int)(layout->max_x - scroll.x);
+            scroll_offset = (int)*layout->offset_x;
+            scroll_target = (int)(int)(layout->max_x - scroll.x);
             scroll_step = layout->max_x * 0.05f;
             scroll_inc = layout->max_x * 0.005f;
             scroll_offset = nk_do_scrollbarh(&state, out, scroll, scroll_has_scrolling,
@@ -19687,7 +19657,7 @@ nk_panel_end(struct nk_context *ctx)
     if (layout->flags & NK_WINDOW_BORDER)
     {
         struct nk_color border_color = nk_panel_get_border_color(style, layout->type);
-        const float padding_y = (layout->flags & NK_WINDOW_MINIMIZED)
+        const int padding_y = (layout->flags & NK_WINDOW_MINIMIZED)
             ? (style->window.border + window->bounds.y + layout->header_height)
             : ((layout->flags & NK_WINDOW_DYNAMIC)
                 ? (layout->bounds.y + layout->bounds.h + layout->footer_height)
@@ -19734,7 +19704,7 @@ nk_panel_end(struct nk_context *ctx)
                     NK_BUTTON_LEFT, scaler, nk_true);
 
             if (left_mouse_down && left_mouse_click_in_scaler) {
-                float delta_x = in->mouse.delta.x;
+                int delta_x = in->mouse.delta.x;
                 if (layout->flags & NK_WINDOW_SCALE_LEFT) {
                     delta_x = -delta_x;
                     window->bounds.x += in->mouse.delta.x;
@@ -20024,7 +19994,7 @@ nk_begin_titled(struct nk_context *ctx, const char *name, const char *title,
     {
         int inpanel, ishovered;
         struct nk_window *iter = win;
-        float h = ctx->style.font->height + 2.0f * style->window.header.padding.y +
+        int h = ctx->style.font->height + 2.0f * style->window.header.padding.y +
             (2.0f * style->window.header.label_padding.y);
         struct nk_rect win_bounds = (!(win->flags & NK_WINDOW_MINIMIZED))?
             win->bounds: nk_rect(win->bounds.x, win->bounds.y, win->bounds.w, h);
@@ -20145,7 +20115,7 @@ nk_window_get_size(const struct nk_context *ctx)
     if (!ctx || !ctx->current) return nk_vec2(0,0);
     return nk_vec2(ctx->current->bounds.w, ctx->current->bounds.h);
 }
-NK_API float
+NK_API int
 nk_window_get_width(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
@@ -20153,7 +20123,7 @@ nk_window_get_width(const struct nk_context *ctx)
     if (!ctx || !ctx->current) return 0;
     return ctx->current->bounds.w;
 }
-NK_API float
+NK_API int
 nk_window_get_height(const struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
@@ -21269,7 +21239,7 @@ nk_menu_end(struct nk_context *ctx)
  *
  * ===============================================================*/
 NK_API void
-nk_layout_set_min_row_height(struct nk_context *ctx, float height)
+nk_layout_set_min_row_height(struct nk_context *ctx, int height)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -21302,25 +21272,25 @@ nk_layout_reset_min_row_height(struct nk_context *ctx)
     layout->row.min_height += ctx->style.text.padding.y*2;
     layout->row.min_height += ctx->style.window.min_row_height_padding*2;
 }
-NK_LIB float
+NK_LIB int
 nk_layout_row_calculate_usable_space(const struct nk_style *style, enum nk_panel_type type,
-    float total_space, int columns)
+    int total_space, int columns)
 {
-    float panel_spacing;
-    float panel_space;
+    int panel_spacing;
+    int panel_space;
 
     struct nk_vec2 spacing;
 
     spacing = style->window.spacing;
 
     /* calculate the usable panel space */
-    panel_spacing = (float)NK_MAX(columns - 1, 0) * spacing.x;
+    panel_spacing = (int)NK_MAX(columns - 1, 0) * spacing.x;
     panel_space  = total_space - panel_spacing;
     return panel_space;
 }
 NK_LIB void
 nk_panel_layout(const struct nk_context *ctx, struct nk_window *win,
-    float height, int cols)
+    int height, int cols)
 {
     struct nk_panel *layout;
     const struct nk_style *style;
@@ -21372,7 +21342,7 @@ nk_panel_layout(const struct nk_context *ctx, struct nk_window *win,
 }
 NK_LIB void
 nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt,
-    float height, int cols, int width)
+    int height, int cols, int width)
 {
     /* update the current row and set the current row layout */
     struct nk_window *win;
@@ -21391,10 +21361,10 @@ nk_row_layout(struct nk_context *ctx, enum nk_layout_format fmt,
     win->layout->row.ratio = 0;
     win->layout->row.filled = 0;
     win->layout->row.item_offset = 0;
-    win->layout->row.item_width = (float)width;
+    win->layout->row.item_width = (int)width;
 }
-NK_API float
-nk_layout_ratio_from_pixel(struct nk_context *ctx, float pixel_width)
+NK_API int
+nk_layout_ratio_from_pixel(struct nk_context *ctx, int pixel_width)
 {
     struct nk_window *win;
     NK_ASSERT(ctx);
@@ -21404,18 +21374,18 @@ nk_layout_ratio_from_pixel(struct nk_context *ctx, float pixel_width)
     return NK_CLAMP(0.0f, pixel_width/win->bounds.x, 1.0f);
 }
 NK_API void
-nk_layout_row_dynamic(struct nk_context *ctx, float height, int cols)
+nk_layout_row_dynamic(struct nk_context *ctx, int height, int cols)
 {
     nk_row_layout(ctx, NK_DYNAMIC, height, cols, 0);
 }
 NK_API void
-nk_layout_row_static(struct nk_context *ctx, float height, int item_width, int cols)
+nk_layout_row_static(struct nk_context *ctx, int height, int item_width, int cols)
 {
     nk_row_layout(ctx, NK_STATIC, height, cols, item_width);
 }
 NK_API void
 nk_layout_row_begin(struct nk_context *ctx, enum nk_layout_format fmt,
-    float row_height, int cols)
+    int row_height, int cols)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -21440,7 +21410,7 @@ nk_layout_row_begin(struct nk_context *ctx, enum nk_layout_format fmt,
     layout->row.columns = cols;
 }
 NK_API void
-nk_layout_row_push(struct nk_context *ctx, float ratio_or_width)
+nk_layout_row_push(struct nk_context *ctx, int ratio_or_width)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -21458,7 +21428,7 @@ nk_layout_row_push(struct nk_context *ctx, float ratio_or_width)
         return;
 
     if (layout->row.type == NK_LAYOUT_DYNAMIC_ROW) {
-        float ratio = ratio_or_width;
+        int ratio = ratio_or_width;
         if ((ratio + layout->row.filled) > 1.0f) return;
         if (ratio > 0.0f)
             layout->row.item_width = NK_SATURATE(ratio);
@@ -21487,7 +21457,7 @@ nk_layout_row_end(struct nk_context *ctx)
 }
 NK_API void
 nk_layout_row(struct nk_context *ctx, enum nk_layout_format fmt,
-    float height, int cols, const float *ratio)
+    int height, int cols, const int *ratio)
 {
     int i;
     int n_undef = 0;
@@ -21505,7 +21475,7 @@ nk_layout_row(struct nk_context *ctx, enum nk_layout_format fmt,
     nk_panel_layout(ctx, win, height, cols);
     if (fmt == NK_DYNAMIC) {
         /* calculate width of undefined widget ratios */
-        float r = 0;
+        int r = 0;
         layout->row.ratio = ratio;
         for (i = 0; i < cols; ++i) {
             if (ratio[i] < 0.0f)
@@ -21514,7 +21484,7 @@ nk_layout_row(struct nk_context *ctx, enum nk_layout_format fmt,
         }
         r = NK_SATURATE(1.0f - r);
         layout->row.type = NK_LAYOUT_DYNAMIC;
-        layout->row.item_width = (r > 0 && n_undef > 0) ? (r / (float)n_undef):0;
+        layout->row.item_width = (r > 0 && n_undef > 0) ? (r / (int)n_undef):0;
     } else {
         layout->row.ratio = ratio;
         layout->row.type = NK_LAYOUT_STATIC;
@@ -21525,7 +21495,7 @@ nk_layout_row(struct nk_context *ctx, enum nk_layout_format fmt,
     layout->row.filled = 0;
 }
 NK_API void
-nk_layout_row_template_begin(struct nk_context *ctx, float height)
+nk_layout_row_template_begin(struct nk_context *ctx, int height)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -21572,7 +21542,7 @@ nk_layout_row_template_push_dynamic(struct nk_context *ctx)
     layout->row.templates[layout->row.columns++] = -1.0f;
 }
 NK_API void
-nk_layout_row_template_push_variable(struct nk_context *ctx, float min_width)
+nk_layout_row_template_push_variable(struct nk_context *ctx, int min_width)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -21592,7 +21562,7 @@ nk_layout_row_template_push_variable(struct nk_context *ctx, float min_width)
     layout->row.templates[layout->row.columns++] = -min_width;
 }
 NK_API void
-nk_layout_row_template_push_static(struct nk_context *ctx, float width)
+nk_layout_row_template_push_static(struct nk_context *ctx, int width)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -21620,9 +21590,9 @@ nk_layout_row_template_end(struct nk_context *ctx)
     int i = 0;
     int variable_count = 0;
     int min_variable_count = 0;
-    float min_fixed_width = 0.0f;
-    float total_fixed_width = 0.0f;
-    float max_variable_width = 0.0f;
+    int min_fixed_width = 0.0f;
+    int total_fixed_width = 0.0f;
+    int max_variable_width = 0.0f;
 
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -21635,7 +21605,7 @@ nk_layout_row_template_end(struct nk_context *ctx)
     NK_ASSERT(layout->row.type == NK_LAYOUT_TEMPLATE);
     if (layout->row.type != NK_LAYOUT_TEMPLATE) return;
     for (i = 0; i < layout->row.columns; ++i) {
-        float width = layout->row.templates[i];
+        int width = layout->row.templates[i];
         if (width >= 0.0f) {
             total_fixed_width += width;
             min_fixed_width += width;
@@ -21650,21 +21620,21 @@ nk_layout_row_template_end(struct nk_context *ctx)
         }
     }
     if (variable_count) {
-        float space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
+        int space = nk_layout_row_calculate_usable_space(&ctx->style, layout->type,
                             layout->bounds.w, layout->row.columns);
-        float var_width = (NK_MAX(space-min_fixed_width,0.0f)) / (float)variable_count;
+        int var_width = (NK_MAX(space-min_fixed_width,0.0f)) / (int)variable_count;
         int enough_space = var_width >= max_variable_width;
         if (!enough_space)
-            var_width = (NK_MAX(space-total_fixed_width,0)) / (float)min_variable_count;
+            var_width = (NK_MAX(space-total_fixed_width,0)) / (int)min_variable_count;
         for (i = 0; i < layout->row.columns; ++i) {
-            float *width = &layout->row.templates[i];
+            int *width = &layout->row.templates[i];
             *width = (*width >= 0.0f)? *width: (*width < -1.0f && !enough_space)? -(*width): var_width;
         }
     }
 }
 NK_API void
 nk_layout_space_begin(struct nk_context *ctx, enum nk_layout_format fmt,
-    float height, int widget_count)
+    int height, int widget_count)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -21772,8 +21742,8 @@ nk_layout_space_to_screen(struct nk_context *ctx, struct nk_vec2 ret)
     win = ctx->current;
     layout = win->layout;
 
-    ret.x += layout->at_x - (float)*layout->offset_x;
-    ret.y += layout->at_y - (float)*layout->offset_y;
+    ret.x += layout->at_x - (int)*layout->offset_x;
+    ret.y += layout->at_y - (int)*layout->offset_y;
     return ret;
 }
 NK_API struct nk_vec2
@@ -21788,8 +21758,8 @@ nk_layout_space_to_local(struct nk_context *ctx, struct nk_vec2 ret)
     win = ctx->current;
     layout = win->layout;
 
-    ret.x += -layout->at_x + (float)*layout->offset_x;
-    ret.y += -layout->at_y + (float)*layout->offset_y;
+    ret.x += -layout->at_x + (int)*layout->offset_x;
+    ret.y += -layout->at_y + (int)*layout->offset_y;
     return ret;
 }
 NK_API struct nk_rect
@@ -21804,8 +21774,8 @@ nk_layout_space_rect_to_screen(struct nk_context *ctx, struct nk_rect ret)
     win = ctx->current;
     layout = win->layout;
 
-    ret.x += layout->at_x - (float)*layout->offset_x;
-    ret.y += layout->at_y - (float)*layout->offset_y;
+    ret.x += layout->at_x - (int)*layout->offset_x;
+    ret.y += layout->at_y - (int)*layout->offset_y;
     return ret;
 }
 NK_API struct nk_rect
@@ -21820,8 +21790,8 @@ nk_layout_space_rect_to_local(struct nk_context *ctx, struct nk_rect ret)
     win = ctx->current;
     layout = win->layout;
 
-    ret.x += -layout->at_x + (float)*layout->offset_x;
-    ret.y += -layout->at_y + (float)*layout->offset_y;
+    ret.x += -layout->at_x + (int)*layout->offset_x;
+    ret.y += -layout->at_y + (int)*layout->offset_y;
     return ret;
 }
 NK_LIB void
@@ -21829,7 +21799,7 @@ nk_panel_alloc_row(const struct nk_context *ctx, struct nk_window *win)
 {
     struct nk_panel *layout = win->layout;
     struct nk_vec2 spacing = ctx->style.window.spacing;
-    const float row_height = layout->row.height - spacing.y;
+    const int row_height = layout->row.height - spacing.y;
     nk_panel_layout(ctx, win, row_height, layout->row.columns);
 }
 NK_LIB void
@@ -21841,10 +21811,10 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
 
     struct nk_vec2 spacing;
 
-    float item_offset = 0;
-    float item_width = 0;
-    float item_spacing = 0;
-    float panel_space = 0;
+    int item_offset = 0;
+    int item_width = 0;
+    int item_spacing = 0;
+    int panel_space = 0;
 
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -21866,14 +21836,14 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     switch (layout->row.type) {
     case NK_LAYOUT_DYNAMIC_FIXED: {
         /* scaling fixed size widgets item width */
-        float w = NK_MAX(1.0f,panel_space) / (float)layout->row.columns;
-        item_offset = (float)layout->row.index * w;
+        int w = NK_MAX(1.0f,panel_space) / (int)layout->row.columns;
+        item_offset = (int)layout->row.index * w;
         item_width = w + NK_FRAC(item_offset);
-        item_spacing = (float)layout->row.index * spacing.x;
+        item_spacing = (int)layout->row.index * spacing.x;
     } break;
     case NK_LAYOUT_DYNAMIC_ROW: {
         /* scaling single ratio widget width */
-        float w = layout->row.item_width * panel_space;
+        int w = layout->row.item_width * panel_space;
         item_offset = layout->row.item_offset;
         item_width = w + NK_FRAC(item_offset);
         item_spacing = 0;
@@ -21887,22 +21857,22 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     case NK_LAYOUT_DYNAMIC_FREE: {
         /* panel width depended free widget placing */
         bounds->x = layout->at_x + (layout->bounds.w * layout->row.item.x);
-        bounds->x -= (float)*layout->offset_x;
+        bounds->x -= (int)*layout->offset_x;
         bounds->y = layout->at_y + (layout->row.height * layout->row.item.y);
-        bounds->y -= (float)*layout->offset_y;
+        bounds->y -= (int)*layout->offset_y;
         bounds->w = layout->bounds.w  * layout->row.item.w + NK_FRAC(bounds->x);
         bounds->h = layout->row.height * layout->row.item.h + NK_FRAC(bounds->y);
         return;
     }
     case NK_LAYOUT_DYNAMIC: {
         /* scaling arrays of panel width ratios for every widget */
-        float ratio, w;
+        int ratio, w;
         NK_ASSERT(layout->row.ratio);
         ratio = (layout->row.ratio[layout->row.index] < 0) ?
             layout->row.item_width : layout->row.ratio[layout->row.index];
 
         w = (ratio * panel_space);
-        item_spacing = (float)layout->row.index * spacing.x;
+        item_spacing = (int)layout->row.index * spacing.x;
         item_offset = layout->row.item_offset;
         item_width = w + NK_FRAC(item_offset);
 
@@ -21914,14 +21884,14 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     case NK_LAYOUT_STATIC_FIXED: {
         /* non-scaling fixed widgets item width */
         item_width = layout->row.item_width;
-        item_offset = (float)layout->row.index * item_width;
-        item_spacing = (float)layout->row.index * spacing.x;
+        item_offset = (int)layout->row.index * item_width;
+        item_spacing = (int)layout->row.index * spacing.x;
     } break;
     case NK_LAYOUT_STATIC_ROW: {
         /* scaling single ratio widget width */
         item_width = layout->row.item_width;
         item_offset = layout->row.item_offset;
-        item_spacing = (float)layout->row.index * spacing.x;
+        item_spacing = (int)layout->row.index * spacing.x;
         if (modify) layout->row.item_offset += item_width;
     } break;
     case NK_LAYOUT_STATIC_FREE: {
@@ -21930,28 +21900,28 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
         bounds->w = layout->row.item.w;
         if (((bounds->x + bounds->w) > layout->max_x) && modify)
             layout->max_x = (bounds->x + bounds->w);
-        bounds->x -= (float)*layout->offset_x;
+        bounds->x -= (int)*layout->offset_x;
         bounds->y = layout->at_y + layout->row.item.y;
-        bounds->y -= (float)*layout->offset_y;
+        bounds->y -= (int)*layout->offset_y;
         bounds->h = layout->row.item.h;
         return;
     }
     case NK_LAYOUT_STATIC: {
         /* non-scaling array of panel pixel width for every widget */
-        item_spacing = (float)layout->row.index * spacing.x;
+        item_spacing = (int)layout->row.index * spacing.x;
         item_width = layout->row.ratio[layout->row.index];
         item_offset = layout->row.item_offset;
         if (modify) layout->row.item_offset += item_width;
     } break;
     case NK_LAYOUT_TEMPLATE: {
         /* stretchy row layout with combined dynamic/static widget width*/
-        float w;
+        int w;
         NK_ASSERT(layout->row.index < layout->row.columns);
         NK_ASSERT(layout->row.index < NK_MAX_LAYOUT_ROW_TEMPLATE_COLUMNS);
         w = layout->row.templates[layout->row.index];
         item_offset = layout->row.item_offset;
         item_width = w + NK_FRAC(item_offset);
-        item_spacing = (float)layout->row.index * spacing.x;
+        item_spacing = (int)layout->row.index * spacing.x;
         if (modify) layout->row.item_offset += w;
     } break;
     #undef NK_FRAC
@@ -21961,11 +21931,11 @@ nk_layout_widget_space(struct nk_rect *bounds, const struct nk_context *ctx,
     /* set the bounds of the newly allocated widget */
     bounds->w = item_width;
     bounds->h = layout->row.height - spacing.y;
-    bounds->y = layout->at_y - (float)*layout->offset_y;
+    bounds->y = layout->at_y - (int)*layout->offset_y;
     bounds->x = layout->at_x + item_offset + item_spacing;
     if (((bounds->x + bounds->w) > layout->max_x) && modify)
         layout->max_x = bounds->x + bounds->w;
-    bounds->x -= (float)*layout->offset_x;
+    bounds->x -= (int)*layout->offset_x;
 }
 NK_LIB void
 nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx)
@@ -21992,7 +21962,7 @@ nk_panel_alloc_space(struct nk_rect *bounds, const struct nk_context *ctx)
 NK_LIB void
 nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
 {
-    float y;
+    int y;
     int index;
     struct nk_window *win;
     struct nk_panel *layout;
@@ -22039,7 +22009,7 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
     const struct nk_input *in;
     const struct nk_style_button *button;
     enum nk_symbol_type symbol;
-    float row_height;
+    int row_height;
 
     struct nk_vec2 item_spacing;
     struct nk_rect header = {0,0,0,0};
@@ -22129,7 +22099,7 @@ nk_tree_state_base(struct nk_context *ctx, enum nk_tree_type type,
 
     /* increase x-axis cursor widget position pointer */
     if (*state == NK_MAXIMIZED) {
-        layout->at_x = header.x + (float)*layout->offset_x + style->tab.indent;
+        layout->at_x = header.x + (int)*layout->offset_x + style->tab.indent;
         layout->bounds.w = NK_MAX(layout->bounds.w, style->tab.indent);
         layout->bounds.w -= (style->tab.indent + style->window.padding.x);
         layout->row.tree_depth++;
@@ -22184,7 +22154,7 @@ nk_tree_state_pop(struct nk_context *ctx)
 
     win = ctx->current;
     layout = win->layout;
-    layout->at_x -= ctx->style.tab.indent + (float)*layout->offset_x;
+    layout->at_x -= ctx->style.tab.indent + (int)*layout->offset_x;
     layout->bounds.w += ctx->style.tab.indent + ctx->style.window.padding.x;
     NK_ASSERT(layout->row.tree_depth);
     layout->row.tree_depth--;
@@ -22220,11 +22190,11 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     const struct nk_input *in;
     const struct nk_style_button *button;
     enum nk_symbol_type symbol;
-    float row_height;
+    int row_height;
     struct nk_vec2 padding;
 
     int text_len;
-    float text_width;
+    int text_width;
 
     struct nk_vec2 item_spacing;
     struct nk_rect header = {0,0,0,0};
@@ -22309,7 +22279,7 @@ nk_tree_element_image_push_hashed_base(struct nk_context *ctx, enum nk_tree_type
     }
     /* increase x-axis cursor widget position pointer */
     if (*state == NK_MAXIMIZED) {
-        layout->at_x = header.x + (float)*layout->offset_x + style->tab.indent;
+        layout->at_x = header.x + (int)*layout->offset_x + style->tab.indent;
         layout->bounds.w = NK_MAX(layout->bounds.w, style->tab.indent);
         layout->bounds.w -= (style->tab.indent + style->window.padding.x);
         layout->row.tree_depth++;
@@ -22651,8 +22621,8 @@ nk_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
     layout = win->layout;
 
     view->total_height = row_height * NK_MAX(row_count,1);
-    view->begin = (int)NK_MAX(((float)view->scroll_value / (float)row_height), 0.0f);
-    view->count = (int)NK_MAX(nk_iceilf((layout->clip.h)/(float)row_height),0);
+    view->begin = (int)NK_MAX(((int)view->scroll_value / (int)row_height), 0.0f);
+    view->count = (int)NK_MAX(nk_iceilf((layout->clip.h)/(int)row_height),0);
     view->count = NK_MIN(view->count, row_count - view->begin);
     view->end = view->begin + view->count;
     view->ctx = ctx;
@@ -22673,7 +22643,7 @@ nk_list_view_end(struct nk_list_view *view)
     ctx = view->ctx;
     win = ctx->current;
     layout = win->layout;
-    layout->at_y = layout->bounds.y + (float)view->total_height;
+    layout->at_y = layout->bounds.y + (int)view->total_height;
     *view->scroll_pointer = *view->scroll_pointer + view->scroll_value;
     nk_group_end(view->ctx);
 }
@@ -22722,7 +22692,7 @@ nk_widget_size(struct nk_context *ctx)
     nk_layout_peek(&bounds, ctx);
     return nk_vec2(bounds.w, bounds.h);
 }
-NK_API float
+NK_API int
 nk_widget_width(struct nk_context *ctx)
 {
     struct nk_rect bounds;
@@ -22734,7 +22704,7 @@ nk_widget_width(struct nk_context *ctx)
     nk_layout_peek(&bounds, ctx);
     return bounds.w;
 }
-NK_API float
+NK_API int
 nk_widget_height(struct nk_context *ctx)
 {
     struct nk_rect bounds;
@@ -22757,10 +22727,10 @@ nk_widget_is_hovered(struct nk_context *ctx)
         return 0;
 
     c = ctx->current->layout->clip;
-    c.x = (float)((int)c.x);
-    c.y = (float)((int)c.y);
-    c.w = (float)((int)c.w);
-    c.h = (float)((int)c.h);
+    c.x = (int)((int)c.x);
+    c.y = (int)((int)c.y);
+    c.w = (int)((int)c.w);
+    c.h = (int)((int)c.h);
 
     nk_layout_peek(&bounds, ctx);
     nk_unify(&v, &c, bounds.x, bounds.y, bounds.x + bounds.w, bounds.y + bounds.h);
@@ -22779,10 +22749,10 @@ nk_widget_is_mouse_clicked(struct nk_context *ctx, enum nk_buttons btn)
         return 0;
 
     c = ctx->current->layout->clip;
-    c.x = (float)((int)c.x);
-    c.y = (float)((int)c.y);
-    c.w = (float)((int)c.w);
-    c.h = (float)((int)c.h);
+    c.x = (int)((int)c.x);
+    c.y = (int)((int)c.y);
+    c.w = (int)((int)c.w);
+    c.h = (int)((int)c.h);
 
     nk_layout_peek(&bounds, ctx);
     nk_unify(&v, &c, bounds.x, bounds.y, bounds.x + bounds.w, bounds.y + bounds.h);
@@ -22801,10 +22771,10 @@ nk_widget_has_mouse_click_down(struct nk_context *ctx, enum nk_buttons btn, nk_b
         return 0;
 
     c = ctx->current->layout->clip;
-    c.x = (float)((int)c.x);
-    c.y = (float)((int)c.y);
-    c.w = (float)((int)c.w);
-    c.h = (float)((int)c.h);
+    c.x = (int)((int)c.x);
+    c.y = (int)((int)c.y);
+    c.w = (int)((int)c.w);
+    c.h = (int)((int)c.h);
 
     nk_layout_peek(&bounds, ctx);
     nk_unify(&v, &c, bounds.x, bounds.y, bounds.x + bounds.w, bounds.y + bounds.h);
@@ -22842,16 +22812,16 @@ nk_widget(struct nk_rect *bounds, const struct nk_context *ctx)
     NK_ASSERT(!(layout->flags & NK_WINDOW_HIDDEN));
     NK_ASSERT(!(layout->flags & NK_WINDOW_CLOSED));
 
-    /* need to convert to int here to remove floating point errors */
-    bounds->x = (float)((int)bounds->x);
-    bounds->y = (float)((int)bounds->y);
-    bounds->w = (float)((int)bounds->w);
-    bounds->h = (float)((int)bounds->h);
+    /* need to convert to int here to remove inting point errors */
+    bounds->x = (int)((int)bounds->x);
+    bounds->y = (int)((int)bounds->y);
+    bounds->w = (int)((int)bounds->w);
+    bounds->h = (int)((int)bounds->h);
 
-    c.x = (float)((int)c.x);
-    c.y = (float)((int)c.y);
-    c.w = (float)((int)c.w);
-    c.h = (float)((int)c.h);
+    c.x = (int)((int)c.x);
+    c.y = (int)((int)c.y);
+    c.w = (int)((int)c.w);
+    c.h = (int)((int)c.h);
 
     nk_unify(&v, &c, bounds->x, bounds->y, bounds->x + bounds->w, bounds->y + bounds->h);
     if (!NK_INTERSECT(c.x, c.y, c.w, c.h, bounds->x, bounds->y, bounds->w, bounds->h))
@@ -22924,7 +22894,7 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
     nk_flags a, const struct nk_user_font *f)
 {
     struct nk_rect label;
-    float text_width;
+    int text_width;
 
     NK_ASSERT(o);
     NK_ASSERT(t);
@@ -22943,19 +22913,19 @@ nk_widget_text(struct nk_command_buffer *o, struct nk_rect b,
         label.x = b.x + t->padding.x;
         label.w = NK_MAX(0, b.w - 2 * t->padding.x);
     } else if (a & NK_TEXT_ALIGN_CENTERED) {
-        label.w = NK_MAX(1, 2 * t->padding.x + (float)text_width);
+        label.w = NK_MAX(1, 2 * t->padding.x + (int)text_width);
         label.x = (b.x + t->padding.x + ((b.w - 2 * t->padding.x) - label.w) / 2);
         label.x = NK_MAX(b.x + t->padding.x, label.x);
         label.w = NK_MIN(b.x + b.w, label.x + label.w);
         if (label.w >= label.x) label.w -= label.x;
     } else if (a & NK_TEXT_ALIGN_RIGHT) {
-        label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (float)text_width));
-        label.w = (float)text_width + 2 * t->padding.x;
+        label.x = NK_MAX(b.x + t->padding.x, (b.x + b.w) - (2 * t->padding.x + (int)text_width));
+        label.w = (int)text_width + 2 * t->padding.x;
     } else return;
 
     /* align in y-axis */
     if (a & NK_TEXT_ALIGN_MIDDLE) {
-        label.y = b.y + b.h/2.0f - (float)f->height/2.0f;
+        label.y = b.y + b.h/2.0f - (int)f->height/2.0f;
         label.h = NK_MAX(b.h/2.0f, b.h - (b.h/2.0f + f->height/2.0f));
     } else if (a & NK_TEXT_ALIGN_BOTTOM) {
         label.y = b.y + b.h - f->height;
@@ -22968,7 +22938,7 @@ nk_widget_text_wrap(struct nk_command_buffer *o, struct nk_rect b,
     const char *string, int len, const struct nk_text *t,
     const struct nk_user_font *f)
 {
-    float width;
+    int width;
     int glyphs = 0;
     int fitting = 0;
     int done = 0;
@@ -23140,19 +23110,19 @@ nk_value_uint(struct nk_context *ctx, const char *prefix, unsigned int value)
 {
     nk_labelf(ctx, NK_TEXT_LEFT, "%s: %u", prefix, value);
 }
-NK_API void
-nk_value_float(struct nk_context *ctx, const char *prefix, float value)
-{
-    double double_value = (double)value;
-    nk_labelf(ctx, NK_TEXT_LEFT, "%s: %.3f", prefix, double_value);
-}
+// NK_API void
+// nk_value_int(struct nk_context *ctx, const char *prefix, int value)
+// {
+//     double double_value = (double)value;
+//     nk_labelf(ctx, NK_TEXT_LEFT, "%s: %.3f", prefix, double_value);
+// }
 NK_API void
 nk_value_color_byte(struct nk_context *ctx, const char *p, struct nk_color c)
 {
     nk_labelf(ctx, NK_TEXT_LEFT, "%s: (%d, %d, %d, %d)", p, c.r, c.g, c.b, c.a);
 }
 NK_API void
-nk_value_color_float(struct nk_context *ctx, const char *p, struct nk_color color)
+nk_value_color_int(struct nk_context *ctx, const char *p, struct nk_color color)
 {
     double c[4]; nk_color_dv(c, color);
     nk_labelf(ctx, NK_TEXT_LEFT, "%s: (%.2f, %.2f, %.2f, %.2f)",
@@ -23355,7 +23325,7 @@ nk_image_color(struct nk_context *ctx, struct nk_image img, struct nk_color col)
 NK_LIB void
 nk_draw_symbol(struct nk_command_buffer *out, enum nk_symbol_type type,
     struct nk_rect content, struct nk_color background, struct nk_color foreground,
-    float border_width, const struct nk_user_font *font)
+    int border_width, const struct nk_user_font *font)
 {
     switch (type) {
     case NK_SYMBOL_X:
@@ -24663,11 +24633,11 @@ nk_select_symbol_label(struct nk_context *ctx, enum nk_symbol_type sym,
  *                              SLIDER
  *
  * ===============================================================*/
-NK_LIB float
+NK_LIB int
 nk_slider_behavior(nk_flags *state, struct nk_rect *logical_cursor,
     struct nk_rect *visual_cursor, struct nk_input *in,
-    struct nk_rect bounds, float slider_min, float slider_max, float slider_value,
-    float slider_step, float slider_steps)
+    struct nk_rect bounds, int slider_min, int slider_max, int slider_value,
+    int slider_step, int slider_steps)
 {
     int left_mouse_down;
     int left_mouse_click_in_cursor;
@@ -24679,14 +24649,14 @@ nk_slider_behavior(nk_flags *state, struct nk_rect *logical_cursor,
             NK_BUTTON_LEFT, *visual_cursor, nk_true);
 
     if (left_mouse_down && left_mouse_click_in_cursor) {
-        float ratio = 0;
-        const float d = in->mouse.pos.x - (visual_cursor->x+visual_cursor->w*0.5f);
-        const float pxstep = bounds.w / slider_steps;
+        int ratio = 0;
+        const int d = in->mouse.pos.x - (visual_cursor->x+visual_cursor->w*0.5f);
+        const int pxstep = bounds.w / slider_steps;
 
         /* only update value if the next slider step is reached */
         *state = NK_WIDGET_STATE_ACTIVE;
         if (NK_ABS(d) >= pxstep) {
-            const float steps = (float)((int)(NK_ABS(d) / pxstep));
+            const int steps = (int)((int)(NK_ABS(d) / pxstep));
             slider_value += (d > 0) ? (slider_step*steps) : -(slider_step*steps);
             slider_value = NK_CLAMP(slider_min, slider_value, slider_max);
             ratio = (slider_value - slider_min)/slider_step;
@@ -24708,7 +24678,7 @@ nk_slider_behavior(nk_flags *state, struct nk_rect *logical_cursor,
 NK_LIB void
 nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
     const struct nk_style_slider *style, const struct nk_rect *bounds,
-    const struct nk_rect *visual_cursor, float min, float value, float max)
+    const struct nk_rect *visual_cursor, int min, int value, int max)
 {
     struct nk_rect fill;
     struct nk_rect bar;
@@ -24764,19 +24734,19 @@ nk_draw_slider(struct nk_command_buffer *out, nk_flags state,
         nk_draw_image(out, *visual_cursor, &cursor->data.image, nk_white);
     else nk_fill_circle(out, *visual_cursor, cursor->data.color);
 }
-NK_LIB float
+NK_LIB int
 nk_do_slider(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect bounds,
-    float min, float val, float max, float step,
+    int min, int val, int max, int step,
     const struct nk_style_slider *style, struct nk_input *in,
     const struct nk_user_font *font)
 {
-    float slider_range;
-    float slider_min;
-    float slider_max;
-    float slider_value;
-    float slider_steps;
-    float cursor_offset;
+    int slider_range;
+    int slider_min;
+    int slider_max;
+    int slider_value;
+    int slider_steps;
+    int cursor_offset;
 
     struct nk_rect visual_cursor;
     struct nk_rect logical_cursor;
@@ -24853,58 +24823,58 @@ nk_do_slider(nk_flags *state,
     if (style->draw_end) style->draw_end(out, style->userdata);
     return slider_value;
 }
-NK_API nk_bool
-nk_slider_float(struct nk_context *ctx, float min_value, float *value, float max_value,
-    float value_step)
-{
-    struct nk_window *win;
-    struct nk_panel *layout;
-    struct nk_input *in;
-    const struct nk_style *style;
+// NK_API nk_bool
+// nk_slider_int(struct nk_context *ctx, int min_value, int *value, int max_value,
+//     int value_step)
+// {
+//     struct nk_window *win;
+//     struct nk_panel *layout;
+//     struct nk_input *in;
+//     const struct nk_style *style;
 
-    int ret = 0;
-    float old_value;
-    struct nk_rect bounds;
-    enum nk_widget_layout_states state;
+//     int ret = 0;
+//     int old_value;
+//     struct nk_rect bounds;
+//     enum nk_widget_layout_states state;
 
-    NK_ASSERT(ctx);
-    NK_ASSERT(ctx->current);
-    NK_ASSERT(ctx->current->layout);
-    NK_ASSERT(value);
-    if (!ctx || !ctx->current || !ctx->current->layout || !value)
-        return ret;
+//     NK_ASSERT(ctx);
+//     NK_ASSERT(ctx->current);
+//     NK_ASSERT(ctx->current->layout);
+//     NK_ASSERT(value);
+//     if (!ctx || !ctx->current || !ctx->current->layout || !value)
+//         return ret;
 
-    win = ctx->current;
-    style = &ctx->style;
-    layout = win->layout;
+//     win = ctx->current;
+//     style = &ctx->style;
+//     layout = win->layout;
 
-    state = nk_widget(&bounds, ctx);
-    if (!state) return ret;
-    in = (/*state == NK_WIDGET_ROM || */ layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
+//     state = nk_widget(&bounds, ctx);
+//     if (!state) return ret;
+//     in = (/*state == NK_WIDGET_ROM || */ layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
 
-    old_value = *value;
-    *value = nk_do_slider(&ctx->last_widget_state, &win->buffer, bounds, min_value,
-                old_value, max_value, value_step, &style->slider, in, style->font);
-    return (old_value > *value || old_value < *value);
-}
-NK_API float
-nk_slide_float(struct nk_context *ctx, float min, float val, float max, float step)
-{
-    nk_slider_float(ctx, min, &val, max, step); return val;
-}
+//     old_value = *value;
+//     *value = nk_do_slider(&ctx->last_widget_state, &win->buffer, bounds, min_value,
+//                 old_value, max_value, value_step, &style->slider, in, style->font);
+//     return (old_value > *value || old_value < *value);
+// }
 NK_API int
 nk_slide_int(struct nk_context *ctx, int min, int val, int max, int step)
 {
-    float value = (float)val;
-    nk_slider_float(ctx, (float)min, &value, (float)max, (float)step);
-    return (int)value;
+    nk_slider_int(ctx, min, &val, max, step); return val;
 }
+// NK_API int
+// nk_slide_int(struct nk_context *ctx, int min, int val, int max, int step)
+// {
+//     int value = (int)val;
+//     nk_slider_int(ctx, (int)min, &value, (int)max, (int)step);
+//     return (int)value;
+// }
 NK_API nk_bool
 nk_slider_int(struct nk_context *ctx, int min, int *val, int max, int step)
 {
     int ret;
-    float value = (float)*val;
-    ret = nk_slider_float(ctx, (float)min, &value, (float)max, (float)step);
+    int value = (int)*val;
+    ret = nk_slider_int(ctx, (int)min, &value, (int)max, (int)step);
     *val =  (int)value;
     return ret;
 }
@@ -24935,8 +24905,8 @@ nk_progress_behavior(nk_flags *state, struct nk_input *in,
 
     if (in && left_mouse_down && left_mouse_click_in_cursor) {
         if (left_mouse_down && left_mouse_click_in_cursor) {
-            float ratio = NK_MAX(0, (float)(in->mouse.pos.x - cursor.x)) / (float)cursor.w;
-            value = (nk_size)NK_CLAMP(0, (float)max * ratio, (float)max);
+            int ratio = NK_MAX(0, (int)(in->mouse.pos.x - cursor.x)) / (int)cursor.w;
+            value = (nk_size)NK_CLAMP(0, (int)max * ratio, (int)max);
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.x = cursor.x + cursor.w/2.0f;
             *state |= NK_WIDGET_STATE_ACTIVE;
         }
@@ -24989,7 +24959,7 @@ nk_do_progress(nk_flags *state,
     nk_size value, nk_size max, nk_bool modifiable,
     const struct nk_style_progress *style, struct nk_input *in)
 {
-    float prog_scale;
+    int prog_scale;
     nk_size prog_value;
     struct nk_rect cursor;
 
@@ -25001,7 +24971,7 @@ nk_do_progress(nk_flags *state,
     cursor.w = NK_MAX(bounds.w, 2 * style->padding.x + 2 * style->border);
     cursor.h = NK_MAX(bounds.h, 2 * style->padding.y + 2 * style->border);
     cursor = nk_pad_rect(bounds, nk_vec2(style->padding.x + style->border, style->padding.y + style->border));
-    prog_scale = (float)value / (float)max;
+    prog_scale = (int)value / (int)max;
 
     /* update progressbar */
     prog_value = NK_MIN(value, max);
@@ -25061,18 +25031,18 @@ nk_prog(struct nk_context *ctx, nk_size cur, nk_size max, nk_bool modifyable)
  *                              SCROLLBAR
  *
  * ===============================================================*/
-NK_LIB float
+NK_LIB int
 nk_scrollbar_behavior(nk_flags *state, struct nk_input *in,
     int has_scrolling, const struct nk_rect *scroll,
     const struct nk_rect *cursor, const struct nk_rect *empty0,
-    const struct nk_rect *empty1, float scroll_offset,
-    float target, float scroll_step, enum nk_orientation o)
+    const struct nk_rect *empty1, int scroll_offset,
+    int target, int scroll_step, enum nk_orientation o)
 {
     nk_flags ws = 0;
     int left_mouse_down;
     int left_mouse_clicked;
     int left_mouse_click_in_cursor;
-    float scroll_delta;
+    int scroll_delta;
 
     nk_widget_state_reset(state);
     if (!in) return scroll_offset;
@@ -25087,17 +25057,17 @@ nk_scrollbar_behavior(nk_flags *state, struct nk_input *in,
     scroll_delta = (o == NK_VERTICAL) ? in->mouse.scroll_delta.y: in->mouse.scroll_delta.x;
     if (left_mouse_down && left_mouse_click_in_cursor && !left_mouse_clicked) {
         /* update cursor by mouse dragging */
-        float pixel, delta;
+        int pixel, delta;
         *state = NK_WIDGET_STATE_ACTIVE;
         if (o == NK_VERTICAL) {
-            float cursor_y;
+            int cursor_y;
             pixel = in->mouse.delta.y;
             delta = (pixel / scroll->h) * target;
             scroll_offset = NK_CLAMP(0, scroll_offset + delta, target - scroll->h);
             cursor_y = scroll->y + ((scroll_offset/target) * scroll->h);
             in->mouse.buttons[NK_BUTTON_LEFT].clicked_pos.y = cursor_y + cursor->h/2.0f;
         } else {
-            float cursor_x;
+            int cursor_x;
             pixel = in->mouse.delta.x;
             delta = (pixel / scroll->w) * target;
             scroll_offset = NK_CLAMP(0, scroll_offset + delta, target - scroll->w);
@@ -25171,10 +25141,10 @@ nk_draw_scrollbar(struct nk_command_buffer *out, nk_flags state,
         nk_stroke_rect(out, *scroll, style->rounding_cursor, style->border_cursor, style->cursor_border_color);
     } else nk_draw_image(out, *scroll, &cursor->data.image, nk_white);
 }
-NK_LIB float
+NK_LIB int
 nk_do_scrollbarv(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect scroll, int has_scrolling,
-    float offset, float target, float step, float button_pixel_inc,
+    int offset, int target, int step, int button_pixel_inc,
     const struct nk_style_scrollbar *style, struct nk_input *in,
     const struct nk_user_font *font)
 {
@@ -25182,10 +25152,10 @@ nk_do_scrollbarv(nk_flags *state,
     struct nk_rect empty_south;
     struct nk_rect cursor;
 
-    float scroll_step;
-    float scroll_offset;
-    float scroll_off;
-    float scroll_ratio;
+    int scroll_step;
+    int scroll_offset;
+    int scroll_off;
+    int scroll_ratio;
 
     NK_ASSERT(out);
     NK_ASSERT(style);
@@ -25199,7 +25169,7 @@ nk_do_scrollbarv(nk_flags *state,
     /* optional scrollbar buttons */
     if (style->show_buttons) {
         nk_flags ws;
-        float scroll_h;
+        int scroll_h;
         struct nk_rect button;
 
         button.x = scroll.x;
@@ -25260,10 +25230,10 @@ nk_do_scrollbarv(nk_flags *state,
     if (style->draw_end) style->draw_end(out, style->userdata);
     return scroll_offset;
 }
-NK_LIB float
+NK_LIB int
 nk_do_scrollbarh(nk_flags *state,
     struct nk_command_buffer *out, struct nk_rect scroll, int has_scrolling,
-    float offset, float target, float step, float button_pixel_inc,
+    int offset, int target, int step, int button_pixel_inc,
     const struct nk_style_scrollbar *style, struct nk_input *in,
     const struct nk_user_font *font)
 {
@@ -25271,10 +25241,10 @@ nk_do_scrollbarh(nk_flags *state,
     struct nk_rect empty_west;
     struct nk_rect empty_east;
 
-    float scroll_step;
-    float scroll_offset;
-    float scroll_off;
-    float scroll_ratio;
+    int scroll_step;
+    int scroll_offset;
+    int scroll_off;
+    int scroll_ratio;
 
     NK_ASSERT(out);
     NK_ASSERT(style);
@@ -25288,7 +25258,7 @@ nk_do_scrollbarh(nk_flags *state,
     /* optional scrollbar buttons */
     if (style->show_buttons) {
         nk_flags ws;
-        float scroll_w;
+        int scroll_w;
         struct nk_rect button;
         button.y = scroll.y;
         button.w = scroll.h;
@@ -25360,18 +25330,18 @@ nk_do_scrollbarh(nk_flags *state,
  * ===============================================================*/
 /* stb_textedit.h - v1.8  - public domain - Sean Barrett */
 struct nk_text_find {
-   float x,y;    /* position of n'th character */
-   float height; /* height of line */
+   int x,y;    /* position of n'th character */
+   int height; /* height of line */
    int first_char, length; /* first char of row, and length */
    int prev_first;  /*_ first char of previous row */
 };
 
 struct nk_text_edit_row {
-   float x0,x1;
+   int x0,x1;
    /* starting x location, end x location (allows for align=right, etc) */
-   float baseline_y_delta;
+   int baseline_y_delta;
    /* position of baseline relative to previous row's baseline*/
-   float ymin,ymax;
+   int ymin,ymax;
    /* height of row above and below baseline */
    int num_chars;
 };
@@ -25382,7 +25352,7 @@ NK_INTERN void nk_textedit_makeundo_insert(struct nk_text_edit*, int, int);
 NK_INTERN void nk_textedit_makeundo_replace(struct nk_text_edit*, int, int, int);
 #define NK_TEXT_HAS_SELECTION(s)   ((s)->select_start != (s)->select_end)
 
-NK_INTERN float
+NK_INTERN int
 nk_textedit_get_width(const struct nk_text_edit *edit, int line_start, int char_id,
     const struct nk_user_font *font)
 {
@@ -25393,7 +25363,7 @@ nk_textedit_get_width(const struct nk_text_edit *edit, int line_start, int char_
 }
 NK_INTERN void
 nk_textedit_layout_row(struct nk_text_edit_row *r, struct nk_text_edit *edit,
-    int line_start_id, float row_height, const struct nk_user_font *font)
+    int line_start_id, int row_height, const struct nk_user_font *font)
 {
     int l;
     int glyphs = 0;
@@ -25413,12 +25383,12 @@ nk_textedit_layout_row(struct nk_text_edit_row *r, struct nk_text_edit *edit,
     r->num_chars = glyphs;
 }
 NK_INTERN int
-nk_textedit_locate_coord(struct nk_text_edit *edit, float x, float y,
-    const struct nk_user_font *font, float row_height)
+nk_textedit_locate_coord(struct nk_text_edit *edit, int x, int y,
+    const struct nk_user_font *font, int row_height)
 {
     struct nk_text_edit_row r;
     int n = edit->string.len;
-    float base_y = 0, prev_x;
+    int base_y = 0, prev_x;
     int i=0, k;
 
     r.x0 = r.x1 = 0;
@@ -25455,7 +25425,7 @@ nk_textedit_locate_coord(struct nk_text_edit *edit, float x, float y,
         k = i;
         prev_x = r.x0;
         for (i=0; i < r.num_chars; ++i) {
-            float w = nk_textedit_get_width(edit, k, i, font);
+            int w = nk_textedit_get_width(edit, k, i, font);
             if (x < prev_x+w) {
                 if (x < prev_x+w/2)
                     return k+i;
@@ -25473,8 +25443,8 @@ nk_textedit_locate_coord(struct nk_text_edit *edit, float x, float y,
     else return i+r.num_chars;
 }
 NK_LIB void
-nk_textedit_click(struct nk_text_edit *state, float x, float y,
-    const struct nk_user_font *font, float row_height)
+nk_textedit_click(struct nk_text_edit *state, int x, int y,
+    const struct nk_user_font *font, int row_height)
 {
     /* API click: on mouse down, move the cursor to the clicked location,
      * and reset the selection */
@@ -25484,8 +25454,8 @@ nk_textedit_click(struct nk_text_edit *state, float x, float y,
     state->has_preferred_x = 0;
 }
 NK_LIB void
-nk_textedit_drag(struct nk_text_edit *state, float x, float y,
-    const struct nk_user_font *font, float row_height)
+nk_textedit_drag(struct nk_text_edit *state, int x, int y,
+    const struct nk_user_font *font, int row_height)
 {
     /* API drag: on mouse drag, move the cursor and selection endpoint
      * to the clicked location */
@@ -25496,7 +25466,7 @@ nk_textedit_drag(struct nk_text_edit *state, float x, float y,
 }
 NK_INTERN void
 nk_textedit_find_charpos(struct nk_text_find *find, struct nk_text_edit *state,
-    int n, int single_line, const struct nk_user_font *font, float row_height)
+    int n, int single_line, const struct nk_user_font *font, int row_height)
 {
     /* find the x/y location of a character, and remember info about the previous
      * row in case we get a move-up event (for page up, we'll have to rescan) */
@@ -25757,7 +25727,7 @@ nk_textedit_text(struct nk_text_edit *state, const char *text, int total_len)
 }
 NK_LIB void
 nk_textedit_key(struct nk_text_edit *state, enum nk_keys key, int shift_mod,
-    const struct nk_user_font *font, float row_height)
+    const struct nk_user_font *font, int row_height)
 {
 retry:
     switch (key)
@@ -25894,8 +25864,8 @@ retry:
         /* now find character position down a row */
         if (find.length)
         {
-            float x;
-            float goal_x = state->has_preferred_x ? state->preferred_x : find.x;
+            int x;
+            int goal_x = state->has_preferred_x ? state->preferred_x : find.x;
             int start = find.first_char + find.length;
 
             state->cursor = start;
@@ -25903,7 +25873,7 @@ retry:
             x = row.x0;
 
             for (i=0; i < row.num_chars && x < row.x1; ++i) {
-                float dx = nk_textedit_get_width(state, start, i, font);
+                int dx = nk_textedit_get_width(state, start, i, font);
                 x += dx;
                 if (x > goal_x)
                     break;
@@ -25942,15 +25912,15 @@ retry:
          /* can only go up if there's a previous row */
          if (find.prev_first != find.first_char) {
             /* now find character position up a row */
-            float x;
-            float goal_x = state->has_preferred_x ? state->preferred_x : find.x;
+            int x;
+            int goal_x = state->has_preferred_x ? state->preferred_x : find.x;
 
             state->cursor = find.prev_first;
             nk_textedit_layout_row(&row, state, state->cursor, row_height, font);
             x = row.x0;
 
             for (i=0; i < row.num_chars && x < row.x1; ++i) {
-                float dx = nk_textedit_get_width(state, find.prev_first, i, font);
+                int dx = nk_textedit_get_width(state, find.prev_first, i, font);
                 x += dx;
                 if (x > goal_x)
                     break;
@@ -26403,7 +26373,7 @@ nk_filter_ascii(const struct nk_text_edit *box, nk_rune unicode)
     else return nk_true;
 }
 NK_API nk_bool
-nk_filter_float(const struct nk_text_edit *box, nk_rune unicode)
+nk_filter_int(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
     if ((unicode < '0' || unicode > '9') && unicode != '.' && unicode != '-')
@@ -26452,8 +26422,8 @@ nk_filter_binary(const struct nk_text_edit *box, nk_rune unicode)
  * ===============================================================*/
 NK_LIB void
 nk_edit_draw_text(struct nk_command_buffer *out,
-    const struct nk_style_edit *style, float pos_x, float pos_y,
-    float x_offset, const char *text, int byte_len, float row_height,
+    const struct nk_style_edit *style, int pos_x, int pos_y,
+    int x_offset, const char *text, int byte_len, int row_height,
     const struct nk_user_font *font, struct nk_color background,
     struct nk_color foreground, nk_bool is_selected)
 {
@@ -26465,10 +26435,10 @@ nk_edit_draw_text(struct nk_command_buffer *out,
     {int glyph_len = 0;
     nk_rune unicode = 0;
     int text_len = 0;
-    float line_width = 0;
-    float glyph_width;
+    int line_width = 0;
+    int glyph_width;
     const char *line = text;
-    float line_offset = 0;
+    int line_offset = 0;
     int line_count = 0;
 
     struct nk_text txt;
@@ -26509,7 +26479,7 @@ nk_edit_draw_text(struct nk_command_buffer *out,
             continue;
         }
         glyph_width = font->width(font->userdata, font->height, text+text_len, glyph_len);
-        line_width += (float)glyph_width;
+        line_width += (int)glyph_width;
         text_len += glyph_len;
         glyph_len = nk_utf_decode(text + text_len, &unicode, byte_len-text_len);
         continue;
@@ -26538,7 +26508,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 {
     struct nk_rect area;
     nk_flags ret = 0;
-    float row_height;
+    int row_height;
     char prev_state = 0;
     char is_hovered = 0;
     char select_all = 0;
@@ -26601,8 +26571,8 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
     if (edit->active && in)
     {
         int shift_mod = in->keyboard.keys[NK_KEY_SHIFT].down;
-        const float mouse_x = (in->mouse.pos.x - area.x) + edit->scrollbar.x;
-        const float mouse_y = (in->mouse.pos.y - area.y) + edit->scrollbar.y;
+        const int mouse_x = (in->mouse.pos.x - area.x) + edit->scrollbar.x;
+        const int mouse_y = (in->mouse.pos.y - area.y) + edit->scrollbar.y;
 
         /* mouse click handler */
         is_hovered = (char)nk_input_is_mouse_hovering_rect(in, area);
@@ -26736,11 +26706,11 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
         int selection_end = NK_MAX(edit->select_start, edit->select_end);
 
         /* calculate total line count + total space + cursor/selection position */
-        float line_width = 0.0f;
+        int line_width = 0.0f;
         if (text && len)
         {
             /* utf8 encoding */
-            float glyph_width;
+            int glyph_width;
             int glyph_len = 0;
             nk_rune unicode = 0;
             int text_len = 0;
@@ -26763,7 +26733,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     const char *remaining;
 
                     /* calculate 2d position */
-                    cursor_pos.y = (float)(total_lines-1) * row_height;
+                    cursor_pos.y = (int)(total_lines-1) * row_height;
                     row_size = nk_text_calculate_text_bounds(font, text+row_begin,
                                 text_len-row_begin, row_height, &remaining,
                                 &out_offset, &glyph_offset, NK_STOP_ON_NEW_LINE);
@@ -26781,7 +26751,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     const char *remaining;
 
                     /* calculate 2d position */
-                    selection_offset_start.y = (float)(NK_MAX(total_lines-1,0)) * row_height;
+                    selection_offset_start.y = (int)(NK_MAX(total_lines-1,0)) * row_height;
                     row_size = nk_text_calculate_text_bounds(font, text+row_begin,
                                 text_len-row_begin, row_height, &remaining,
                                 &out_offset, &glyph_offset, NK_STOP_ON_NEW_LINE);
@@ -26799,7 +26769,7 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                     const char *remaining;
 
                     /* calculate 2d position */
-                    selection_offset_end.y = (float)(total_lines-1) * row_height;
+                    selection_offset_end.y = (int)(total_lines-1) * row_height;
                     row_size = nk_text_calculate_text_bounds(font, text+row_begin,
                                 text_len-row_begin, row_height, &remaining,
                                 &out_offset, &glyph_offset, NK_STOP_ON_NEW_LINE);
@@ -26820,14 +26790,14 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
 
                 glyphs++;
                 text_len += glyph_len;
-                line_width += (float)glyph_width;
+                line_width += (int)glyph_width;
 
                 glyph_len = nk_utf_decode(text + text_len, &unicode, len-text_len);
                 glyph_width = font->width(font->userdata, font->height,
                     text+text_len, glyph_len);
                 continue;
             }
-            text_size.y = (float)total_lines * row_height;
+            text_size.y = (int)total_lines * row_height;
 
             /* handle case when cursor is at end of text buffer */
             if (!cursor_ptr && edit->cursor == edit->string.len) {
@@ -26842,11 +26812,11 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
                 /* update scrollbar to follow cursor */
                 if (!(flags & NK_EDIT_NO_HORIZONTAL_SCROLL)) {
                     /* horizontal scroll */
-                    const float scroll_increment = area.w * 0.25f;
+                    const int scroll_increment = area.w * 0.25f;
                     if (cursor_pos.x < edit->scrollbar.x)
-                        edit->scrollbar.x = (float)(int)NK_MAX(0.0f, cursor_pos.x - scroll_increment);
+                        edit->scrollbar.x = (int)(int)NK_MAX(0.0f, cursor_pos.x - scroll_increment);
                     if (cursor_pos.x >= edit->scrollbar.x + area.w)
-                        edit->scrollbar.x = (float)(int)NK_MAX(0.0f, cursor_pos.x - area.w + scroll_increment);
+                        edit->scrollbar.x = (int)(int)NK_MAX(0.0f, cursor_pos.x - area.w + scroll_increment);
                 } else edit->scrollbar.x = 0;
 
                 if (flags & NK_EDIT_MULTILINE) {
@@ -26863,10 +26833,10 @@ nk_do_edit(nk_flags *state, struct nk_command_buffer *out,
             {
                 nk_flags ws;
                 struct nk_rect scroll;
-                float scroll_target;
-                float scroll_offset;
-                float scroll_step;
-                float scroll_inc;
+                int scroll_target;
+                int scroll_offset;
+                int scroll_step;
+                int scroll_inc;
 
                 scroll = area;
                 scroll.x = (bounds.x + bounds.w - style->border) - style->scrollbar_size.x;
@@ -27095,8 +27065,8 @@ nk_edit_string(struct nk_context *ctx, nk_flags flags,
             edit->select_end = win->edit.sel_end;
         }
         edit->mode = win->edit.mode;
-        edit->scrollbar.x = (float)win->edit.scrollbar.x;
-        edit->scrollbar.y = (float)win->edit.scrollbar.y;
+        edit->scrollbar.x = (int)win->edit.scrollbar.x;
+        edit->scrollbar.y = (int)win->edit.scrollbar.y;
         edit->active = nk_true;
     } else edit->active = nk_false;
 
@@ -27201,7 +27171,7 @@ nk_edit_string_zero_terminated(struct nk_context *ctx, nk_flags flags,
 NK_LIB void
 nk_drag_behavior(nk_flags *state, const struct nk_input *in,
     struct nk_rect drag, struct nk_property_variant *variant,
-    float inc_per_pixel)
+    int inc_per_pixel)
 {
     int left_mouse_down = in && in->mouse.buttons[NK_BUTTON_LEFT].down;
     int left_mouse_click_in_cursor = in &&
@@ -27212,7 +27182,7 @@ nk_drag_behavior(nk_flags *state, const struct nk_input *in,
         *state = NK_WIDGET_STATE_HOVERED;
 
     if (left_mouse_down && left_mouse_click_in_cursor) {
-        float delta, pixels;
+        int delta, pixels;
         pixels = in->mouse.delta.x;
         delta = pixels * inc_per_pixel;
         switch (variant->kind) {
@@ -27221,10 +27191,10 @@ nk_drag_behavior(nk_flags *state, const struct nk_input *in,
             variant->value.i = variant->value.i + (int)delta;
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i, variant->max_value.i);
             break;
-        case NK_PROPERTY_FLOAT:
-            variant->value.f = variant->value.f + (float)delta;
-            variant->value.f = NK_CLAMP(variant->min_value.f, variant->value.f, variant->max_value.f);
-            break;
+        // case NK_PROPERTY_int:
+        //     variant->value.f = variant->value.f + (int)delta;
+        //     variant->value.f = NK_CLAMP(variant->min_value.f, variant->value.f, variant->max_value.f);
+        //     break;
         case NK_PROPERTY_DOUBLE:
             variant->value.d = variant->value.d + (double)delta;
             variant->value.d = NK_CLAMP(variant->min_value.d, variant->value.d, variant->max_value.d);
@@ -27241,7 +27211,7 @@ NK_LIB void
 nk_property_behavior(nk_flags *ws, const struct nk_input *in,
     struct nk_rect property,  struct nk_rect label, struct nk_rect edit,
     struct nk_rect empty, int *state, struct nk_property_variant *variant,
-    float inc_per_pixel)
+    int inc_per_pixel)
 {
     nk_widget_state_reset(ws);
     if (in && *state == NK_PROPERTY_DEFAULT) {
@@ -27295,7 +27265,7 @@ NK_LIB void
 nk_do_property(nk_flags *ws,
     struct nk_command_buffer *out, struct nk_rect property,
     const char *name, struct nk_property_variant *variant,
-    float inc_per_pixel, char *buffer, int *len,
+    int inc_per_pixel, char *buffer, int *len,
     int *state, int *cursor, int *select_begin, int *select_end,
     const struct nk_style_property *style,
     enum nk_property_filter filter, struct nk_input *in,
@@ -27304,12 +27274,12 @@ nk_do_property(nk_flags *ws,
 {
     const nk_plugin_filter filters[] = {
         nk_filter_decimal,
-        nk_filter_float
+        nk_filter_int
     };
     nk_bool active, old;
     int num_len, name_len;
     char string[NK_MAX_NUMBER_BUFFER];
-    float size;
+    int size;
 
     char *dst = 0;
     int *length;
@@ -27330,7 +27300,7 @@ nk_do_property(nk_flags *ws,
     name_len = nk_strlen(name);
     size = font->width(font->userdata, font->height, name, name_len);
     label.x = left.x + left.w + style->padding.x;
-    label.w = (float)size + 2 * style->padding.x;
+    label.w = (int)size + 2 * style->padding.x;
     label.y = property.y + style->border + style->padding.y;
     label.h = property.h - (2 * style->border + 2 * style->padding.y);
 
@@ -27353,13 +27323,13 @@ nk_do_property(nk_flags *ws,
             nk_itoa(string, variant->value.i);
             num_len = nk_strlen(string);
             break;
-        case NK_PROPERTY_FLOAT:
+        case NK_PROPERTY_int:
             NK_DTOA(string, (double)variant->value.f);
-            num_len = nk_string_float_limit(string, NK_MAX_FLOAT_PRECISION);
+            num_len = nk_string_int_limit(string, NK_MAX_int_PRECISION);
             break;
         case NK_PROPERTY_DOUBLE:
             NK_DTOA(string, variant->value.d);
-            num_len = nk_string_float_limit(string, NK_MAX_FLOAT_PRECISION);
+            num_len = nk_string_int_limit(string, NK_MAX_int_PRECISION);
             break;
         }
         size = font->width(font->userdata, font->height, string, num_len);
@@ -27367,7 +27337,7 @@ nk_do_property(nk_flags *ws,
         length = &num_len;
     }
 
-    edit.w =  (float)size + 2 * style->padding.x;
+    edit.w =  (int)size + 2 * style->padding.x;
     edit.w = NK_MIN(edit.w, right.x - (label.x + label.w));
     edit.x = right.x - (edit.w + style->padding.x);
     edit.y = property.y + style->border;
@@ -27394,7 +27364,7 @@ nk_do_property(nk_flags *ws,
         default: break;
         case NK_PROPERTY_INT:
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i - variant->step.i, variant->max_value.i); break;
-        case NK_PROPERTY_FLOAT:
+        case NK_PROPERTY_int:
             variant->value.f = NK_CLAMP(variant->min_value.f, variant->value.f - variant->step.f, variant->max_value.f); break;
         case NK_PROPERTY_DOUBLE:
             variant->value.d = NK_CLAMP(variant->min_value.d, variant->value.d - variant->step.d, variant->max_value.d); break;
@@ -27406,7 +27376,7 @@ nk_do_property(nk_flags *ws,
         default: break;
         case NK_PROPERTY_INT:
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i + variant->step.i, variant->max_value.i); break;
-        case NK_PROPERTY_FLOAT:
+        case NK_PROPERTY_int:
             variant->value.f = NK_CLAMP(variant->min_value.f, variant->value.f + variant->step.f, variant->max_value.f); break;
         case NK_PROPERTY_DOUBLE:
             variant->value.d = NK_CLAMP(variant->min_value.d, variant->value.d + variant->step.d, variant->max_value.d); break;
@@ -27454,13 +27424,13 @@ nk_do_property(nk_flags *ws,
             variant->value.i = nk_strtoi(buffer, 0);
             variant->value.i = NK_CLAMP(variant->min_value.i, variant->value.i, variant->max_value.i);
             break;
-        case NK_PROPERTY_FLOAT:
-            nk_string_float_limit(buffer, NK_MAX_FLOAT_PRECISION);
+        case NK_PROPERTY_int:
+            nk_string_int_limit(buffer, NK_MAX_int_PRECISION);
             variant->value.f = nk_strtof(buffer, 0);
             variant->value.f = NK_CLAMP(variant->min_value.f, variant->value.f, variant->max_value.f);
             break;
         case NK_PROPERTY_DOUBLE:
-            nk_string_float_limit(buffer, NK_MAX_FLOAT_PRECISION);
+            nk_string_int_limit(buffer, NK_MAX_int_PRECISION);
             variant->value.d = nk_strtod(buffer, 0);
             variant->value.d = NK_CLAMP(variant->min_value.d, variant->value.d, variant->max_value.d);
             break;
@@ -27478,17 +27448,17 @@ nk_property_variant_int(int value, int min_value, int max_value, int step)
     result.step.i = step;
     return result;
 }
-NK_LIB struct nk_property_variant
-nk_property_variant_float(float value, float min_value, float max_value, float step)
-{
-    struct nk_property_variant result;
-    result.kind = NK_PROPERTY_FLOAT;
-    result.value.f = value;
-    result.min_value.f = min_value;
-    result.max_value.f = max_value;
-    result.step.f = step;
-    return result;
-}
+// NK_LIB struct nk_property_variant
+// nk_property_variant_int(int value, int min_value, int max_value, int step)
+// {
+//     struct nk_property_variant result;
+//     result.kind = NK_PROPERTY_int;
+//     result.value.f = value;
+//     result.min_value.f = min_value;
+//     result.max_value.f = max_value;
+//     result.step.f = step;
+//     return result;
+// }
 NK_LIB struct nk_property_variant
 nk_property_variant_double(double value, double min_value, double max_value,
     double step)
@@ -27503,7 +27473,7 @@ nk_property_variant_double(double value, double min_value, double max_value,
 }
 NK_LIB void
 nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant *variant,
-    float inc_per_pixel, const enum nk_property_filter filter)
+    int inc_per_pixel, const enum nk_property_filter filter)
 {
     struct nk_window *win;
     struct nk_panel *layout;
@@ -27603,7 +27573,7 @@ nk_property(struct nk_context *ctx, const char *name, struct nk_property_variant
 }
 NK_API void
 nk_property_int(struct nk_context *ctx, const char *name,
-    int min, int *val, int max, int step, float inc_per_pixel)
+    int min, int *val, int max, int step, int inc_per_pixel)
 {
     struct nk_property_variant variant;
     NK_ASSERT(ctx);
@@ -27615,23 +27585,23 @@ nk_property_int(struct nk_context *ctx, const char *name,
     nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_INT);
     *val = variant.value.i;
 }
-NK_API void
-nk_property_float(struct nk_context *ctx, const char *name,
-    float min, float *val, float max, float step, float inc_per_pixel)
-{
-    struct nk_property_variant variant;
-    NK_ASSERT(ctx);
-    NK_ASSERT(name);
-    NK_ASSERT(val);
+// NK_API void
+// nk_property_int(struct nk_context *ctx, const char *name,
+//     int min, int *val, int max, int step, int inc_per_pixel)
+// {
+//     struct nk_property_variant variant;
+//     NK_ASSERT(ctx);
+//     NK_ASSERT(name);
+//     NK_ASSERT(val);
 
-    if (!ctx || !ctx->current || !name || !val) return;
-    variant = nk_property_variant_float(*val, min, max, step);
-    nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_FLOAT);
-    *val = variant.value.f;
-}
+//     if (!ctx || !ctx->current || !name || !val) return;
+//     variant = nk_property_variant_int(*val, min, max, step);
+//     nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_int);
+//     *val = variant.value.f;
+// }
 NK_API void
 nk_property_double(struct nk_context *ctx, const char *name,
-    double min, double *val, double max, double step, float inc_per_pixel)
+    double min, double *val, double max, double step, int inc_per_pixel)
 {
     struct nk_property_variant variant;
     NK_ASSERT(ctx);
@@ -27640,12 +27610,12 @@ nk_property_double(struct nk_context *ctx, const char *name,
 
     if (!ctx || !ctx->current || !name || !val) return;
     variant = nk_property_variant_double(*val, min, max, step);
-    nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_FLOAT);
+    nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_int);
     *val = variant.value.d;
 }
 NK_API int
 nk_propertyi(struct nk_context *ctx, const char *name, int min, int val,
-    int max, int step, float inc_per_pixel)
+    int max, int step, int inc_per_pixel)
 {
     struct nk_property_variant variant;
     NK_ASSERT(ctx);
@@ -27657,23 +27627,23 @@ nk_propertyi(struct nk_context *ctx, const char *name, int min, int val,
     val = variant.value.i;
     return val;
 }
-NK_API float
-nk_propertyf(struct nk_context *ctx, const char *name, float min,
-    float val, float max, float step, float inc_per_pixel)
+NK_API int
+nk_propertyf(struct nk_context *ctx, const char *name, int min,
+    int val, int max, int step, int inc_per_pixel)
 {
     struct nk_property_variant variant;
     NK_ASSERT(ctx);
     NK_ASSERT(name);
 
     if (!ctx || !ctx->current || !name) return val;
-    variant = nk_property_variant_float(val, min, max, step);
-    nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_FLOAT);
+    variant = nk_property_variant_int(val, min, max, step);
+    nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_int);
     val = variant.value.f;
     return val;
 }
 NK_API double
 nk_propertyd(struct nk_context *ctx, const char *name, double min,
-    double val, double max, double step, float inc_per_pixel)
+    double val, double max, double step, int inc_per_pixel)
 {
     struct nk_property_variant variant;
     NK_ASSERT(ctx);
@@ -27681,7 +27651,7 @@ nk_propertyd(struct nk_context *ctx, const char *name, double min,
 
     if (!ctx || !ctx->current || !name) return val;
     variant = nk_property_variant_double(val, min, max, step);
-    nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_FLOAT);
+    nk_property(ctx, name, &variant, inc_per_pixel, NK_FILTER_int);
     val = variant.value.d;
     return val;
 }
@@ -27698,7 +27668,7 @@ nk_propertyd(struct nk_context *ctx, const char *name, double min,
 NK_API nk_bool
 nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
     struct nk_color color, struct nk_color highlight,
-    int count, float min_value, float max_value)
+    int count, int min_value, int max_value)
 {
     struct nk_window *win;
     struct nk_chart *chart;
@@ -27756,7 +27726,7 @@ nk_chart_begin_colored(struct nk_context *ctx, enum nk_chart_type type,
 }
 NK_API nk_bool
 nk_chart_begin(struct nk_context *ctx, const enum nk_chart_type type,
-    int count, float min_value, float max_value)
+    int count, int min_value, int max_value)
 {
     return nk_chart_begin_colored(ctx, type, ctx->style.chart.color,
                 ctx->style.chart.selected_color, count, min_value, max_value);
@@ -27764,7 +27734,7 @@ nk_chart_begin(struct nk_context *ctx, const enum nk_chart_type type,
 NK_API void
 nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
     struct nk_color color, struct nk_color highlight,
-    int count, float min_value, float max_value)
+    int count, int min_value, int max_value)
 {
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -27786,14 +27756,14 @@ nk_chart_add_slot_colored(struct nk_context *ctx, const enum nk_chart_type type,
 }
 NK_API void
 nk_chart_add_slot(struct nk_context *ctx, const enum nk_chart_type type,
-    int count, float min_value, float max_value)
+    int count, int min_value, int max_value)
 {
     nk_chart_add_slot_colored(ctx, type, ctx->style.chart.color,
         ctx->style.chart.selected_color, count, min_value, max_value);
 }
 NK_INTERN nk_flags
 nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
-    struct nk_chart *g, float value, int slot)
+    struct nk_chart *g, int value, int slot)
 {
     struct nk_panel *layout = win->layout;
     const struct nk_input *i = &ctx->input;
@@ -27803,19 +27773,19 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
     struct nk_vec2 cur;
     struct nk_rect bounds;
     struct nk_color color;
-    float step;
-    float range;
-    float ratio;
+    int step;
+    int range;
+    int ratio;
 
     NK_ASSERT(slot >= 0 && slot < NK_CHART_MAX_SLOT);
-    step = g->w / (float)g->slots[slot].count;
+    step = g->w / (int)g->slots[slot].count;
     range = g->slots[slot].max - g->slots[slot].min;
     ratio = (value - g->slots[slot].min) / range;
 
     if (g->slots[slot].index == 0) {
         /* first data point does not have a connection */
         g->slots[slot].last.x = g->x;
-        g->slots[slot].last.y = (g->y + g->h) - ratio * (float)g->h;
+        g->slots[slot].last.y = (g->y + g->h) - ratio * (int)g->h;
 
         bounds.x = g->slots[slot].last.x - 2;
         bounds.y = g->slots[slot].last.y - 2;
@@ -27836,8 +27806,8 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
 
     /* draw a line between the last data point and the new one */
     color = g->slots[slot].color;
-    cur.x = g->x + (float)(step * (float)g->slots[slot].index);
-    cur.y = (g->y + g->h) - (ratio * (float)g->h);
+    cur.x = g->x + (int)(step * (int)g->slots[slot].index);
+    cur.y = (g->y + g->h) - (ratio * (int)g->h);
     nk_stroke_line(out, g->slots[slot].last.x, g->slots[slot].last.y, cur.x, cur.y, 1.0f, color);
 
     bounds.x = cur.x - 3;
@@ -27863,13 +27833,13 @@ nk_chart_push_line(struct nk_context *ctx, struct nk_window *win,
 }
 NK_INTERN nk_flags
 nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
-    struct nk_chart *chart, float value, int slot)
+    struct nk_chart *chart, int value, int slot)
 {
     struct nk_command_buffer *out = &win->buffer;
     const struct nk_input *in = &ctx->input;
     struct nk_panel *layout = win->layout;
 
-    float ratio;
+    int ratio;
     nk_flags ret = 0;
     struct nk_color color;
     struct nk_rect item = {0,0,0,0};
@@ -27878,8 +27848,8 @@ nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
     if (chart->slots[slot].index  >= chart->slots[slot].count)
         return nk_false;
     if (chart->slots[slot].count) {
-        float padding = (float)(chart->slots[slot].count-1);
-        item.w = (chart->w - padding) / (float)(chart->slots[slot].count);
+        int padding = (int)(chart->slots[slot].count-1);
+        item.w = (chart->w - padding) / (int)(chart->slots[slot].count);
     }
 
     /* calculate bounds of current bar chart entry */
@@ -27892,8 +27862,8 @@ nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
         ratio = (value - chart->slots[slot].max) / chart->slots[slot].range;
         item.y = chart->y + (chart->h * NK_ABS(ratio)) - item.h;
     }
-    item.x = chart->x + ((float)chart->slots[slot].index * item.w);
-    item.x = item.x + ((float)chart->slots[slot].index);
+    item.x = chart->x + ((int)chart->slots[slot].index * item.w);
+    item.x = item.x + ((int)chart->slots[slot].index);
 
     /* user chart bar selection */
     if (!(layout->flags & NK_WINDOW_ROM) &&
@@ -27908,7 +27878,7 @@ nk_chart_push_column(const struct nk_context *ctx, struct nk_window *win,
     return ret;
 }
 NK_API nk_flags
-nk_chart_push_slot(struct nk_context *ctx, float value, int slot)
+nk_chart_push_slot(struct nk_context *ctx, int value, int slot)
 {
     nk_flags flags;
     struct nk_window *win;
@@ -27934,7 +27904,7 @@ nk_chart_push_slot(struct nk_context *ctx, float value, int slot)
     return flags;
 }
 NK_API nk_flags
-nk_chart_push(struct nk_context *ctx, float value)
+nk_chart_push(struct nk_context *ctx, int value)
 {
     return nk_chart_push_slot(ctx, value, 0);
 }
@@ -27955,12 +27925,12 @@ nk_chart_end(struct nk_context *ctx)
     return;
 }
 NK_API void
-nk_plot(struct nk_context *ctx, enum nk_chart_type type, const float *values,
+nk_plot(struct nk_context *ctx, enum nk_chart_type type, const int *values,
     int count, int offset)
 {
     int i = 0;
-    float min_value;
-    float max_value;
+    int min_value;
+    int max_value;
 
     NK_ASSERT(ctx);
     NK_ASSERT(values);
@@ -27981,11 +27951,11 @@ nk_plot(struct nk_context *ctx, enum nk_chart_type type, const float *values,
 }
 NK_API void
 nk_plot_function(struct nk_context *ctx, enum nk_chart_type type, void *userdata,
-    float(*value_getter)(void* user, int index), int count, int offset)
+    int(*value_getter)(void* user, int index), int count, int offset)
 {
     int i = 0;
-    float min_value;
-    float max_value;
+    int min_value;
+    int max_value;
 
     NK_ASSERT(ctx);
     NK_ASSERT(value_getter);
@@ -27993,7 +27963,7 @@ nk_plot_function(struct nk_context *ctx, enum nk_chart_type type, void *userdata
 
     max_value = min_value = value_getter(userdata, offset);
     for (i = 0; i < count; ++i) {
-        float value = value_getter(userdata, i + offset);
+        int value = value_getter(userdata, i + offset);
         min_value = NK_MIN(value, min_value);
         max_value = NK_MAX(value, max_value);
     }
@@ -28020,7 +27990,7 @@ nk_color_picker_behavior(nk_flags *state,
     const struct nk_rect *hue_bar, const struct nk_rect *alpha_bar,
     struct nk_colorf *color, const struct nk_input *in)
 {
-    float hsva[4];
+    int hsva[4];
     nk_bool value_changed = 0;
     nk_bool hsv_changed = 0;
 
@@ -28075,10 +28045,10 @@ nk_draw_color_picker(struct nk_command_buffer *o, const struct nk_rect *matrix,
     NK_STORAGE const struct nk_color white = {255, 255, 255, 255};
     NK_STORAGE const struct nk_color black_trans = {0,0,0,0};
 
-    const float crosshair_size = 7.0f;
+    const int crosshair_size = 7.0f;
     struct nk_color temp;
-    float hsva[4];
-    float line_y;
+    int hsva[4];
+    int line_y;
     int i;
 
     NK_ASSERT(o);
@@ -28093,18 +28063,18 @@ nk_draw_color_picker(struct nk_command_buffer *o, const struct nk_rect *matrix,
             {0,0,255,255}, {255, 0, 255, 255}, {255, 0, 0, 255}
         };
         nk_fill_rect_multi_color(o,
-            nk_rect(hue_bar->x, hue_bar->y + (float)i * (hue_bar->h/6.0f) + 0.5f,
+            nk_rect(hue_bar->x, hue_bar->y + (int)i * (hue_bar->h/6.0f) + 0.5f,
                 hue_bar->w, (hue_bar->h/6.0f) + 0.5f), hue_colors[i], hue_colors[i],
                 hue_colors[i+1], hue_colors[i+1]);
     }
-    line_y = (float)(int)(hue_bar->y + hsva[0] * matrix->h + 0.5f);
+    line_y = (int)(int)(hue_bar->y + hsva[0] * matrix->h + 0.5f);
     nk_stroke_line(o, hue_bar->x-1, line_y, hue_bar->x + hue_bar->w + 2,
         line_y, 1, nk_rgb(255,255,255));
 
     /* draw alpha bar */
     if (alpha_bar) {
-        float alpha = NK_SATURATE(col.a);
-        line_y = (float)(int)(alpha_bar->y +  (1.0f - alpha) * matrix->h + 0.5f);
+        int alpha = NK_SATURATE(col.a);
+        line_y = (int)(int)(alpha_bar->y +  (1.0f - alpha) * matrix->h + 0.5f);
 
         nk_fill_rect_multi_color(o, *alpha_bar, white, white, black, black);
         nk_stroke_line(o, alpha_bar->x-1, line_y, alpha_bar->x + alpha_bar->w + 2,
@@ -28117,9 +28087,9 @@ nk_draw_color_picker(struct nk_command_buffer *o, const struct nk_rect *matrix,
     nk_fill_rect_multi_color(o, *matrix, black_trans, black_trans, black, black);
 
     /* draw cross-hair */
-    {struct nk_vec2 p; float S = hsva[1]; float V = hsva[2];
-    p.x = (float)(int)(matrix->x + S * matrix->w);
-    p.y = (float)(int)(matrix->y + (1.0f - V) * matrix->h);
+    {struct nk_vec2 p; int S = hsva[1]; int V = hsva[2];
+    p.x = (int)(int)(matrix->x + S * matrix->w);
+    p.y = (int)(int)(matrix->y + (1.0f - V) * matrix->h);
     nk_stroke_line(o, p.x - crosshair_size, p.y, p.x-2, p.y, 1.0f, white);
     nk_stroke_line(o, p.x + crosshair_size + 1, p.y, p.x+3, p.y, 1.0f, white);
     nk_stroke_line(o, p.x, p.y + crosshair_size + 1, p.x, p.y+3, 1.0f, white);
@@ -28136,7 +28106,7 @@ nk_do_color_picker(nk_flags *state,
     struct nk_rect matrix;
     struct nk_rect hue_bar;
     struct nk_rect alpha_bar;
-    float bar_w;
+    int bar_w;
 
     NK_ASSERT(out);
     NK_ASSERT(col);
@@ -28878,9 +28848,9 @@ nk_combo(struct nk_context *ctx, const char **items, int count,
     window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
     max_height = count * item_height + count * (int)item_spacing.y;
     max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
-    size.y = NK_MIN(size.y, (float)max_height);
+    size.y = NK_MIN(size.y, (int)max_height);
     if (nk_combo_begin_label(ctx, items[selected], size)) {
-        nk_layout_row_dynamic(ctx, (float)item_height, 1);
+        nk_layout_row_dynamic(ctx, (int)item_height, 1);
         for (i = 0; i < count; ++i) {
             if (nk_combo_item_label(ctx, items[i], NK_TEXT_LEFT))
                 selected = i;
@@ -28911,7 +28881,7 @@ nk_combo_separator(struct nk_context *ctx, const char *items_separated_by_separa
     window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
     max_height = count * item_height + count * (int)item_spacing.y;
     max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
-    size.y = NK_MIN(size.y, (float)max_height);
+    size.y = NK_MIN(size.y, (int)max_height);
 
     /* find selected item */
     current_item = items_separated_by_separator;
@@ -28925,7 +28895,7 @@ nk_combo_separator(struct nk_context *ctx, const char *items_separated_by_separa
 
     if (nk_combo_begin_text(ctx, current_item, length, size)) {
         current_item = items_separated_by_separator;
-        nk_layout_row_dynamic(ctx, (float)item_height, 1);
+        nk_layout_row_dynamic(ctx, (int)item_height, 1);
         for (i = 0; i < count; ++i) {
             iter = current_item;
             while (*iter && *iter != separator) iter++;
@@ -28964,11 +28934,11 @@ nk_combo_callback(struct nk_context *ctx, void(*item_getter)(void*, int, const c
     window_padding = nk_panel_get_padding(&ctx->style, ctx->current->layout->type);
     max_height = count * item_height + count * (int)item_spacing.y;
     max_height += (int)item_spacing.y * 2 + (int)window_padding.y * 2;
-    size.y = NK_MIN(size.y, (float)max_height);
+    size.y = NK_MIN(size.y, (int)max_height);
 
     item_getter(userdata, selected, &item);
     if (nk_combo_begin_label(ctx, item, size)) {
-        nk_layout_row_dynamic(ctx, (float)item_height, 1);
+        nk_layout_row_dynamic(ctx, (int)item_height, 1);
         for (i = 0; i < count; ++i) {
             item_getter(userdata, i, &item);
             if (nk_combo_item_label(ctx, item, NK_TEXT_LEFT))
@@ -29014,7 +28984,7 @@ nk_combobox_callback(struct nk_context *ctx,
  *
  * ===============================================================*/
 NK_API nk_bool
-nk_tooltip_begin(struct nk_context *ctx, float width)
+nk_tooltip_begin(struct nk_context *ctx, int width)
 {
     int x,y,w,h;
     struct nk_window *win;
@@ -29039,10 +29009,10 @@ nk_tooltip_begin(struct nk_context *ctx, float width)
     x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x;
     y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y;
 
-    bounds.x = (float)x;
-    bounds.y = (float)y;
-    bounds.w = (float)w;
-    bounds.h = (float)h;
+    bounds.x = (int)x;
+    bounds.y = (int)y;
+    bounds.w = (int)w;
+    bounds.h = (int)h;
 
     ret = nk_popup_begin(ctx, NK_POPUP_DYNAMIC,
         "__##Tooltip##__", NK_WINDOW_NO_SCROLLBAR|NK_WINDOW_BORDER, bounds);
@@ -29069,8 +29039,8 @@ nk_tooltip(struct nk_context *ctx, const char *text)
     struct nk_vec2 padding;
 
     int text_len;
-    float text_width;
-    float text_height;
+    int text_width;
+    int text_height;
 
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
@@ -29091,8 +29061,8 @@ nk_tooltip(struct nk_context *ctx, const char *text)
     text_height = (style->font->height + 2 * padding.y);
 
     /* execute tooltip and fill with text */
-    if (nk_tooltip_begin(ctx, (float)text_width)) {
-        nk_layout_row_dynamic(ctx, (float)text_height, 1);
+    if (nk_tooltip_begin(ctx, (int)text_width)) {
+        nk_layout_row_dynamic(ctx, (int)text_height, 1);
         nk_text(ctx, text, text_len, NK_TEXT_LEFT);
         nk_tooltip_end(ctx);
     }
@@ -29220,8 +29190,8 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// - 2018/01/12 (3.00.2) - Added `nk_group_begin_titled` for separed group identifier and title.
 /// - 2018/01/07 (3.00.1) - Started to change documentation style.
 /// - 2018/01/05 (3.00.0) - BREAKING CHANGE: The previous color picker API was broken
-///                        because of conversions between float and byte color representation.
-///                        Color pickers now use floating point values to represent
+///                        because of conversions between int and byte color representation.
+///                        Color pickers now use inting point values to represent
 ///                        HSV values. To get back the old behavior I added some additional
 ///                        color conversion functions to cast between nk_color and
 ///                        nk_colorf.
@@ -29268,7 +29238,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// - 2017/04/20 (1.37.1) - Fixed key repeat found inside glfw demo backends.
 /// - 2017/04/20 (1.37.0) - Extended properties with selection and clipboard support.
 /// - 2017/04/20 (1.36.2) - Fixed #405 overlapping rows with zero padding and spacing.
-/// - 2017/04/09 (1.36.1) - Fixed #403 with another widget float error.
+/// - 2017/04/09 (1.36.1) - Fixed #403 with another widget int error.
 /// - 2017/04/09 (1.36.0) - Added window `NK_WINDOW_NO_INPUT` and `NK_WINDOW_NOT_INTERACTIVE` flags.
 /// - 2017/04/09 (1.35.3) - Fixed buffer heap corruption.
 /// - 2017/03/25 (1.35.2) - Fixed popup overlapping for `NK_WINDOW_BACKGROUND` windows.
@@ -29415,16 +29385,16 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 /// - 2016/08/12 (1.09.1) - nk_window_is_closed now queries the correct flag `NK_WINDOW_CLOSED`
 ///                        instead of the old flag `NK_WINDOW_HIDDEN`.
 /// - 2016/08/09 (1.09.0) - Added additional double version to nk_property and changed
-///                        the underlying implementation to not cast to float and instead
+///                        the underlying implementation to not cast to int and instead
 ///                        work directly on the given values.
 /// - 2016/08/09 (1.08.0) - Added additional define to overwrite library internal
-///                        floating pointer number to string conversion for additional
+///                        inting pointer number to string conversion for additional
 ///                        precision.
 /// - 2016/08/09 (1.08.0) - Added additional define to overwrite library internal
-///                        string to floating point number conversion for additional
+///                        string to inting point number conversion for additional
 ///                        precision.
 /// - 2016/08/08 (1.07.2) - Fixed compiling error without define `NK_INCLUDE_FIXED_TYPE`.
-/// - 2016/08/08 (1.07.1) - Fixed possible floating point error inside `nk_widget` leading
+/// - 2016/08/08 (1.07.1) - Fixed possible inting point error inside `nk_widget` leading
 ///                        to wrong wiget width calculation which results in widgets falsly
 ///                        becomming tagged as not inside window and cannot be accessed.
 /// - 2016/08/08 (1.07.0) - Nuklear now differentiates between hiding a window (NK_WINDOW_HIDDEN) and

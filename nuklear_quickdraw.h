@@ -255,12 +255,144 @@ NK_API void nk_quickdraw_del_image(struct nk_image* image) {
     free(image);
 }
 
+int widthFor12ptFont[128] = {
+    0,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    8,
+    10,
+    10,
+    10,
+    0,
+    10,
+    10,
+    10,
+    11,
+    11,
+    9,
+    11,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    10,
+    4,
+    6,
+    7,
+    10,
+    7,
+    11,
+    10,
+    3,
+    5,
+    5,
+    7,
+    7,
+    4,
+    7,
+    4,
+    7,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    4,
+    4,
+    6,
+    8,
+    6,
+    8,
+    11,
+    8,
+    8,
+    8,
+    8,
+    7,
+    7,
+    8,
+    8,
+    6,
+    7,
+    9,
+    7,
+    12,
+    9,
+    8,
+    8,
+    8,
+    8,
+    7,
+    6,
+    8,
+    8,
+    12,
+    8,
+    8,
+    8,
+    5,
+    7,
+    5,
+    8,
+    8,
+    6,
+    8,
+    8,
+    7,
+    8,
+    8,
+    6,
+    8,
+    8,
+    4,
+    6,
+    8,
+    4,
+    12,
+    8,
+    8,
+    8,
+    8,
+    6,
+    7,
+    6,
+    8,
+    8,
+    12,
+    8,
+    8,
+    8,
+    5,
+    5,
+    5,
+    8,
+    8
+};
+
 // note: if this produces a greater value than the actual length of the text, 
 // the cursor will walk off to the right
 // too small, it will precede the end of the text
 // TODO: fully convert
 // TODO: assuming system font for v1, support other fonts in v2
-static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, const char *text, int len) {
+// doing this in a "fast" way by using a precomputed table for a 12pt font
+static int nk_quickdraw_font_get_text_width(nk_handle handle, int height, const char *text, int len) {
 
     // writeSerialPort(boutRefNum, "nk_quickdraw_font_get_text_width");
 
@@ -269,12 +401,14 @@ static float nk_quickdraw_font_get_text_width(nk_handle handle, float height, co
         return 0;
     }
 
-    // opening the port is needed to get the proper width of the text, otherwise it will be wrong for some reason
-    OpenPort(&gMainOffScreen.BWPort);
+    int width = 0;
 
-    TextSize(height);
+    for (int i = 0; i < len; i++) {
 
-    return 1.0 * TextWidth(text, 0, len);
+        width += widthFor12ptFont[(int)text[i]];
+    }
+
+    return width;
 }
 
 /* Flags are identical to al_load_font() flags argument */
@@ -368,11 +502,11 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     const struct nk_command_line *l = (const struct nk_command_line *)cmd;
                     color = blackColor;
                     // great reference: http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-60.html
-                    // al_draw_line((float)l->begin.x, (float)l->begin.y, (float)l->end.x, (float)l->end.y, color, (float)l->line_thickness); // TODO: look up and convert al_draw_line
+                    // al_draw_line((int)l->begin.x, (int)l->begin.y, (int)l->end.x, (int)l->end.y, color, (int)l->line_thickness); // TODO: look up and convert al_draw_line
                     ForeColor(color);
-                    PenSize((float)l->line_thickness, (float)l->line_thickness);
-                    MoveTo((float)l->begin.x, (float)l->begin.y);
-                    LineTo((float)l->end.x, (float)l->end.y);
+                    PenSize((int)l->line_thickness, (int)l->line_thickness);
+                    MoveTo((int)l->begin.x, (int)l->begin.y);
+                    LineTo((int)l->end.x, (int)l->end.y);
                 }
 
                 break;
@@ -390,7 +524,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     color = blackColor;
                     
                     ForeColor(color);
-                    PenSize((float)r->line_thickness, (float)r->line_thickness);
+                    PenSize((int)r->line_thickness, (int)r->line_thickness);
 
                     Rect quickDrawRectangle;
                     quickDrawRectangle.top = (int)r->y;
@@ -398,7 +532,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     quickDrawRectangle.bottom = (int)r->y + (int)r->h;
                     quickDrawRectangle.right = (int)r->x + (int)r->w;
 
-                    FrameRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding);
+                    FrameRoundRect(&quickDrawRectangle, (int)r->rounding, (int)r->rounding);
                 }
 
                 break;
@@ -425,8 +559,8 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     quickDrawRectangle.bottom = (int)r->y + (int)r->h;
                     quickDrawRectangle.right = (int)r->x + (int)r->w;
 
-                    FillRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding, &colorPattern);
-                    FrameRoundRect(&quickDrawRectangle, (float)r->rounding, (float)r->rounding); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
+                    FillRoundRect(&quickDrawRectangle, (int)r->rounding, (int)r->rounding, &colorPattern);
+                    FrameRoundRect(&quickDrawRectangle, (int)r->rounding, (int)r->rounding); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
                 }
 
                 break;
@@ -492,12 +626,12 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     color = blackColor;
                     
                     ForeColor(color);
-                    PenSize((float)t->line_thickness, (float)t->line_thickness);
+                    PenSize((int)t->line_thickness, (int)t->line_thickness);
 
-                    MoveTo((float)t->a.x, (float)t->a.y);
-                    LineTo((float)t->b.x, (float)t->b.y);
-                    LineTo((float)t->c.x, (float)t->c.y);
-                    LineTo((float)t->a.x, (float)t->a.y);
+                    MoveTo((int)t->a.x, (int)t->a.y);
+                    LineTo((int)t->b.x, (int)t->b.y);
+                    LineTo((int)t->c.x, (int)t->c.y);
+                    LineTo((int)t->a.x, (int)t->a.y);
                 }
 
                 break;
@@ -517,10 +651,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     ForeColor(color);
 
                     PolyHandle trianglePolygon = OpenPoly(); 
-                    MoveTo((float)t->a.x, (float)t->a.y);
-                    LineTo((float)t->b.x, (float)t->b.y);
-                    LineTo((float)t->c.x, (float)t->c.y);
-                    LineTo((float)t->a.x, (float)t->a.y);
+                    MoveTo((int)t->a.x, (int)t->a.y);
+                    LineTo((int)t->b.x, (int)t->b.y);
+                    LineTo((int)t->c.x, (int)t->c.y);
+                    LineTo((int)t->a.x, (int)t->a.y);
                     ClosePoly();
 
                     FillPoly(trianglePolygon, &colorPattern);
@@ -637,14 +771,14 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
 
                         writeSerialPort(boutRefNum, "NK_COMMAND_TEXT");
                         char log[255];
-                        sprintf(log, "%f: %s, %d", (float)t->height, &t->string, (int)t->length);
+                        sprintf(log, "%f: %s, %d", (int)t->height, &t->string, (int)t->length);
                         writeSerialPort(boutRefNum, log);
                     #endif
 
                     color = blackColor;
                     ForeColor(color);
                     MoveTo((int)t->x, (int)t->y + (int)t->height);
-                    TextSize((float)t->height);
+                    TextSize((int)t->height);
 
                     DrawText((const char*)t->string, 0, (int)t->length);
                 }
@@ -660,10 +794,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
                     color = blackColor;
                     ForeColor(color);
-                    Point p1 = { (float)q->begin.x, (float)q->begin.y};
-                    Point p2 = { (float)q->ctrl[0].x, (float)q->ctrl[0].y};
-                    Point p3 = { (float)q->ctrl[1].x, (float)q->ctrl[1].y};
-                    Point p4 = { (float)q->end.x, (float)q->end.y};
+                    Point p1 = { (int)q->begin.x, (int)q->begin.y};
+                    Point p2 = { (int)q->ctrl[0].x, (int)q->ctrl[0].y};
+                    Point p3 = { (int)q->ctrl[1].x, (int)q->ctrl[1].y};
+                    Point p4 = { (int)q->end.x, (int)q->end.y};
 
                     BezierCurve(p1, p2, p3, p4);
                 }
@@ -683,10 +817,10 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     Rect arcBoundingBoxRectangle;
                     // this is kind of silly because the cx is at the center of the arc and we need to create a rectangle around it 
                     // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-60.html#MARKER-2-116
-                    float x1 = (float)a->cx - (float)a->r;
-                    float y1 = (float)a->cy - (float)a->r;
-                    float x2 = (float)a->cx + (float)a->r;
-                    float y2 = (float)a->cy + (float)a->r;
+                    int x1 = (int)a->cx - (int)a->r;
+                    int y1 = (int)a->cy - (int)a->r;
+                    int x2 = (int)a->cx + (int)a->r;
+                    int y2 = (int)a->cy + (int)a->r;
                     SetRect(&arcBoundingBoxRectangle, x1, y1, x2, y2);
                     // SetRect(secondRect,90,20,140,70);
 
