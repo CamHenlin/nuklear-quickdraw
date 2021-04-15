@@ -100,7 +100,7 @@
 //                 state = (menu_state == MENU_CHART) ? NK_MAXIMIZED: NK_MINIMIZED;
 //                 if (nk_tree_state_push(ctx, NK_TREE_TAB, "CHART", &state)) {
 //                     size_t i = 0;
-//                     const float values[]={26.0f,13.0f,30.0f,15.0f,25.0f,10.0f,20.0f,40.0f,12.0f,8.0f,22.0f,28.0f};
+//                     const int values[]={26,13,30,15,25,10,20,40,12,8,22,28};
 //                     menu_state = MENU_CHART;
 //                     nk_layout_row_dynamic(ctx, 150, 1);
 //                     nk_chart_begin(ctx, NK_CHART_COLUMN, NK_LEN(values), 0, 50);
@@ -202,19 +202,14 @@
 //             {
 //                 /* Basic widgets */
 //                 static int int_slider = 5;
-//                 static float float_slider = 2.5f;
 //                 static size_t prog_value = 40;
-//                 static float property_float = 2;
-//                 static int property_int = 10;
+//                 static int property_int = 2;
 //                 static int property_neg = 10;
 
-//                 static float range_float_min = 0;
-//                 static float range_float_max = 100;
-//                 static float range_float_value = 50;
 //                 static int range_int_min = 0;
-//                 static int range_int_value = 2048;
-//                 static int range_int_max = 4096;
-//                 static const float ratio[] = {120, 150};
+//                 static int range_int_max = 100;
+//                 static int range_int_value = 50;
+//                 static const int ratio[] = {120, 150};
 
 //                 nk_layout_row_static(ctx, 30, 100, 1);
 //                 nk_checkbox_label(ctx, "Checkbox", &checkbox);
@@ -227,15 +222,12 @@
 //                 nk_layout_row(ctx, NK_STATIC, 30, 2, ratio);
 //                 nk_labelf(ctx, NK_TEXT_LEFT, "Slider int");
 //                 nk_slider_int(ctx, 0, &int_slider, 10, 1);
-
-//                 nk_label(ctx, "Slider float", NK_TEXT_LEFT);
-//                 nk_slider_float(ctx, 0, &float_slider, 5.0, 0.5f);
 //                 nk_labelf(ctx, NK_TEXT_LEFT, "Progressbar: %zu" , prog_value);
 //                 nk_progress(ctx, &prog_value, 100, NK_MODIFIABLE);
 
 //                 nk_layout_row(ctx, NK_STATIC, 25, 2, ratio);
-//                 nk_label(ctx, "Property float:", NK_TEXT_LEFT);
-//                 nk_property_float(ctx, "Float:", 0, &property_float, 64.0f, 0.1f, 0.2f);
+//                 nk_label(ctx, "Property int:", NK_TEXT_LEFT);
+//                 nk_property_int(ctx, "Float:", 0, &property_int, 64, 0.1f, 0.2f);
 //                 nk_label(ctx, "Property int:", NK_TEXT_LEFT);
 //                 nk_property_int(ctx, "Int:", 0, &property_int, 100, 1, 1);
 //                 nk_label(ctx, "Property neg:", NK_TEXT_LEFT);
@@ -244,9 +236,9 @@
 //                 nk_layout_row_dynamic(ctx, 25, 1);
 //                 nk_label(ctx, "Range:", NK_TEXT_LEFT);
 //                 nk_layout_row_dynamic(ctx, 25, 3);
-//                 nk_property_float(ctx, "#min:", 0, &range_float_min, range_float_max, 1.0f, 0.2f);
-//                 nk_property_float(ctx, "#float:", range_float_min, &range_float_value, range_float_max, 1.0f, 0.2f);
-//                 nk_property_float(ctx, "#max:", range_float_min, &range_float_max, 100, 1.0f, 0.2f);
+//                 nk_property_int(ctx, "#min:", 0, &range_int_min, range_int_max, 1, 0.2f);
+//                 nk_property_int(ctx, "#int:", range_int_min, &range_int_value, range_int_max, 1, 0.2f);
+//                 nk_property_int(ctx, "#max:", range_int_min, &range_int_max, 100, 1, 0.2f);
 
 //                 nk_property_int(ctx, "#min:", INT_MIN, &range_int_min, range_int_max, 1, 10);
 //                 nk_property_int(ctx, "#neg:", range_int_min, &range_int_value, range_int_max, 1, 10);
@@ -342,12 +334,12 @@
 //                  * which only show the currently activated time/data and hide the
 //                  * selection logic inside the combobox popup.
 //                  */
-//                 static float chart_selection = 8.0f;
+//                 static int chart_selection = 8;
 //                 static int current_weapon = 0;
 //                 static int check_values[5];
-//                 static float position[3];
+//                 static int position[3];
 //                 static struct nk_color combo_color = {130, 50, 50, 255};
-//                 static struct nk_colorf combo_color2 = {0.509f, 0.705f, 0.2f, 1.0f};
+//                 static struct nk_colorf combo_color2 = {0.509f, 0.705f, 0.2f, 1};
 //                 static size_t prog_a =  20, prog_b = 40, prog_c = 10, prog_d = 90;
 //                 static const char *weapons[] = {"Fist","Pistol","Shotgun","Plasma","BFG"};
 
@@ -360,7 +352,7 @@
 
 //                 /* slider color combobox */
 //                 if (nk_combo_begin_color(ctx, combo_color, nk_vec2(200,200))) {
-//                     float ratios[] = {0.15f, 0.85f};
+//                     int ratios[] = {0.15f, 0.85f};
 //                     nk_layout_row(ctx, NK_DYNAMIC, 30, 2, ratios);
 //                     nk_label(ctx, "R:", NK_TEXT_LEFT);
 //                     combo_color.r = (nk_byte)nk_slide_int(ctx, 0, combo_color.r, 255, 5);
@@ -387,17 +379,17 @@
 
 //                     nk_layout_row_dynamic(ctx, 25, 1);
 //                     if (col_mode == COL_RGB) {
-//                         combo_color2.r = nk_propertyf(ctx, "#R:", 0, combo_color2.r, 1.0f, 0.01f,0.005f);
-//                         combo_color2.g = nk_propertyf(ctx, "#G:", 0, combo_color2.g, 1.0f, 0.01f,0.005f);
-//                         combo_color2.b = nk_propertyf(ctx, "#B:", 0, combo_color2.b, 1.0f, 0.01f,0.005f);
-//                         combo_color2.a = nk_propertyf(ctx, "#A:", 0, combo_color2.a, 1.0f, 0.01f,0.005f);
+//                         combo_color2.r = nk_propertyf(ctx, "#R:", 0, combo_color2.r, 1, 0.01f,0.005f);
+//                         combo_color2.g = nk_propertyf(ctx, "#G:", 0, combo_color2.g, 1, 0.01f,0.005f);
+//                         combo_color2.b = nk_propertyf(ctx, "#B:", 0, combo_color2.b, 1, 0.01f,0.005f);
+//                         combo_color2.a = nk_propertyf(ctx, "#A:", 0, combo_color2.a, 1, 0.01f,0.005f);
 //                     } else {
-//                         float hsva[4];
+//                         int hsva[4];
 //                         nk_colorf_hsva_fv(hsva, combo_color2);
-//                         hsva[0] = nk_propertyf(ctx, "#H:", 0, hsva[0], 1.0f, 0.01f,0.05f);
-//                         hsva[1] = nk_propertyf(ctx, "#S:", 0, hsva[1], 1.0f, 0.01f,0.05f);
-//                         hsva[2] = nk_propertyf(ctx, "#V:", 0, hsva[2], 1.0f, 0.01f,0.05f);
-//                         hsva[3] = nk_propertyf(ctx, "#A:", 0, hsva[3], 1.0f, 0.01f,0.05f);
+//                         hsva[0] = nk_propertyf(ctx, "#H:", 0, hsva[0], 1, 0.01f,0.05f);
+//                         hsva[1] = nk_propertyf(ctx, "#S:", 0, hsva[1], 1, 0.01f,0.05f);
+//                         hsva[2] = nk_propertyf(ctx, "#V:", 0, hsva[2], 1, 0.01f,0.05f);
+//                         hsva[3] = nk_propertyf(ctx, "#A:", 0, hsva[3], 1, 0.01f,0.05f);
 //                         combo_color2 = nk_hsva_colorfv(hsva);
 //                     }
 //                     nk_combo_end(ctx);
@@ -430,9 +422,9 @@
 //                 sprintf(buffer, "%.2f, %.2f, %.2f", position[0], position[1],position[2]);
 //                 if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,200))) {
 //                     nk_layout_row_dynamic(ctx, 25, 1);
-//                     nk_property_float(ctx, "#X:", -1024.0f, &position[0], 1024.0f, 1,0.5f);
-//                     nk_property_float(ctx, "#Y:", -1024.0f, &position[1], 1024.0f, 1,0.5f);
-//                     nk_property_float(ctx, "#Z:", -1024.0f, &position[2], 1024.0f, 1,0.5f);
+//                     nk_property_int(ctx, "#X:", -1024, &position[0], 1024, 1,0.5f);
+//                     nk_property_int(ctx, "#Y:", -1024, &position[1], 1024, 1,0.5f);
+//                     nk_property_int(ctx, "#Z:", -1024, &position[2], 1024, 1,0.5f);
 //                     nk_combo_end(ctx);
 //                 }
 
@@ -440,7 +432,7 @@
 //                 sprintf(buffer, "%.1f", chart_selection);
 //                 if (nk_combo_begin_label(ctx, buffer, nk_vec2(200,250))) {
 //                     size_t i = 0;
-//                     static const float values[]={26.0f,13.0f,30.0f,15.0f,25.0f,10.0f,20.0f,40.0f, 12.0f, 8.0f, 22.0f, 28.0f, 5.0f};
+//                     static const int values[]={26,13,30,15,25,10,20,40, 12, 8, 22, 28, 5};
 //                     nk_layout_row_dynamic(ctx, 150, 1);
 //                     nk_chart_begin(ctx, NK_CHART_COLUMN, NK_LEN(values), 0, 50);
 //                     for (i = 0; i < NK_LEN(values); ++i) {
@@ -522,8 +514,8 @@
 //                         {int year_n = (sel_date.tm_mon < 2) ? year-1: year;
 //                         int y = year_n % 100;
 //                         int c = year_n / 100;
-//                         int y4 = (int)((float)y / 4);
-//                         int c4 = (int)((float)c / 4);
+//                         int y4 = (int)((int)y / 4);
+//                         int c4 = (int)((int)c / 4);
 //                         int m = (int)(2.6 * (double)(((sel_date.tm_mon + 10) % 12) + 1) - 0.2);
 //                         int week_day = (((1 + m + y + y4 + c4 - 2 * c) % 7) + 7) % 7;
 
@@ -550,7 +542,7 @@
 
 //             if (nk_tree_push(ctx, NK_TREE_NODE, "Input", NK_MINIMIZED))
 //             {
-//                 static const float ratio[] = {120, 150};
+//                 static const int ratio[] = {120, 150};
 //                 static char field_buffer[64];
 //                 static char text[9][64];
 //                 static int text_len[9];
@@ -566,7 +558,7 @@
 //                 nk_label(ctx, "Int:", NK_TEXT_LEFT);
 //                 nk_edit_string(ctx, NK_EDIT_SIMPLE, text[1], &text_len[1], 64, nk_filter_decimal);
 //                 nk_label(ctx, "Float:", NK_TEXT_LEFT);
-//                 nk_edit_string(ctx, NK_EDIT_SIMPLE, text[2], &text_len[2], 64, nk_filter_float);
+//                 nk_edit_string(ctx, NK_EDIT_SIMPLE, text[2], &text_len[2], 64, nk_filter_int);
 //                 nk_label(ctx, "Hex:", NK_TEXT_LEFT);
 //                 nk_edit_string(ctx, NK_EDIT_SIMPLE, text[4], &text_len[4], 64, nk_filter_hex);
 //                 nk_label(ctx, "Octal:", NK_TEXT_LEFT);
@@ -620,10 +612,10 @@
 //              * and need to provide min and max values for scaling on the Y-axis.
 //              * and then call `nk_chart_push` to push values into the chart.
 //              * Finally `nk_chart_end` needs to be called to end the process. */
-//             float id = 0;
+//             int id = 0;
 //             static int col_index = -1;
 //             static int line_index = -1;
-//             float step = (2*3.141592654f) / 32;
+//             int step = (2*3.141592654f) / 32;
 
 //             int i;
 //             int index = -1;
@@ -634,9 +626,9 @@
 //             index = -1;
 //             nk_layout_row_dynamic(ctx, 100, 1);
 //             bounds = nk_widget_bounds(ctx);
-//             if (nk_chart_begin(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f)) {
+//             if (nk_chart_begin(ctx, NK_CHART_LINES, 32, -1, 1)) {
 //                 for (i = 0; i < 32; ++i) {
-//                     nk_flags res = nk_chart_push(ctx, (float)(id));
+//                     nk_flags res = nk_chart_push(ctx, (int)(id));
 //                     if (res & NK_CHART_HOVERING)
 //                         index = (int)i;
 //                     if (res & NK_CHART_CLICKED)
@@ -647,18 +639,18 @@
 //             }
 
 //             if (index != -1)
-//                 nk_tooltipf(ctx, "Value: %.2f", (float)((float)index*step));
+//                 nk_tooltipf(ctx, "Value: %.2f", (int)((int)index*step));
 //             if (line_index != -1) {
 //                 nk_layout_row_dynamic(ctx, 20, 1);
-//                 nk_labelf(ctx, NK_TEXT_LEFT, "Selected value: %.2f", (float)((float)index*step));
+//                 nk_labelf(ctx, NK_TEXT_LEFT, "Selected value: %.2f", (int)((int)index*step));
 //             }
 
 //             /* column chart */
 //             nk_layout_row_dynamic(ctx, 100, 1);
 //             bounds = nk_widget_bounds(ctx);
-//             if (nk_chart_begin(ctx, NK_CHART_COLUMN, 32, 0.0f, 1.0f)) {
+//             if (nk_chart_begin(ctx, NK_CHART_COLUMN, 32, 0, 1)) {
 //                 for (i = 0; i < 32; ++i) {
-//                     nk_flags res = nk_chart_push(ctx, (float)fabs((id)));
+//                     nk_flags res = nk_chart_push(ctx, (int)fabs((id)));
 //                     if (res & NK_CHART_HOVERING)
 //                         index = (int)i;
 //                     if (res & NK_CHART_CLICKED)
@@ -668,22 +660,22 @@
 //                 nk_chart_end(ctx);
 //             }
 //             if (index != -1)
-//                 nk_tooltipf(ctx, "Value: %.2f", (float)fabs((step * (float)index)));
+//                 nk_tooltipf(ctx, "Value: %.2f", (int)fabs((step * (int)index)));
 //             if (col_index != -1) {
 //                 nk_layout_row_dynamic(ctx, 20, 1);
-//                 nk_labelf(ctx, NK_TEXT_LEFT, "Selected value: %.2f", (float)fabs((step * (float)col_index)));
+//                 nk_labelf(ctx, NK_TEXT_LEFT, "Selected value: %.2f", (int)fabs((step * (int)col_index)));
 //             }
 
 //             /* mixed chart */
 //             nk_layout_row_dynamic(ctx, 100, 1);
 //             bounds = nk_widget_bounds(ctx);
-//             if (nk_chart_begin(ctx, NK_CHART_COLUMN, 32, 0.0f, 1.0f)) {
-//                 nk_chart_add_slot(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f);
-//                 nk_chart_add_slot(ctx, NK_CHART_LINES, 32, -1.0f, 1.0f);
+//             if (nk_chart_begin(ctx, NK_CHART_COLUMN, 32, 0, 1)) {
+//                 nk_chart_add_slot(ctx, NK_CHART_LINES, 32, -1, 1);
+//                 nk_chart_add_slot(ctx, NK_CHART_LINES, 32, -1, 1);
 //                 for (id = 0, i = 0; i < 32; ++i) {
-//                     nk_chart_push_slot(ctx, (float)fabs((id)), 0);
-//                     nk_chart_push_slot(ctx, (float)(id), 1);
-//                     nk_chart_push_slot(ctx, (float)(id), 2);
+//                     nk_chart_push_slot(ctx, (int)fabs((id)), 0);
+//                     nk_chart_push_slot(ctx, (int)(id), 1);
+//                     nk_chart_push_slot(ctx, (int)(id), 2);
 //                     id += step;
 //                 }
 //             }
@@ -692,13 +684,13 @@
 //             /* mixed colored chart */
 //             nk_layout_row_dynamic(ctx, 100, 1);
 //             bounds = nk_widget_bounds(ctx);
-//             if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
-//                 nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
-//                 nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, -1.0f, 1.0f);
+//             if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0, 1)) {
+//                 nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1, 1);
+//                 nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, -1, 1);
 //                 for (id = 0, i = 0; i < 32; ++i) {
-//                     nk_chart_push_slot(ctx, (float)fabs((id)), 0);
-//                     nk_chart_push_slot(ctx, (float)(id), 1);
-//                     nk_chart_push_slot(ctx, (float)(id), 2);
+//                     nk_chart_push_slot(ctx, (int)fabs((id)), 0);
+//                     nk_chart_push_slot(ctx, (int)(id), 1);
+//                     nk_chart_push_slot(ctx, (int)(id), 2);
 //                     id += step;
 //                 }
 //             }
@@ -797,8 +789,8 @@
 //         {
 //             if (nk_tree_push(ctx, NK_TREE_NODE, "Widget", NK_MINIMIZED))
 //             {
-//                 float ratio_two[] = {0.2f, 0.6f, 0.2f};
-//                 float width_two[] = {100, 200, 50};
+//                 int ratio_two[] = {0.2f, 0.6f, 0.2f};
+//                 int width_two[] = {100, 200, 50};
 
 //                 nk_layout_row_dynamic(ctx, 30, 1);
 //                 nk_label(ctx, "Dynamic fixed column layout with generated position and size:", NK_TEXT_LEFT);
@@ -904,7 +896,7 @@
 //                 nk_property_int(ctx, "#Height:", 100, &group_height, 500, 10, 1);
 //                 nk_layout_row_end(ctx);
 
-//                 nk_layout_row_static(ctx, (float)group_height, group_width, 2);
+//                 nk_layout_row_static(ctx, (int)group_height, group_width, 2);
 //                 if (nk_group_begin(ctx, "Group", group_flags)) {
 //                     int i = 0;
 //                     static int selected[16];
@@ -951,21 +943,21 @@
 //             {
 //                 static int current_tab = 0;
 //                 struct nk_rect bounds;
-//                 float step = (2*3.141592654f) / 32;
+//                 int step = (2*3.141592654f) / 32;
 //                 enum chart_type {CHART_LINE, CHART_HISTO, CHART_MIXED};
 //                 const char *names[] = {"Lines", "Columns", "Mixed"};
-//                 float id = 0;
+//                 int id = 0;
 //                 int i;
 
 //                 /* Header */
 //                 nk_style_push_vec2(ctx, &ctx->style.window.spacing, nk_vec2(0,0));
-//                 nk_style_push_float(ctx, &ctx->style.button.rounding, 0);
+//                 nk_style_push_int(ctx, &ctx->style.button.rounding, 0);
 //                 nk_layout_row_begin(ctx, NK_STATIC, 20, 3);
 //                 for (i = 0; i < 3; ++i) {
 //                     /* make sure button perfectly fits text */
 //                     const struct nk_user_font *f = ctx->style.font;
-//                     float text_width = f->width(f->userdata, f->height, names[i], nk_strlen(names[i]));
-//                     float widget_width = text_width + 3 * ctx->style.button.padding.x;
+//                     int text_width = f->width(f->userdata, f->height, names[i], nk_strlen(names[i]));
+//                     int widget_width = text_width + 3 * ctx->style.button.padding.x;
 //                     nk_layout_row_push(ctx, widget_width);
 //                     if (current_tab == i) {
 //                         /* active tab gets highlighted */
@@ -975,7 +967,7 @@
 //                         ctx->style.button.normal = button_color;
 //                     } else current_tab = nk_button_label(ctx, names[i]) ? i: current_tab;
 //                 }
-//                 nk_style_pop_float(ctx);
+//                 nk_style_pop_int(ctx);
 
 //                 /* Body */
 //                 nk_layout_row_dynamic(ctx, 140, 1);
@@ -987,11 +979,11 @@
 //                     case CHART_LINE:
 //                         nk_layout_row_dynamic(ctx, 100, 1);
 //                         bounds = nk_widget_bounds(ctx);
-//                         if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
-//                             nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
+//                         if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0, 1)) {
+//                             nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1, 1);
 //                             for (i = 0, id = 0; i < 32; ++i) {
-//                                 nk_chart_push_slot(ctx, (float)fabs((id)), 0);
-//                                 nk_chart_push_slot(ctx, (float)(id), 1);
+//                                 nk_chart_push_slot(ctx, (int)fabs((id)), 0);
+//                                 nk_chart_push_slot(ctx, (int)(id), 1);
 //                                 id += step;
 //                             }
 //                         }
@@ -1000,9 +992,9 @@
 //                     case CHART_HISTO:
 //                         nk_layout_row_dynamic(ctx, 100, 1);
 //                         bounds = nk_widget_bounds(ctx);
-//                         if (nk_chart_begin_colored(ctx, NK_CHART_COLUMN, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
+//                         if (nk_chart_begin_colored(ctx, NK_CHART_COLUMN, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0, 1)) {
 //                             for (i = 0, id = 0; i < 32; ++i) {
-//                                 nk_chart_push_slot(ctx, (float)fabs((id)), 0);
+//                                 nk_chart_push_slot(ctx, (int)fabs((id)), 0);
 //                                 id += step;
 //                             }
 //                         }
@@ -1011,13 +1003,13 @@
 //                     case CHART_MIXED:
 //                         nk_layout_row_dynamic(ctx, 100, 1);
 //                         bounds = nk_widget_bounds(ctx);
-//                         if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
-//                             nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
-//                             nk_chart_add_slot_colored(ctx, NK_CHART_COLUMN, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, 0.0f, 1.0f);
+//                         if (nk_chart_begin_colored(ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0, 1)) {
+//                             nk_chart_add_slot_colored(ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1, 1);
+//                             nk_chart_add_slot_colored(ctx, NK_CHART_COLUMN, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, 0, 1);
 //                             for (i = 0, id = 0; i < 32; ++i) {
-//                                 nk_chart_push_slot(ctx, (float)fabs((id)), 0);
-//                                 nk_chart_push_slot(ctx, (float)fabs((id)), 1);
-//                                 nk_chart_push_slot(ctx, (float)fabs((id)), 2);
+//                                 nk_chart_push_slot(ctx, (int)fabs((id)), 0);
+//                                 nk_chart_push_slot(ctx, (int)fabs((id)), 1);
+//                                 nk_chart_push_slot(ctx, (int)fabs((id)), 2);
 //                                 id += step;
 //                             }
 //                         }
@@ -1131,10 +1123,10 @@
 
 //                 if (nk_tree_push(ctx, NK_TREE_NODE, "Vertical", NK_MINIMIZED))
 //                 {
-//                     static float a = 100, b = 100, c = 100;
+//                     static int a = 100, b = 100, c = 100;
 //                     struct nk_rect bounds;
 
-//                     float row_layout[5];
+//                     int row_layout[5];
 //                     row_layout[0] = a;
 //                     row_layout[1] = 8;
 //                     row_layout[2] = b;
@@ -1144,13 +1136,13 @@
 //                     /* header */
 //                     nk_layout_row_static(ctx, 30, 100, 2);
 //                     nk_label(ctx, "left:", NK_TEXT_LEFT);
-//                     nk_slider_float(ctx, 10.0f, &a, 200.0f, 10.0f);
+//                     nk_slider_int(ctx, 10, &a, 200, 10);
 
 //                     nk_label(ctx, "middle:", NK_TEXT_LEFT);
-//                     nk_slider_float(ctx, 10.0f, &b, 200.0f, 10.0f);
+//                     nk_slider_int(ctx, 10, &b, 200, 10);
 
 //                     nk_label(ctx, "right:", NK_TEXT_LEFT);
-//                     nk_slider_float(ctx, 10.0f, &c, 200.0f, 10.0f);
+//                     nk_slider_int(ctx, 10, &c, 200, 10);
 
 //                     /* tiles */
 //                     nk_layout_row(ctx, NK_STATIC, 200, 5, row_layout);
@@ -1218,19 +1210,19 @@
 
 //                 if (nk_tree_push(ctx, NK_TREE_NODE, "Horizontal", NK_MINIMIZED))
 //                 {
-//                     static float a = 100, b = 100, c = 100;
+//                     static int a = 100, b = 100, c = 100;
 //                     struct nk_rect bounds;
 
 //                     /* header */
 //                     nk_layout_row_static(ctx, 30, 100, 2);
 //                     nk_label(ctx, "top:", NK_TEXT_LEFT);
-//                     nk_slider_float(ctx, 10.0f, &a, 200.0f, 10.0f);
+//                     nk_slider_int(ctx, 10, &a, 200, 10);
 
 //                     nk_label(ctx, "middle:", NK_TEXT_LEFT);
-//                     nk_slider_float(ctx, 10.0f, &b, 200.0f, 10.0f);
+//                     nk_slider_int(ctx, 10, &b, 200, 10);
 
 //                     nk_label(ctx, "bottom:", NK_TEXT_LEFT);
-//                     nk_slider_float(ctx, 10.0f, &c, 200.0f, 10.0f);
+//                     nk_slider_int(ctx, 10, &c, 200, 10);
 
 //                     /* top space */
 //                     nk_layout_row_dynamic(ctx, a, 1);

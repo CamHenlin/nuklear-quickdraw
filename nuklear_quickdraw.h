@@ -43,13 +43,12 @@ NK_API NkQuickDrawFont* nk_quickdraw_font_create_from_file();
  *
  * ===============================================================
  */
-#define NK_MEMSET memset
-#define NK_MEMCPY memcpy
-#ifdef NK_QUICKDRAW_IMPLEMENTATIO
-N#ifndef NK_QUICKDRAW_TEXT_MAX
+
+#ifdef NK_QUICKDRAW_IMPLEMENTATION
+#ifndef NK_QUICKDRAW_TEXT_MAX
 #define NK_QUICKDRAW_TEXT_MAX 256
 #endif
-
+#endif
 struct NkQuickDrawFont {
     struct nk_user_font nk;
     char *font;
@@ -532,7 +531,7 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     quickDrawRectangle.bottom = (int)r->y + (int)r->h;
                     quickDrawRectangle.right = (int)r->x + (int)r->w;
 
-                    FrameRoundRect(&quickDrawRectangle, (int)r->rounding, (int)r->rounding);
+                    FrameRect(&quickDrawRectangle);//, (int)r->rounding, (int)r->rounding);
                 }
 
                 break;
@@ -559,8 +558,8 @@ NK_API void nk_quickdraw_render(WindowPtr window, struct nk_context *ctx) {
                     quickDrawRectangle.bottom = (int)r->y + (int)r->h;
                     quickDrawRectangle.right = (int)r->x + (int)r->w;
 
-                    FillRoundRect(&quickDrawRectangle, (int)r->rounding, (int)r->rounding, &colorPattern);
-                    FrameRoundRect(&quickDrawRectangle, (int)r->rounding, (int)r->rounding); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
+                    FillRect(&quickDrawRectangle, &colorPattern);
+                    FrameRect(&quickDrawRectangle);//, (int)r->rounding, (int)r->rounding); // http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/QuickDraw/QuickDraw-105.html#HEADING105-0
                 }
 
                 break;
@@ -1055,7 +1054,7 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
                     nk_input_key(nuklear_context, NK_KEY_BACKSPACE, isKeyDown);
                 } else if (key == escapeKey) {
                     
-                    nk_input_key(nuklear_context, NK_KEY_TEXT_RESET_MODE, isKeyDown);
+                    // nk_input_key(nuklear_context, NK_KEY_TEXT_RESET_MODE, isKeyDown);
                 } else if (key == pageUpKey) {
                  
                     nk_input_key(nuklear_context, NK_KEY_SCROLL_UP, isKeyDown);
@@ -1064,11 +1063,11 @@ NK_API int nk_quickdraw_handle_event(EventRecord *event, struct nk_context *nukl
                     nk_input_key(nuklear_context, NK_KEY_SCROLL_DOWN, isKeyDown);
                 } else if (key == homeKey) {
 
-                    nk_input_key(nuklear_context, NK_KEY_TEXT_START, isKeyDown);
+                    // nk_input_key(nuklear_context, NK_KEY_TEXT_START, isKeyDown);
                     nk_input_key(nuklear_context, NK_KEY_SCROLL_START, isKeyDown);
                 } else if (key == endKey) {
 
-                    nk_input_key(nuklear_context, NK_KEY_TEXT_END, isKeyDown);
+                    // nk_input_key(nuklear_context, NK_KEY_TEXT_END, isKeyDown);
                     nk_input_key(nuklear_context, NK_KEY_SCROLL_END, isKeyDown);
                 } else {
 
@@ -1201,18 +1200,5 @@ NK_API void nk_quickdraw_shutdown(void) {
     memset(&quickdraw, 0, sizeof(quickdraw));
 }
         
-void aFailed(char *file, int line) {
-    
-    MoveTo(10, 10);
-    char *textoutput;
-    sprintf(textoutput, "%s:%d", file, line);
-    writeSerialPort(boutRefNum, "assertion failure");
-    writeSerialPort(boutRefNum, textoutput);
-    // hold the program - we want to be able to read the text! assuming anything after the assert would be a crash
-    while (true) {}
-}
 
-#define NK_ASSERT(e) \
-    if (!(e)) \
-        aFailed(__FILE__, __LINE__)
         
