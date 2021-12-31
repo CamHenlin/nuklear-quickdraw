@@ -1,0 +1,1 @@
+/home/camh/Retro68-build/toolchain/bin/m68k-apple-macos-gcc    CMakeFiles/nuklear_quickdraw.dir/SerialHelper.c.obj CMakeFiles/nuklear_quickdraw.dir/mac_main.c.obj  -o nuklear_quickdraw.code.bin 

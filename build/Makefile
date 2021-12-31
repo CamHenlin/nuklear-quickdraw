@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/camh/Documents/Retro68kApps/NuklearQuickDraw
+CMAKE_SOURCE_DIR = /home/camh/Documents/Retro68kApps/nuklear_quickdraw
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/camh/Documents/Retro68kApps/NuklearQuickDraw/build
+CMAKE_BINARY_DIR = /home/camh/Documents/Retro68kApps/nuklear_quickdraw/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/camh/Documents/Retro68kApps/NuklearQuickDraw/build/CMakeFiles /home/camh/Documents/Retro68kApps/NuklearQuickDraw/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/camh/Documents/Retro68kApps/nuklear_quickdraw/build/CMakeFiles /home/camh/Documents/Retro68kApps/nuklear_quickdraw/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/camh/Documents/Retro68kApps/NuklearQuickDraw/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/camh/Documents/Retro68kApps/nuklear_quickdraw/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,57 +111,30 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named NuklearQuickDraw_APPL
+# Target rules for targets named nuklear_quickdraw_APPL
 
 # Build rule for target.
-NuklearQuickDraw_APPL: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 NuklearQuickDraw_APPL
-.PHONY : NuklearQuickDraw_APPL
+nuklear_quickdraw_APPL: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 nuklear_quickdraw_APPL
+.PHONY : nuklear_quickdraw_APPL
 
 # fast build rule for target.
-NuklearQuickDraw_APPL/fast:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw_APPL.dir/build.make CMakeFiles/NuklearQuickDraw_APPL.dir/build
-.PHONY : NuklearQuickDraw_APPL/fast
+nuklear_quickdraw_APPL/fast:
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw_APPL.dir/build.make CMakeFiles/nuklear_quickdraw_APPL.dir/build
+.PHONY : nuklear_quickdraw_APPL/fast
 
 #=============================================================================
-# Target rules for targets named NuklearQuickDraw
+# Target rules for targets named nuklear_quickdraw
 
 # Build rule for target.
-NuklearQuickDraw: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 NuklearQuickDraw
-.PHONY : NuklearQuickDraw
+nuklear_quickdraw: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 nuklear_quickdraw
+.PHONY : nuklear_quickdraw
 
 # fast build rule for target.
-NuklearQuickDraw/fast:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/build
-.PHONY : NuklearQuickDraw/fast
-
-Sample.obj: Sample.c.obj
-
-.PHONY : Sample.obj
-
-# target to build an object file
-Sample.c.obj:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/Sample.c.obj
-.PHONY : Sample.c.obj
-
-Sample.i: Sample.c.i
-
-.PHONY : Sample.i
-
-# target to preprocess a source file
-Sample.c.i:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/Sample.c.i
-.PHONY : Sample.c.i
-
-Sample.s: Sample.c.s
-
-.PHONY : Sample.s
-
-# target to generate assembly for a file
-Sample.c.s:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/Sample.c.s
-.PHONY : Sample.c.s
+nuklear_quickdraw/fast:
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw.dir/build.make CMakeFiles/nuklear_quickdraw.dir/build
+.PHONY : nuklear_quickdraw/fast
 
 SerialHelper.obj: SerialHelper.c.obj
 
@@ -169,7 +142,7 @@ SerialHelper.obj: SerialHelper.c.obj
 
 # target to build an object file
 SerialHelper.c.obj:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/SerialHelper.c.obj
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw.dir/build.make CMakeFiles/nuklear_quickdraw.dir/SerialHelper.c.obj
 .PHONY : SerialHelper.c.obj
 
 SerialHelper.i: SerialHelper.c.i
@@ -178,7 +151,7 @@ SerialHelper.i: SerialHelper.c.i
 
 # target to preprocess a source file
 SerialHelper.c.i:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/SerialHelper.c.i
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw.dir/build.make CMakeFiles/nuklear_quickdraw.dir/SerialHelper.c.i
 .PHONY : SerialHelper.c.i
 
 SerialHelper.s: SerialHelper.c.s
@@ -187,35 +160,35 @@ SerialHelper.s: SerialHelper.c.s
 
 # target to generate assembly for a file
 SerialHelper.c.s:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/SerialHelper.c.s
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw.dir/build.make CMakeFiles/nuklear_quickdraw.dir/SerialHelper.c.s
 .PHONY : SerialHelper.c.s
 
-coprocessorjs.obj: coprocessorjs.c.obj
+mac_main.obj: mac_main.c.obj
 
-.PHONY : coprocessorjs.obj
+.PHONY : mac_main.obj
 
 # target to build an object file
-coprocessorjs.c.obj:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/coprocessorjs.c.obj
-.PHONY : coprocessorjs.c.obj
+mac_main.c.obj:
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw.dir/build.make CMakeFiles/nuklear_quickdraw.dir/mac_main.c.obj
+.PHONY : mac_main.c.obj
 
-coprocessorjs.i: coprocessorjs.c.i
+mac_main.i: mac_main.c.i
 
-.PHONY : coprocessorjs.i
+.PHONY : mac_main.i
 
 # target to preprocess a source file
-coprocessorjs.c.i:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/coprocessorjs.c.i
-.PHONY : coprocessorjs.c.i
+mac_main.c.i:
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw.dir/build.make CMakeFiles/nuklear_quickdraw.dir/mac_main.c.i
+.PHONY : mac_main.c.i
 
-coprocessorjs.s: coprocessorjs.c.s
+mac_main.s: mac_main.c.s
 
-.PHONY : coprocessorjs.s
+.PHONY : mac_main.s
 
 # target to generate assembly for a file
-coprocessorjs.c.s:
-	$(MAKE) -f CMakeFiles/NuklearQuickDraw.dir/build.make CMakeFiles/NuklearQuickDraw.dir/coprocessorjs.c.s
-.PHONY : coprocessorjs.c.s
+mac_main.c.s:
+	$(MAKE) -f CMakeFiles/nuklear_quickdraw.dir/build.make CMakeFiles/nuklear_quickdraw.dir/mac_main.c.s
+.PHONY : mac_main.c.s
 
 # Help Target
 help:
@@ -225,17 +198,14 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... NuklearQuickDraw_APPL"
-	@echo "... NuklearQuickDraw"
-	@echo "... Sample.obj"
-	@echo "... Sample.i"
-	@echo "... Sample.s"
+	@echo "... nuklear_quickdraw_APPL"
+	@echo "... nuklear_quickdraw"
 	@echo "... SerialHelper.obj"
 	@echo "... SerialHelper.i"
 	@echo "... SerialHelper.s"
-	@echo "... coprocessorjs.obj"
-	@echo "... coprocessorjs.i"
-	@echo "... coprocessorjs.s"
+	@echo "... mac_main.obj"
+	@echo "... mac_main.i"
+	@echo "... mac_main.s"
 .PHONY : help
 
 

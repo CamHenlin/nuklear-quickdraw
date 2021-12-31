@@ -114,6 +114,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/NuklearQuickDraw_APPL.dir/DependInfo.cmake"
-  "CMakeFiles/NuklearQuickDraw.dir/DependInfo.cmake"
+  "CMakeFiles/nuklear_quickdraw_APPL.dir/DependInfo.cmake"
+  "CMakeFiles/nuklear_quickdraw.dir/DependInfo.cmake"
   )

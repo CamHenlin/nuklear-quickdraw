@@ -6,9 +6,8 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-add_application(NuklearQuickDraw
+add_application(nuklear_quickdraw
     SerialHelper.c
-    coprocessorjs.c
-	Sample.c
-	Sample.r
+	mac_main.c
+	mac_main.r
    )

@@ -20,7 +20,7 @@
 #include <Devices.h>
 #include <stdio.h>
 #include <string.h>
-#include "Sample.h"
+#include "mac_main.h"
 
 //#define PROFILING 1
 #ifdef PROFILING
@@ -90,8 +90,6 @@ void PROFILE_COMPLETE() {
 
 #include "SerialHelper.h"
 #include "Quickdraw.h"
-#include "output_js.h"
-#include "coprocessorjs.h"
 
 #include "nuklear_app.c"
 
@@ -106,6 +104,7 @@ Boolean		gHasWaitNextEvent;	/* set up by Initialize */
 /* GInBackground is maintained by our osEvent handling routines. Any part of
    the program can check it to find out if it is currently in the background. */
 Boolean		gInBackground;		/* maintained by Initialize and DoEvent */
+Boolean gotMouseEvent;
 
 // #define MAC_APP_DEBUGGING
 /* The following globals are the state of the window. If we supported more than
@@ -154,14 +153,6 @@ void main()
 
     SysBeep(1);
 
-    setupCoprocessor("nuklear", "modem"); // could also be "printer", modem is 0 in PCE settings - printer would be 1
-    // we could build a nuklear window for selection
-
-    char programResult[MAX_RECEIVE_SIZE];
-    sendProgramToCoprocessor(OUTPUT_JS, programResult);
-
-    coprocessorLoaded = 1;
-
     EventLoop(ctx); /* call the main event loop */
 }
 
@@ -179,6 +170,8 @@ void EventLoop(struct nk_context *ctx)
     int lastMouseHPos = 0;
     int lastMouseVPos = 0;
     int lastUpdatedTickCount = 0;
+    Boolean firstOrMouseMove = true;
+    gotMouseEvent = false;
 
     do {
 
@@ -187,21 +180,6 @@ void EventLoop(struct nk_context *ctx)
         // #ifdef PROFILING
         //     PROFILE_START("eventloop");
         // #endif
-
-        // check for new stuff every 10 sec?
-        // note! this is used by some of the functionality in our nuklear_app to trigger
-        // new chat lookups
-        if (TickCount() - lastUpdatedTickCount > 600) {
-
-            // writeSerialPortDebug(boutRefNum, "update by tick count");
-            lastUpdatedTickCount = TickCount();
-
-            if (strcmp(activeChat, "no active chat")) {
-
-                // writeSerialPortDebug(boutRefNum, "check chat");
-                getHasNewMessagesInChat(activeChat);
-            }
-        } 
 
         Boolean beganInput = false;
 
@@ -236,9 +214,6 @@ void EventLoop(struct nk_context *ctx)
                 firstOrMouseMove = true;
                 beganInput = true;
 
-                mouse_x = tempPoint.h;
-                mouse_y = tempPoint.v;
-
                 lastUpdatedTickCount = TickCount();
                 lastMouseHPos = mouse.h;
                 lastMouseVPos = mouse.v;
@@ -247,7 +222,6 @@ void EventLoop(struct nk_context *ctx)
         } else {
 
             gotEvent = GetNextEvent(everyEvent, &event);
-            gotMouseEvent = false;
 
             // drain all events before rendering -- really this only applies to keyboard events and single mouse clicks now
             while (gotEvent) {
@@ -315,7 +289,14 @@ void EventLoop(struct nk_context *ctx)
                 PROFILE_START("nk_quickdraw_render");
             #endif
 
-            nk_quickdraw_render(FrontWindow(), ctx);
+            GetGlobalMouse(&mouse);
+
+            // if the mouse is moving, don't try to render. we'll likely have more rendering to do when
+            // the user stops moving the mouse
+            if (lastMouseVPos == mouse.v || lastMouseHPos == mouse.h) {
+
+                nk_quickdraw_render(FrontWindow(), ctx);
+            }
 
             #ifdef PROFILING
                 PROFILE_END("nk_quickdraw_render");
@@ -359,8 +340,6 @@ void DoEvent(EventRecord *event, struct nk_context *ctx) {
     switch ( event->what ) {
 
         case mouseUp:
-
-            gotMouseEvent = true;
 
             #ifdef MAC_APP_DEBUGGING
                 writeSerialPortDebug(boutRefNum, "mouseup");
@@ -642,9 +621,7 @@ void DoMenuCommand(menuResult)
             handledByDA = SystemEdit(menuItem-1);	/* since we donÕt do any Editing */
             break;
         case mLight:
-            // note this was co-opted to send new chats instead of the demo functionality. do the
-            // same thing for other menu items as necessary
-            sendNewChat = 1;
+            // example handling for menu item
             break;
 
         case mHelp:
