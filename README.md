@@ -5,8 +5,8 @@ This repo is intended to be used as a template from which to build other Nuklear
 You could probably refer to the `nuklear.h` file in this repo as a sort of Nuklear-lite. Nuklear initially had poor performance on Classic Macintosh systems in a "death by 1000 cuts" situation. To that end, Nuklear has been modified in the following ways to help optimize for performance on 8MHz Macintosh systems:
 
 - all floating point math has been moved to int-based math. Some math was refactored to support this
-- some coloring commands have been removed (black and white screen) -- likely more could be done here
-- UTF8 font handling was partially removed -- again, likely more could be done here
+- all coloring commands have been removed and replaced with direct reference to black and white quickdraw patterns
+- UTF8 font handling was partially removed -- likely more could be done here
 - asserts were removed
 - some draw command caching was implemented in conjunction with the QuickDraw-specific rendering code contained in this repo.
 
@@ -47,3 +47,10 @@ Here's a list of software built using Nuklear QuickDraw:
 For a usable demo, see [this blog post](https://henlin.net/2021/12/21/Introducing-Nuklear-for-Macintosh/) where there's an embedded version of this repo's calculator app running a Nuklear emulator. Otherwise, check out this animated gif:
 
 ![demo image](https://henlin.net/images/nuklear-quickdraw-demo.gif)
+
+## Bugs
+Due to performance work outlined above, there are likely significant bugs that may need to be resolved for nuklear to work for your specific use case. I will try to keep this repo up to date with my own fixes and encourage others to submit PRs to this repo with fixes.
+
+Some areas that I know bugs exist in:
+- some items may disappear due to performance work. I've implemented mechanisms for some draw commands to avoid cache, you'll likely need to go through the nuklear code and do that. (Ex: demo is slightly broken right now (but not unusably so!), you'll see when you run it)
+- some scroll bars may be broken. I fixed vertical scroll bars in text boxes but know the same problems exist elsewhere. The issue is that math needs to be refactored to support integer math, right now it is floating point-based math that will result in incorrect values. 

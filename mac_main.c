@@ -106,6 +106,9 @@ Boolean		gHasWaitNextEvent;	/* set up by Initialize */
 Boolean		gInBackground;		/* maintained by Initialize and DoEvent */
 Boolean gotMouseEvent;
 
+Boolean gotKeyboardEvent = false;
+int gotKeyboardEventTime = 0;
+
 // #define MAC_APP_DEBUGGING
 /* The following globals are the state of the window. If we supported more than
    one window, they would be attatched to each document, rather than globals. */
@@ -180,6 +183,12 @@ void EventLoop(struct nk_context *ctx)
         // #ifdef PROFILING
         //     PROFILE_START("eventloop");
         // #endif
+
+        if (gotKeyboardEvent && TickCount() > gotKeyboardEventTime + 20) {
+
+            gotKeyboardEvent = false;
+            ShowCursor();
+        }
 
         Boolean beganInput = false;
 
@@ -402,6 +411,14 @@ void DoEvent(EventRecord *event, struct nk_context *ctx) {
             #ifdef MAC_APP_DEBUGGING
                 writeSerialPortDebug(boutRefNum, "key");
             #endif
+
+            if (!gotKeyboardEvent) {
+
+                HideCursor();
+                gotKeyboardEvent = true;
+            }
+
+            gotKeyboardEventTime = TickCount();
 
             key = event->message & charCodeMask;
             if ( event->modifiers & cmdKey )	{		/* Command key down */
